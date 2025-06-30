@@ -23,17 +23,17 @@ export function Properties() {
 
   useEffect(() => {
     // FIX: Cargar unidades primero, luego propiedades
-    if (state.units.length === 0) {
-      mockUnits.forEach(unit => {
-        dispatch({ type: 'ADD_UNIT', payload: unit });
-      });
-    }
+    // if (state.units.length === 0) {
+    //   mockUnits.forEach(unit => {
+    //     dispatch({ type: 'ADD_UNIT', payload: unit });
+    //   });
+    // }
     
-    if (state.properties.length === 0) {
-      mockProperties.forEach(property => {
-        dispatch({ type: 'ADD_PROPERTY', payload: property });
-      });
-    }
+    // if (state.properties.length === 0) {
+    //   mockProperties.forEach(property => {
+    //     dispatch({ type: 'ADD_PROPERTY', payload: property });
+    //   });
+    // }
   }, [state.units.length, state.properties.length, dispatch]);
 
   // FIX: Filtros funcionando correctamente

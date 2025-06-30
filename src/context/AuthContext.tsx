@@ -150,6 +150,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
       }
 
+      if (organization) {
+        apiClient.setOrganizationId(organization.id);
+      }
+
       dispatch({
         type: 'LOGIN_SUCCESS',
         payload: { user, organization: organization!, subscription: subscription!, token: response.token },
@@ -225,6 +229,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Logout error:', error);
     } finally {
       apiClient.setToken(null);
+      apiClient.setOrganizationId(null);
       dispatch({ type: 'LOGOUT' });
     }
   };

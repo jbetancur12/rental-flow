@@ -27,7 +27,6 @@ export function handleValidationErrors(req: Request, res: Response, next: NextFu
 
 export function validateOrganizationAccess(req: AuthRequest, res: Response, next: NextFunction) {
   const organizationId = req.headers['x-organization-id'] || req.params.organizationId;
-  
   if (!organizationId) {
     return res.status(400).json({
       error: 'Organization ID required',

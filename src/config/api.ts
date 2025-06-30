@@ -4,10 +4,12 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/
 class ApiClient {
   private baseURL: string;
   private token: string | null = null;
+  private organizationId: string | null = null;
 
   constructor(baseURL: string) {
     this.baseURL = baseURL;
     this.token = localStorage.getItem('auth_token');
+    this.organizationId = localStorage.getItem('organization_id');
   }
 
   setToken(token: string | null) {
@@ -19,19 +21,34 @@ class ApiClient {
     }
   }
 
+ setOrganizationId(organizationId: string | null) {
+  this.organizationId = organizationId;
+  if (organizationId) {
+    localStorage.setItem('organization_id', organizationId);
+  } else {
+    localStorage.removeItem('organization_id');
+  }
+}
+
+
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
     
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...options.headers,
+      ...(options.headers && !(options.headers instanceof Headers) ? options.headers as Record<string, string> : {}),
     };
 
     if (this.token) {
       headers.Authorization = `Bearer ${this.token}`;
+    }
+
+    // Add organization ID header for authenticated requests
+    if (this.organizationId && this.token) {
+      headers['X-Organization-ID'] = this.organizationId;
     }
 
     const config: RequestInit = {

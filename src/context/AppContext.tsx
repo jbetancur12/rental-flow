@@ -177,7 +177,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // Load units from backend
   const loadUnits = async () => {
-    if (!authState.isAuthenticated) return;
+    if (!authState.isAuthenticated || !authState.organization ) return;
     
     try {
       const response = await apiClient.getUnits();
@@ -198,6 +198,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         createdAt: new Date(unit.createdAt),
         updatedAt: new Date(unit.updatedAt),
       }));
+      console.log("🚀 ~ units ~ units:", units)
       
       dispatch({ type: 'SET_UNITS', payload: units });
     } catch (error: any) {

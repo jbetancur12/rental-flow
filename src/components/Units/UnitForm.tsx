@@ -24,7 +24,7 @@ export function UnitForm({ unit, isOpen, onClose, onSave }: UnitFormProps) {
     amenities: [] as string[],
     photos: [] as string[],
     manager: '',
-    subUnits: []
+    
   });
 
   const [newAmenity, setNewAmenity] = useState('');
@@ -42,7 +42,7 @@ export function UnitForm({ unit, isOpen, onClose, onSave }: UnitFormProps) {
         amenities: [...unit.amenities],
         photos: [...unit.photos],
         manager: unit.manager || '',
-        subUnits: []
+        
       });
     } else {
       setFormData({
@@ -56,7 +56,7 @@ export function UnitForm({ unit, isOpen, onClose, onSave }: UnitFormProps) {
         amenities: [],
         photos: [],
         manager: '',
-        subUnits: []
+        
       });
     }
   }, [unit]);
