@@ -197,7 +197,7 @@ router.put('/:id',
   requireRole(['ADMIN', 'MANAGER']),
   validateOrganizationAccess,
   [
-    param('id').isUUID(),
+    param('id').isString(),
     body('propertyId').optional().isUUID(),
     body('tenantId').optional().isUUID(),
     body('startDate').optional().isISO8601(),
@@ -207,13 +207,26 @@ router.put('/:id',
     body('terms').optional().isArray(),
     body('status').optional().isIn(['DRAFT', 'ACTIVE', 'EXPIRED', 'TERMINATED']),
     body('signedDate').optional().isISO8601(),
-    body('terminationDate').optional().isISO8601()
+    body('terminationDate').optional({ checkFalsy: true }).isISO8601()
   ],
   handleValidationErrors,
   async (req:Request, res:Response) => {
     try {
       const { id } = req.params;
       const organizationId = (req as any).organizationId;
+
+       const {
+        propertyId,
+        tenantId,
+        startDate,
+        endDate,
+        monthlyRent,
+        securityDeposit,
+        terms,
+        status,
+        signedDate,
+        terminationDate
+      } = req.body;
 
       const existingContract = await prisma.contract.findFirst({
         where: { id, organizationId }
@@ -251,15 +264,36 @@ router.put('/:id',
         }
       }
 
-      const updateData: any = { ...req.body };
-      if (req.body.startDate) updateData.startDate = new Date(req.body.startDate);
-      if (req.body.endDate) updateData.endDate = new Date(req.body.endDate);
-      if (req.body.signedDate) updateData.signedDate = new Date(req.body.signedDate);
-      if (req.body.terminationDate) updateData.terminationDate = new Date(req.body.terminationDate);
+       const updateData: any = {};
 
+      // Asigna solo los campos que existen en la solicitud
+      if (monthlyRent !== undefined) updateData.monthlyRent = monthlyRent;
+      if (securityDeposit !== undefined) updateData.securityDeposit = securityDeposit;
+      if (terms !== undefined) updateData.terms = terms;
+      if (status !== undefined) updateData.status = status;
+
+      // Convierte las fechas a objetos Date
+      if (startDate) updateData.startDate = new Date(startDate);
+      if (endDate) updateData.endDate = new Date(endDate);
+      if (signedDate) updateData.signedDate = new Date(signedDate);
+      if (terminationDate) { // Puede ser null, pero si existe, es una fecha
+        updateData.terminationDate = new Date(terminationDate);
+      } else if (req.body.hasOwnProperty('terminationDate') && req.body.terminationDate === null) {
+          updateData.terminationDate = null; // Permite establecer la fecha en null
+      }
+      
+      // 3. Usa "connect" para actualizar las relaciones
+      if (propertyId) {
+        updateData.property = { connect: { id: propertyId } };
+      }
+      if (tenantId) {
+        updateData.tenant = { connect: { id: tenantId } };
+      }
+
+      // 4. Llama a Prisma con el objeto `data` limpio y correcto
       const contract = await prisma.contract.update({
         where: { id },
-        data: updateData,
+        data: {...updateData, status: 'ACTIVE'}, // 👍
         include: {
           property: true,
           tenant: true
@@ -269,7 +303,7 @@ router.put('/:id',
       // Update property status based on contract status
       if (req.body.status) {
         let propertyStatus = 'AVAILABLE';
-        if (req.body.status === 'ACTIVE') propertyStatus = 'RENTED';
+        if (req.body.status === 'DRAFT') propertyStatus = 'RENTED';
         
         await prisma.property.update({
           where: { id: contract.propertyId },

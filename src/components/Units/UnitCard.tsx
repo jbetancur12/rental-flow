@@ -43,8 +43,8 @@ export function UnitCard({
     }
   };
 
-  const availableProperties = properties.filter(p => p.status === 'available').length;
-  const rentedProperties = properties.filter(p => p.status === 'rented').length;
+  const availableProperties = properties.filter(p => p.status === 'AVAILABLE').length;
+  const rentedProperties = properties.filter(p => p.status === 'RENTED').length;
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-lg transition-shadow">
@@ -135,8 +135,8 @@ export function UnitCard({
                       </div>
                       <div className="flex items-center space-x-1">
                         <span className={`px-1 py-0.5 rounded text-xs ${
-                          property.status === 'available' ? 'bg-emerald-100 text-emerald-700' :
-                          property.status === 'rented' ? 'bg-blue-100 text-blue-700' :
+                          property.status === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-700' :
+                          property.status === 'RENTED' ? 'bg-blue-100 text-blue-700' :
                           'bg-yellow-100 text-yellow-700'
                         }`}>
                           {property.status}
@@ -185,8 +185,8 @@ export function UnitCard({
                     <p className="text-sm text-slate-600">{properties[0].size} sq ft • ${properties[0].rent}/month</p>
                   </div>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    properties[0].status === 'available' ? 'bg-emerald-100 text-emerald-800' :
-                    properties[0].status === 'rented' ? 'bg-blue-100 text-blue-800' :
+                    properties[0].status === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-800' :
+                    properties[0].status === 'RENTED' ? 'bg-blue-100 text-blue-800' :
                     'bg-yellow-100 text-yellow-800'
                   }`}>
                     {properties[0].status}
@@ -219,8 +219,8 @@ export function UnitCard({
                     <p className="text-sm text-slate-600">{properties[0].size} sq ft • ${properties[0].rent}/month</p>
                   </div>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    properties[0].status === 'available' ? 'bg-emerald-100 text-emerald-800' :
-                    properties[0].status === 'rented' ? 'bg-blue-100 text-blue-800' :
+                    properties[0].status === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-800' :
+                    properties[0].status === 'RENTED' ? 'bg-blue-100 text-blue-800' :
                     'bg-yellow-100 text-yellow-800'
                   }`}>
                     {properties[0].status}

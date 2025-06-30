@@ -189,9 +189,33 @@ router.put('/:id',
         });
       }
 
+      const {
+        firstName,
+        lastName,
+        email,
+        phone,
+        emergencyContact,
+        employment,
+        status,
+        creditScore,
+        references
+      } = req.body;
+
+      const updateData: any = {};
+
+      if (firstName !== undefined) updateData.firstName = firstName;
+      if (lastName !== undefined) updateData.lastName = lastName;
+      if (email !== undefined) updateData.email = email;
+      if (phone !== undefined) updateData.phone = phone;
+      if (emergencyContact !== undefined) updateData.emergencyContact = emergencyContact;
+      if (employment !== undefined) updateData.employment = employment;
+      if (status !== undefined) updateData.status = status;
+      if (creditScore !== undefined) updateData.creditScore = creditScore;
+      if (references !== undefined) updateData.references = references;
+
       const tenant = await prisma.tenant.update({
         where: { id },
-        data: req.body
+        data: updateData
       });
 
       logger.info('Tenant updated:', { tenantId: tenant.id, organizationId });

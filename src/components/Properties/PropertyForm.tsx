@@ -22,7 +22,7 @@ export function PropertyForm({ property, isOpen, onClose, onSave }: PropertyForm
     bathrooms: 0,
     amenities: [] as string[],
     rent: 0,
-    status: 'available' as Property['status'],
+    status: 'AVAILABLE' as Property['status'],
     photos: [] as string[],
     unitId: '',
     unitNumber: '',
@@ -58,7 +58,7 @@ export function PropertyForm({ property, isOpen, onClose, onSave }: PropertyForm
         bathrooms: 0,
         amenities: [],
         rent: 0,
-        status: 'available',
+        status: 'AVAILABLE',
         photos: [],
         unitId: '',
         unitNumber: '',
@@ -350,10 +350,10 @@ export function PropertyForm({ property, isOpen, onClose, onSave }: PropertyForm
                   className="w-full max-w-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   disabled={isSubmitting}
                 >
-                  <option value="available">Disponible</option>
-                  <option value="reserved">Reservada</option>
-                  <option value="rented">Alquilada</option>
-                  <option value="maintenance">En Mantenimiento</option>
+                  <option value="AVAILABLE">Disponible</option>
+                  <option value="RESERVED">Reservada</option>
+                  <option value="RENTED">Alquilada</option>
+                  <option value="MAINTENANCE">En Mantenimiento</option>
                 </select>
               </div>
 

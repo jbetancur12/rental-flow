@@ -150,6 +150,7 @@ const AppContext = createContext<{
   updateContract: (id: string, data: any) => Promise<void>;
   deleteContract: (id: string) => Promise<void>;
   createPayment: (data: any) => Promise<void>;
+  loadPayments: () => Promise<void>;
   updatePayment?: (id: string, data: any) => Promise<void>;
   createMaintenanceRequest?: (data: any) => Promise<void>;
   updateMaintenanceRequest?: (id: string, data: any) => Promise<void>;
@@ -179,7 +180,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         bathrooms: prop.bathrooms,
         amenities: prop.amenities || [],
         rent: prop.rent,
-        status: prop.status.toLowerCase(),
+        status: prop.status,
         photos: prop.photos || [],
         unitId: prop.unitId,
         unitNumber: prop.unitNumber,
@@ -450,6 +451,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const loadPayments = async () => {
+    if (!authState.isAuthenticated || !authState.organization) return;
+    try {
+      const response = await apiClient.getPayments();
+      
+      // Transform backend payments to frontend format
+      const payments = response.payments.map((payment: any) => ({
+        ...payment,
+        type: payment.type.toUpperCase(),
+        status: payment.status,
+        dueDate: new Date(payment.dueDate),
+        paidDate: payment.paidDate ? new Date(payment.paidDate) : null,
+      }));
+      
+      dispatch({ type: 'LOAD_INITIAL_DATA', payload: { payments } });
+    } catch (error: any) {
+      toast.error('Error', error.message || 'Failed to load payments');
+    }
+  }
+
   const createPayment = async (data: any) => {
     try {
       const response = await apiClient.createPayment(data);
@@ -468,6 +489,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       loadProperties();
       getTenants();
       loadContracts();
+      loadPayments();
     }
   }, [authState.isAuthenticated, authState.organization]);
 
@@ -523,6 +545,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       loadContracts,
       createContract,
       updateContract,
+      loadPayments,
       createPayment,
       deleteContract,
     

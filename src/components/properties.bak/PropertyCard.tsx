@@ -14,13 +14,13 @@ interface PropertyCardProps {
 export function PropertyCard({ property, onEdit, onView }: PropertyCardProps) {
   const getStatusColor = (status: Property['status']) => {
     switch (status) {
-      case 'available':
+      case 'AVAILABLE':
         return 'bg-green-100 text-green-800'
-      case 'rented':
+      case 'RENTED':
         return 'bg-blue-100 text-blue-800'
-      case 'reserved':
+      case 'RESERVED':
         return 'bg-yellow-100 text-yellow-800'
-      case 'maintenance':
+      case 'MAINTENANCE':
         return 'bg-red-100 text-red-800'
       default:
         return 'bg-gray-100 text-gray-800'

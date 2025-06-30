@@ -25,19 +25,19 @@ export function PropertyCard({
   const { state } = useApp();
   
   const statusColors = {
-    available: 'bg-emerald-100 text-emerald-800',
-    reserved: 'bg-yellow-100 text-yellow-800',
-    rented: 'bg-blue-100 text-blue-800',
-    maintenance: 'bg-red-100 text-red-800'
+    AVAILABLE: 'bg-emerald-100 text-emerald-800',
+    RESERVED: 'bg-yellow-100 text-yellow-800',
+    RENTED: 'bg-blue-100 text-blue-800',
+    MAINTENANCE: 'bg-red-100 text-red-800'
   };
 
-  // Get current tenant and contract info for rented properties
+  // Get current tenant and contract info for RENTED properties
   const activeContract = state.contracts.find(c => 
     c.propertyId === property.id && c.status === 'ACTIVE'
   );
   
   const currentTenant = activeContract ? 
-    state.tenants.find(t => t.id === activeContract.tenantId) : null;
+  state.tenants.find(t => t.id === activeContract.tenantId) : null;
 
   // Check for overdue payments
   const overduePayments = state.payments.filter(p => 
@@ -45,6 +45,8 @@ export function PropertyCard({
     p.status === 'PENDING' && 
     new Date(p.dueDate) < new Date()
   );
+
+ 
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-lg transition-shadow">
@@ -116,7 +118,7 @@ export function PropertyCard({
         </div>
 
         {/* Current Tenant Info for Rented Properties */}
-        {property.status === 'rented' && currentTenant && (
+        {property.status === 'RENTED' && currentTenant && (
           <div className="mb-4 p-3 bg-blue-50 rounded-lg">
             <div className="flex items-center justify-between">
               <div>
@@ -156,7 +158,7 @@ export function PropertyCard({
 
         {/* Action Buttons Based on Property Status */}
         <div className="space-y-2">
-          {property.status === 'available' && (
+          {property.status === 'AVAILABLE' && (
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => onRent && onRent(property)}
@@ -172,7 +174,7 @@ export function PropertyCard({
             </div>
           )}
 
-          {property.status === 'rented' && (
+          {property.status === 'RENTED' && (
             <div className="space-y-2">
               <div className="grid grid-cols-2 gap-2">
                 <button
@@ -204,7 +206,7 @@ export function PropertyCard({
             </div>
           )}
 
-          {property.status === 'maintenance' && (
+          {property.status === 'MAINTENANCE' && (
             <button className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm font-medium">
               Under Maintenance
             </button>

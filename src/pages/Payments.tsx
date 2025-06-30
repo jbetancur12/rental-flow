@@ -10,8 +10,8 @@ import { Payment } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 export function Payments() {
-  const { state, dispatch } = useApp();
-  const [filter, setFilter] = useState<'all' | 'pending' | 'paid' | 'overdue'>('all');
+  const { state, dispatch, loadPayments } = useApp();
+  const [filter, setFilter] = useState<'all' | 'PENDING' | 'PAID' | 'OVERDUE'>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPayment, setEditingPayment] = useState<Payment | undefined>();
   
@@ -25,13 +25,19 @@ export function Payments() {
   
   const [showKPIs, setShowKPIs] = useState(true);
 
+  const fetchPayments = async () => {
+    try {
+      await loadPayments();
+    } catch (error) {
+      
+    }
+  }
+
   useEffect(() => {
     if (state.payments.length === 0) {
-      mockPayments.forEach(payment => {
-        dispatch({ type: 'ADD_PAYMENT', payload: payment });
-      });
+      fetchPayments()
     }
-  }, [state.payments.length, dispatch]);
+  }, [state.payments.length]);
 
   // NEW: Listen for receipt generation events
   useEffect(() => {
@@ -60,14 +66,14 @@ export function Payments() {
   }, [state.payments, state.tenants, state.properties, state.contracts]);
 
   const getPaymentStatus = (payment: any) => {
-    if (payment.status === 'paid') return 'paid';
-    if (payment.status === 'pending' && isAfter(new Date(), payment.dueDate)) return 'overdue';
+    if (payment.status === 'PAID') return 'PAID';
+    if (payment.status === 'PENDING' && isAfter(new Date(), payment.dueDate)) return 'OVERDUE';
     return payment.status;
   };
 
   const filteredPayments = state.payments.filter(payment => {
     if (filter === 'all') return true;
-    if (filter === 'overdue') return getPaymentStatus(payment) === 'overdue';
+    if (filter === 'OVERDUE') return getPaymentStatus(payment) === 'OVERDUE';
     return payment.status === filter;
   });
 
@@ -112,17 +118,17 @@ export function Payments() {
   const kpiData = getFilteredKPIData();
 
   // KPIs calculados
-  const totalCollected = kpiData.filter(p => p.status === 'paid').reduce((sum, p) => sum + p.amount, 0);
-  const pendingAmount = kpiData.filter(p => p.status === 'pending').reduce((sum, p) => sum + p.amount, 0);
-  const overdueAmount = kpiData.filter(p => getPaymentStatus(p) === 'overdue').reduce((sum, p) => sum + p.amount, 0);
+  const totalCollected = kpiData.filter(p => p.status === 'PAID').reduce((sum, p) => sum + p.amount, 0);
+  const pendingAmount = kpiData.filter(p => p.status === 'PENDING').reduce((sum, p) => sum + p.amount, 0);
+  const overdueAmount = kpiData.filter(p => getPaymentStatus(p) === 'OVERDUE').reduce((sum, p) => sum + p.amount, 0);
   const thisMonthAmount = kpiData.filter(p => p.dueDate.getMonth() === new Date().getMonth()).reduce((sum, p) => sum + p.amount, 0);
 
   // Datos para gráficos
   const paymentTypeData = [
-    { name: 'Alquiler', value: kpiData.filter(p => p.type === 'rent').reduce((sum, p) => sum + p.amount, 0) },
-    { name: 'Depósito', value: kpiData.filter(p => p.type === 'deposit').reduce((sum, p) => sum + p.amount, 0) },
-    { name: 'Recargo', value: kpiData.filter(p => p.type === 'late_fee').reduce((sum, p) => sum + p.amount, 0) },
-    { name: 'Servicios', value: kpiData.filter(p => p.type === 'utility').reduce((sum, p) => sum + p.amount, 0) },
+    { name: 'Alquiler', value: kpiData.filter(p => p.type === 'RENT').reduce((sum, p) => sum + p.amount, 0) },
+    { name: 'Depósito', value: kpiData.filter(p => p.type === 'DEPOSIT').reduce((sum, p) => sum + p.amount, 0) },
+    { name: 'Recargo', value: kpiData.filter(p => p.type === 'LATE_FEE').reduce((sum, p) => sum + p.amount, 0) },
+    { name: 'Servicios', value: kpiData.filter(p => p.type === 'UTILITY').reduce((sum, p) => sum + p.amount, 0) },
   ].filter(item => item.value > 0);
 
   const monthlyTrendData = Array.from({length: 6}, (_, i) => {
@@ -134,8 +140,8 @@ export function Payments() {
     );
     return {
       month: month.toLocaleDateString('default', { month: 'short' }),
-      collected: monthPayments.filter(p => p.status === 'paid').reduce((sum, p) => sum + p.amount, 0),
-      pending: monthPayments.filter(p => p.status === 'pending').reduce((sum, p) => sum + p.amount, 0)
+      collected: monthPayments.filter(p => p.status === 'PAID').reduce((sum, p) => sum + p.amount, 0),
+      PENDING: monthPayments.filter(p => p.status === 'PENDING').reduce((sum, p) => sum + p.amount, 0)
     };
   });
 
@@ -143,9 +149,9 @@ export function Payments() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'paid':
+      case 'PAID':
         return <CheckCircle className="w-5 h-5 text-emerald-600" />;
-      case 'overdue':
+      case 'OVERDUE':
         return <AlertCircle className="w-5 h-5 text-red-600" />;
       default:
         return <Clock className="w-5 h-5 text-yellow-600" />;
@@ -154,12 +160,12 @@ export function Payments() {
 
   const getStatusColor = (status: string) => {
     const colors = {
-      paid: 'bg-emerald-100 text-emerald-800',
-      pending: 'bg-yellow-100 text-yellow-800',
-      overdue: 'bg-red-100 text-red-800',
+      PAID: 'bg-emerald-100 text-emerald-800',
+      PENDING: 'bg-yellow-100 text-yellow-800',
+      OVERDUE: 'bg-red-100 text-red-800',
       partial: 'bg-orange-100 text-orange-800'
     };
-    return colors[status as keyof typeof colors] || colors.pending;
+    return colors[status as keyof typeof colors] || colors.PENDING;
   };
 
   const getTenantName = (tenantId: string) => {
@@ -372,7 +378,7 @@ export function Payments() {
                       <YAxis />
                       <Tooltip />
                       <Bar dataKey="collected" fill="#10b981" name="Recaudado" />
-                      <Bar dataKey="pending" fill="#f59e0b" name="Pendiente" />
+                      <Bar dataKey="PENDING" fill="#f59e0b" name="Pendiente" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -412,7 +418,7 @@ export function Payments() {
               <div>
                 <p className="text-sm text-slate-600">Total Recaudado</p>
                 <p className="text-2xl font-bold text-emerald-600">
-                  ${state.payments.filter(p => p.status === 'paid').reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
+                  ${state.payments.filter(p => p.status === 'PAID').reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
                 </p>
               </div>
               <CheckCircle className="w-8 h-8 text-emerald-600" />
@@ -424,7 +430,7 @@ export function Payments() {
               <div>
                 <p className="text-sm text-slate-600">Pendiente</p>
                 <p className="text-2xl font-bold text-yellow-600">
-                  ${state.payments.filter(p => p.status === 'pending').reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
+                  ${state.payments.filter(p => p.status === 'PENDING').reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
                 </p>
               </div>
               <Clock className="w-8 h-8 text-yellow-600" />
@@ -436,7 +442,7 @@ export function Payments() {
               <div>
                 <p className="text-sm text-slate-600">Vencido</p>
                 <p className="text-2xl font-bold text-red-600">
-                  ${filteredPayments.filter(p => getPaymentStatus(p) === 'overdue').reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
+                  ${filteredPayments.filter(p => getPaymentStatus(p) === 'OVERDUE').reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
                 </p>
               </div>
               <AlertCircle className="w-8 h-8 text-red-600" />
@@ -459,7 +465,7 @@ export function Payments() {
         {/* Filters and Actions */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex space-x-2">
-            {['all', 'pending', 'paid', 'overdue'].map((status) => (
+            {['all', 'PENDING', 'PAID', 'OVERDUE'].map((status) => (
               <button
                 key={status}
                 onClick={() => setFilter(status as any)}
@@ -470,11 +476,11 @@ export function Payments() {
                 }`}
               >
                 {status === 'all' ? 'Todos' :
-                 status === 'pending' ? 'Pendientes' :
-                 status === 'paid' ? 'Pagados' : 'Vencidos'}
+                 status === 'PENDING' ? 'Pendientes' :
+                 status === 'PAID' ? 'Pagados' : 'Vencidos'}
                 <span className="ml-2 text-xs">
                   ({filter === 'all' ? state.payments.length : 
-                    filter === 'overdue' ? filteredPayments.filter(p => getPaymentStatus(p) === 'overdue').length :
+                    filter === 'OVERDUE' ? filteredPayments.filter(p => getPaymentStatus(p) === 'OVERDUE').length :
                     state.payments.filter(p => p.status === status).length})
                 </span>
               </button>
@@ -515,10 +521,10 @@ export function Payments() {
                           {getStatusIcon(status)}
                           <div className="ml-3">
                             <p className="font-medium text-slate-900">
-                              {payment.type === 'rent' ? 'Alquiler' :
-                               payment.type === 'deposit' ? 'Depósito' :
-                               payment.type === 'late_fee' ? 'Recargo por Mora' :
-                               payment.type === 'utility' ? 'Servicios' : 'Mantenimiento'}
+                              {payment.type === 'RENT' ? 'Alquiler' :
+                               payment.type === 'DEPOSIT' ? 'Depósito' :
+                               payment.type === 'LATE_FEE' ? 'Recargo por Mora' :
+                               payment.type === 'UTILITY' ? 'Servicios' : 'Mantenimiento'}
                             </p>
                             <p className="text-sm text-slate-500">#{payment.id.slice(-6).toUpperCase()}</p>
                           </div>
@@ -547,15 +553,15 @@ export function Payments() {
                       </td>
                       <td className="py-4 px-6">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(status)}`}>
-                          {status === 'paid' ? 'Pagado' :
-                           status === 'pending' ? 'Pendiente' :
-                           status === 'overdue' ? 'Vencido' : 'Parcial'}
+                          {status === 'PAID' ? 'Pagado' :
+                           status === 'PENDING' ? 'Pendiente' :
+                           status === 'OVERDUE' ? 'Vencido' : 'Parcial'}
                         </span>
                       </td>
                       <td className="py-4 px-6">
                         <div className="flex space-x-2">
                           {/* NEW: Generate Receipt Button */}
-                          {payment.status === 'paid' && (
+                          {payment.status === 'PAID' && (
                             <button 
                               onClick={() => handleGenerateReceipt(payment)}
                               className="text-sm text-emerald-600 hover:text-emerald-800 font-medium"
@@ -595,8 +601,8 @@ export function Payments() {
             <p className="text-slate-600 mb-4">
               {filter === 'all' 
                 ? "No hay registros de pagos disponibles."
-                : `No se encontraron pagos ${filter === 'pending' ? 'pendientes' : 
-                    filter === 'paid' ? 'pagados' : 'vencidos'}.`
+                : `No se encontraron pagos ${filter === 'PENDING' ? 'pendientes' : 
+                    filter === 'PAID' ? 'pagados' : 'vencidos'}.`
               }
             </p>
             <button

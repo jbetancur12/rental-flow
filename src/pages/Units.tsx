@@ -11,7 +11,7 @@ import { Building2, Home, Store } from 'lucide-react';
 import { Unit } from '../types';
 
 export function Units() {
-  const { state, dispatch, toast } = useApp();
+  const { state, dispatch, loadUnits } = useApp();
   const { isOpen: isConfirmOpen, options: confirmOptions, confirm, handleConfirm, handleCancel } = useConfirm();
   const [filter, setFilter] = useState<'all' | 'building' | 'house' | 'commercial'>('all');
   const [isUnitFormOpen, setIsUnitFormOpen] = useState(false);
@@ -19,13 +19,20 @@ export function Units() {
   const [editingUnit, setEditingUnit] = useState<Unit | undefined>();
   const [selectedUnit, setSelectedUnit] = useState<Unit | undefined>();
 
+  const fetchUnits = async () => {
+    try {
+      await loadUnits();
+    } catch (error) {
+      console.error('Failed to load units:', error);
+     
+    }
+  }
+
   useEffect(() => {
     if (state.units.length === 0) {
-      mockUnits.forEach(unit => {
-        dispatch({ type: 'ADD_UNIT', payload: unit });
-      });
+      fetchUnits();
     }
-  }, [state.units.length, dispatch]);
+  }, [state.units.length, ]);
 
   const filteredUnits = filter === 'all' 
     ? state.units 

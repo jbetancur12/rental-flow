@@ -15,7 +15,7 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
   const [formData, setFormData] = useState({
     propertyId: '',
     tenantId: '',
-    startDate: '',
+    startDate: new Date().toISOString().split('T')[0], // Default to today
     endDate: '',
     monthlyRent: 0,
     securityDeposit: 0,
@@ -24,31 +24,69 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
     signedDate: ''
   });
 
+  const [contractPeriod, setContractPeriod] = useState('12'); // Default to 12 months
   const [newTerm, setNewTerm] = useState('');
 
-  // Filter only available properties for new contracts
+  // Filter only AVAILABLE properties for new contracts
   const availableProperties = contract 
     ? properties 
-    : properties.filter(p => p.status === 'available');
+    : properties.filter(p => p.status === 'AVAILABLE');
+
+  // Function to calculate end date based on start date and period
+  const calculateEndDate = (startDate: string, months: number): string => {
+    if (!startDate) return '';
+    
+    const start = new Date(startDate);
+    const end = new Date(start);
+    end.setMonth(end.getMonth() + months);
+    
+    return end.toISOString().split('T')[0];
+  };
+
+  // Function to calculate period from existing dates
+  const calculatePeriodFromDates = (startDate: string, endDate: string): string => {
+    if (!startDate || !endDate) return '12';
+    
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    const diffMonths = Math.round(diffTime / (1000 * 60 * 60 * 24 * 30.44)); // Average days per month
+    
+    // Find closest standard period
+    const periods = [6, 12, 18, 24];
+    const closest = periods.reduce((prev, curr) => 
+      Math.abs(curr - diffMonths) < Math.abs(prev - diffMonths) ? curr : prev
+    );
+    
+    return closest.toString();
+  };
 
   useEffect(() => {
+    if(isOpen){
+     
     if (contract) {
+      const startDateStr = new Date(contract.startDate).toISOString().split('T')[0];
+      const endDateStr = new Date(contract.endDate).toISOString().split('T')[0];
+      const period = calculatePeriodFromDates(startDateStr, endDateStr);
+      
       setFormData({
         propertyId: contract.propertyId,
         tenantId: contract.tenantId,
-        startDate: new Date(contract.startDate).toISOString().split('T')[0],
-        endDate: new Date(contract.endDate).toISOString().split('T')[0],
+        startDate: startDateStr,
+        endDate: endDateStr,
         monthlyRent: contract.monthlyRent,
         securityDeposit: contract.securityDeposit,
         terms: [...contract.terms],
         status: contract.status,
         signedDate: contract.signedDate ? new Date(contract.signedDate).toISOString().split('T')[0] : ''
       });
+      setContractPeriod(period);
     } else {
       setFormData({
         propertyId: '',
         tenantId: '',
-        startDate: '',
+        startDate: new Date().toISOString().split('T')[0],
         endDate: '',
         monthlyRent: 0,
         securityDeposit: 0,
@@ -56,8 +94,22 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
         status: 'DRAFT',
         signedDate: ''
       });
+      setContractPeriod('12');
     }
-  }, [contract]);
+  }
+  }, [contract, isOpen]);
+
+  // Update end date when start date or period changes
+  useEffect(() => {
+    if (isOpen && formData.startDate && contractPeriod) {
+      const newEndDate = calculateEndDate(formData.startDate, parseInt(contractPeriod));
+      setFormData(prev => ({
+        ...prev,
+        endDate: newEndDate
+      }));
+    }
+    
+  }, [isOpen, formData.startDate, contractPeriod]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,6 +120,15 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
       signedDate: formData.signedDate ? new Date(formData.signedDate) : undefined
     });
     onClose();
+  };
+
+  const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newStartDate = e.target.value;
+    setFormData({ ...formData, startDate: newStartDate });
+  };
+
+  const handlePeriodChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setContractPeriod(e.target.value);
   };
 
   const addTerm = () => {
@@ -119,12 +180,12 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
                 <option value="">Select a property</option>
                 {availableProperties.map((property) => (
                   <option key={property.id} value={property.id}>
-                    {property.name} - {property.address} {property.status === 'available' ? '✅' : ''}
+                    {property.name} - {property.address} {property.status === 'AVAILABLE' ? '✅' : ''}
                   </option>
                 ))}
               </select>
               {!contract && availableProperties.length === 0 && (
-                <p className="text-sm text-red-600 mt-1">No available properties found</p>
+                <p className="text-sm text-red-600 mt-1">No AVAILABLE properties found</p>
               )}
             </div>
 
@@ -148,7 +209,7 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Start Date
@@ -157,21 +218,39 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
                 type="date"
                 required
                 value={formData.startDate}
-                onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                onChange={handleStartDateChange}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
+                Contract Period
+              </label>
+              <select
+                value={contractPeriod}
+                onChange={handlePeriodChange}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="6">6 months</option>
+                <option value="12">12 months</option>
+                <option value="18">18 months</option>
+                <option value="24">24 months</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
                 End Date
+                <span className="text-xs text-slate-500 ml-1">(Auto-calculated)</span>
               </label>
               <input
                 type="date"
                 required
                 value={formData.endDate}
-                onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                readOnly
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-600 cursor-not-allowed"
+                title="This date is automatically calculated based on start date and period"
               />
             </div>
           </div>

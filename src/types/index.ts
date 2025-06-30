@@ -8,7 +8,7 @@ export interface Property {
   bathrooms: number;
   amenities: string[];
   rent: number;
-  status: 'available' | 'reserved' | 'rented' | 'maintenance';
+  status: 'AVAILABLE' | 'RESERVED' | 'RENTED' | 'MAINTENANCE';
   photos: string[];
   
   // NEW: Connection to Units system
@@ -115,7 +115,7 @@ export interface Payment {
   contractId: string;
   tenantId: string;
   amount: number;
-  type: 'rent' | 'deposit' | 'late_fee' | 'utility' | 'maintenance';
+  type: 'RENT' | 'DEPOSIT' | 'LATE_FEE' | 'UTILITY' | 'MAINTENANCE';
   dueDate: Date;
   paidDate?: Date;
   status: 'PENDING' | 'PAID' | 'OVERDUE' | 'PARTIAL';

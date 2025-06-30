@@ -39,8 +39,8 @@ export function UnitDetails({ unit, properties, isOpen, onClose, onEdit }: UnitD
     }
   };
 
-  const availableProperties = properties.filter(p => p.status === 'available').length;
-  const rentedProperties = properties.filter(p => p.status === 'rented').length;
+  const availableProperties = properties.filter(p => p.status === 'AVAILABLE').length;
+  const rentedProperties = properties.filter(p => p.status === 'RENTED').length;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -176,9 +176,9 @@ export function UnitDetails({ unit, properties, isOpen, onClose, onEdit }: UnitD
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-medium text-slate-900">{property.name}</h4>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        property.status === 'available' ? 'bg-emerald-100 text-emerald-800' :
-                        property.status === 'rented' ? 'bg-blue-100 text-blue-800' :
-                        property.status === 'reserved' ? 'bg-yellow-100 text-yellow-800' :
+                        property.status === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-800' :
+                        property.status === 'RENTED' ? 'bg-blue-100 text-blue-800' :
+                        property.status === 'RESERVED' ? 'bg-yellow-100 text-yellow-800' :
                         'bg-red-100 text-red-800'
                       }`}>
                         {property.status}

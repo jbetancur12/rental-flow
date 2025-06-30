@@ -95,7 +95,6 @@ export function Contracts() {
     }
   };
 
-  console.log("Contracts component rendered with state:", state.contracts);
 
   return (
     <div className="flex-1 overflow-auto">
@@ -244,7 +243,7 @@ export function Contracts() {
         properties={state.properties}
         tenants={state.tenants}
         isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
+        onClose={() => {setIsFormOpen(false); setEditingContract(undefined);}}
         onSave={handleSaveContract}
       />
 

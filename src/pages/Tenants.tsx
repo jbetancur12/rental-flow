@@ -33,7 +33,7 @@ export function Tenants() {
     if (state.tenants.length === 0) {
       fetchTenants();
     }
-  }, [state.tenants.length, dispatch]);
+  }, [state.tenants.length]);
 
   // Get tenants with OVERDUE payments
   const tenantsWithOverdue = state.tenants.filter(tenant => {

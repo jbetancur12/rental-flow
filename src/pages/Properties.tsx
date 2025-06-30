@@ -34,7 +34,7 @@ export function Properties() {
     //     dispatch({ type: 'ADD_PROPERTY', payload: property });
     //   });
     // }
-  }, [state.units.length, state.properties.length, dispatch]);
+  }, [state.units.length, state.properties.length]);
 
   // FIX: Filtros funcionando correctamente
   const filteredProperties = filter === 'all' 
@@ -84,7 +84,7 @@ export function Properties() {
         // Update property status
         const updatedProperty = {
           ...property,
-          status: 'available' as const,
+          status: 'AVAILABLE' as const,
           updatedAt: new Date()
         };
         
@@ -138,7 +138,7 @@ export function Properties() {
 
   // Calculate overdue properties
   const overdueProperties = state.properties.filter(property => {
-    if (property.status !== 'rented') return false;
+    if (property.status !== 'RENTED') return false;
     const activeContract = state.contracts.find(c => 
       c.propertyId === property.id && c.status === 'ACTIVE'
     );
@@ -201,7 +201,7 @@ export function Properties() {
               <div>
                 <p className="text-sm text-slate-600">Disponibles</p>
                 <p className="text-2xl font-bold text-emerald-600">
-                  {state.properties.filter(p => p.status === 'available').length}
+                  {state.properties.filter(p => p.status === 'AVAILABLE').length}
                 </p>
               </div>
               <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
@@ -215,7 +215,7 @@ export function Properties() {
               <div>
                 <p className="text-sm text-slate-600">Alquiladas</p>
                 <p className="text-2xl font-bold text-blue-600">
-                  {state.properties.filter(p => p.status === 'rented').length}
+                  {state.properties.filter(p => p.status === 'RENTED').length}
                 </p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -242,7 +242,7 @@ export function Properties() {
         {/* FIX: Filtros funcionando */}
         <div className="mb-6">
           <div className="flex space-x-2">
-            {['all', 'available', 'rented', 'reserved', 'maintenance'].map((status) => (
+            {['all', 'AVAILABLE', 'RENTED', 'RESERVED', 'MAINTENANCE'].map((status) => (
               <button
                 key={status}
                 onClick={() => setFilter(status as any)}
@@ -253,9 +253,9 @@ export function Properties() {
                 }`}
               >
                 {status === 'all' ? 'Todas' :
-                 status === 'available' ? 'Disponibles' :
-                 status === 'rented' ? 'Alquiladas' :
-                 status === 'reserved' ? 'Reservadas' :
+                 status === 'AVAILABLE' ? 'Disponibles' :
+                 status === 'RENTED' ? 'Alquiladas' :
+                 status === 'RESERVED' ? 'Reservadas' :
                  'Mantenimiento'}
                 {status !== 'all' && (
                   <span className="ml-2 text-xs">
@@ -269,8 +269,7 @@ export function Properties() {
             ))}
           </div>
         </div>
-
-        {/* Properties Grid */}
+     {/* Properties Grid */}
         {filteredProperties.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProperties.map((property) => (
@@ -297,9 +296,9 @@ export function Properties() {
             <p className="text-slate-600 mb-4">
               {filter === 'all' 
                 ? "Aún no has agregado ninguna propiedad."
-                : `No se encontraron propiedades con estado "${filter === 'available' ? 'disponibles' : 
-                    filter === 'rented' ? 'alquiladas' : 
-                    filter === 'reserved' ? 'reservadas' : 'en mantenimiento'}".`
+                : `No se encontraron propiedades con estado "${filter === 'AVAILABLE' ? 'disponibles' : 
+                    filter === 'RENTED' ? 'alquiladas' : 
+                    filter === 'RESERVED' ? 'reservadas' : 'en mantenimiento'}".`
               }
             </p>
             {filter === 'all' && (
