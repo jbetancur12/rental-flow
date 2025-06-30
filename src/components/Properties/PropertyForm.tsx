@@ -1,0 +1,444 @@
+import React, { useState, useEffect } from 'react';
+import { Property, Unit } from '../../types';
+import { useApp } from '../../context/AppContext';
+import { X, Upload } from 'lucide-react';
+
+interface PropertyFormProps {
+  property?: Property;
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (property: Omit<Property, 'id' | 'createdAt' | 'updatedAt'>) => void;
+}
+
+export function PropertyForm({ property, isOpen, onClose, onSave }: PropertyFormProps) {
+  const { state, createProperty, updateProperty } = useApp();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    type: 'apartment' as Property['type'],
+    address: '',
+    size: 0,
+    rooms: 0,
+    bathrooms: 0,
+    amenities: [] as string[],
+    rent: 0,
+    status: 'available' as Property['status'],
+    photos: [] as string[],
+    unitId: '',
+    unitNumber: '',
+    floor: 1
+  });
+
+  const [newAmenity, setNewAmenity] = useState('');
+
+  useEffect(() => {
+    if (property) {
+      setFormData({
+        name: property.name,
+        type: property.type,
+        address: property.address,
+        size: property.size,
+        rooms: property.rooms,
+        bathrooms: property.bathrooms,
+        amenities: [...property.amenities],
+        rent: property.rent,
+        status: property.status,
+        photos: [...property.photos],
+        unitId: property.unitId || '',
+        unitNumber: property.unitNumber || '',
+        floor: property.floor || 1
+      });
+    } else {
+      setFormData({
+        name: '',
+        type: 'apartment',
+        address: '',
+        size: 0,
+        rooms: 0,
+        bathrooms: 0,
+        amenities: [],
+        rent: 0,
+        status: 'available',
+        photos: [],
+        unitId: '',
+        unitNumber: '',
+        floor: 1
+      });
+    }
+  }, [property]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    try {
+      // Get unit info to set address
+      const selectedUnit = state.units.find(u => u.id === formData.unitId);
+      let finalAddress = formData.address;
+      
+      if (selectedUnit) {
+        if (selectedUnit.type === 'building' && formData.unitNumber) {
+          finalAddress = `${selectedUnit.address}, Unidad ${formData.unitNumber}`;
+        } else if (selectedUnit.type === 'house' || selectedUnit.type === 'commercial') {
+          finalAddress = selectedUnit.address;
+        }
+      }
+      
+      const propertyData = {
+        ...formData,
+        address: finalAddress
+      };
+
+      if (property) {
+        await updateProperty(property.id, propertyData);
+      } else {
+        await createProperty(propertyData);
+      }
+      
+      onClose();
+    } catch (error) {
+      console.error('Error saving property:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const addAmenity = () => {
+    if (newAmenity.trim() && !formData.amenities.includes(newAmenity.trim())) {
+      setFormData({
+        ...formData,
+        amenities: [...formData.amenities, newAmenity.trim()]
+      });
+      setNewAmenity('');
+    }
+  };
+
+  const removeAmenity = (amenity: string) => {
+    setFormData({
+      ...formData,
+      amenities: formData.amenities.filter(a => a !== amenity)
+    });
+  };
+
+  const handleUnitChange = (unitId: string) => {
+    const selectedUnit = state.units.find(u => u.id === unitId);
+    if (selectedUnit) {
+      // Auto-set property type based on unit type
+      let propertyType: Property['type'] = 'apartment';
+      if (selectedUnit.type === 'house') {
+        propertyType = 'house';
+      } else if (selectedUnit.type === 'commercial') {
+        propertyType = 'commercial';
+      }
+      
+      setFormData({
+        ...formData,
+        unitId,
+        type: propertyType,
+        address: selectedUnit.address,
+        name: selectedUnit.type === 'building' ? '' : selectedUnit.name
+      });
+    } else {
+      setFormData({
+        ...formData,
+        unitId: '',
+        address: '',
+        name: ''
+      });
+    }
+  };
+
+  if (!isOpen) return null;
+
+  const selectedUnit = state.units.find(u => u.id === formData.unitId);
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200">
+          <h2 className="text-xl font-semibold text-slate-900">
+            {property ? 'Editar Propiedad' : 'Agregar Nueva Propiedad'}
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
+            disabled={isSubmitting}
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {/* Unit Selection */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Seleccionar Unidad <span className="text-red-500">*</span>
+            </label>
+            {state.units.length === 0 ? (
+              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-yellow-800 text-sm">
+                  ⚠️ No hay unidades disponibles. Por favor, cree unidades primero en la sección de Unidades.
+                </p>
+              </div>
+            ) : (
+              <select
+                required
+                value={formData.unitId}
+                onChange={(e) => handleUnitChange(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isSubmitting}
+              >
+                <option value="">Elegir una unidad...</option>
+                {state.units.map((unit) => (
+                  <option key={unit.id} value={unit.id}>
+                    {unit.name} - {unit.type === 'building' ? 'Edificio' : 
+                                   unit.type === 'house' ? 'Casa' : 'Comercial'} ({unit.address})
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+
+          {/* Property Details */}
+          {selectedUnit && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Nombre de la Propiedad
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder={
+                      selectedUnit.type === 'building' 
+                        ? 'ej., Apartamento 2A, Suite 200' 
+                        : selectedUnit.name
+                    }
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Tipo de Propiedad
+                  </label>
+                  <select
+                    value={formData.type}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value as Property['type'] })}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    disabled={selectedUnit.type !== 'building' || isSubmitting}
+                  >
+                    {selectedUnit.type === 'building' ? (
+                      <>
+                        <option value="apartment">Apartamento</option>
+                        <option value="commercial">Comercial</option>
+                      </>
+                    ) : selectedUnit.type === 'house' ? (
+                      <option value="house">Casa</option>
+                    ) : (
+                      <option value="commercial">Comercial</option>
+                    )}
+                  </select>
+                </div>
+              </div>
+
+              {/* Unit Number and Floor (for buildings) */}
+              {selectedUnit.type === 'building' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Número de Unidad <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.unitNumber}
+                      onChange={(e) => setFormData({ ...formData, unitNumber: e.target.value })}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="ej., 2A, 101, Suite 200"
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Piso
+                    </label>
+                    <select
+                      value={formData.floor}
+                      onChange={(e) => setFormData({ ...formData, floor: parseInt(e.target.value) })}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      disabled={isSubmitting}
+                    >
+                      {Array.from({ length: selectedUnit.totalFloors || 10 }, (_, i) => i + 1).map(floor => (
+                        <option key={floor} value={floor}>Piso {floor}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Tamaño (m²)
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    value={formData.size}
+                    onChange={(e) => setFormData({ ...formData, size: parseInt(e.target.value) })}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    {formData.type === 'commercial' ? 'Habitaciones/Espacios' : 'Dormitorios'}
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    value={formData.rooms}
+                    onChange={(e) => setFormData({ ...formData, rooms: parseInt(e.target.value) })}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Baños
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    step="0.5"
+                    value={formData.bathrooms}
+                    onChange={(e) => setFormData({ ...formData, bathrooms: parseFloat(e.target.value) })}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Alquiler Mensual ($)
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    value={formData.rent}
+                    onChange={(e) => setFormData({ ...formData, rent: parseInt(e.target.value) })}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    disabled={isSubmitting}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Estado
+                </label>
+                <select
+                  value={formData.status}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value as Property['status'] })}
+                  className="w-full max-w-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={isSubmitting}
+                >
+                  <option value="available">Disponible</option>
+                  <option value="reserved">Reservada</option>
+                  <option value="rented">Alquilada</option>
+                  <option value="maintenance">En Mantenimiento</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Comodidades
+                </label>
+                <div className="flex space-x-2 mb-3">
+                  <input
+                    type="text"
+                    value={newAmenity}
+                    onChange={(e) => setNewAmenity(e.target.value)}
+                    placeholder="Agregar comodidad"
+                    className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addAmenity())}
+                    disabled={isSubmitting}
+                  />
+                  <button
+                    type="button"
+                    onClick={addAmenity}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                    disabled={isSubmitting}
+                  >
+                    Agregar
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {formData.amenities.map((amenity, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-sm"
+                    >
+                      {amenity}
+                      <button
+                        type="button"
+                        onClick={() => removeAmenity(amenity)}
+                        className="ml-2 text-slate-400 hover:text-slate-600"
+                        disabled={isSubmitting}
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Fotos
+                </label>
+                <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-slate-400 transition-colors">
+                  <Upload className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                  <p className="text-slate-600">Haz clic para subir fotos o arrastra y suelta</p>
+                  <p className="text-sm text-slate-500 mt-1">PNG, JPG hasta 10MB cada una</p>
+                </div>
+              </div>
+            </>
+          )}
+
+          <div className="flex justify-end space-x-4 pt-4 border-t border-slate-200">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors"
+              disabled={isSubmitting}
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              disabled={!formData.unitId || isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                  Guardando...
+                </>
+              ) : (
+                property ? 'Actualizar Propiedad' : 'Crear Propiedad'
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}

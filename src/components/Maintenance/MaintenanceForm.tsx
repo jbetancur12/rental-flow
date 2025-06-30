@@ -1,0 +1,327 @@
+import React, { useState, useEffect } from 'react';
+import { MaintenanceRequest, Property, Tenant } from '../../types';
+import { X, Upload } from 'lucide-react';
+
+interface MaintenanceFormProps {
+  request?: MaintenanceRequest;
+  properties: Property[];
+  tenants: Tenant[];
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (request: Omit<MaintenanceRequest, 'id'>) => void;
+}
+
+export function MaintenanceForm({ request, properties, tenants, isOpen, onClose, onSave }: MaintenanceFormProps) {
+  const [formData, setFormData] = useState({
+    propertyId: '',
+    tenantId: '',
+    title: '',
+    description: '',
+    priority: 'medium' as MaintenanceRequest['priority'],
+    category: 'other' as MaintenanceRequest['category'],
+    status: 'open' as MaintenanceRequest['status'],
+    reportedDate: new Date().toISOString().split('T')[0],
+    completedDate: '',
+    assignedTo: '',
+    estimatedCost: 0,
+    actualCost: 0,
+    notes: ''
+  });
+
+  useEffect(() => {
+    if (request) {
+      setFormData({
+        propertyId: request.propertyId,
+        tenantId: request.tenantId || '',
+        title: request.title,
+        description: request.description,
+        priority: request.priority,
+        category: request.category,
+        status: request.status,
+        reportedDate: request.reportedDate.toISOString().split('T')[0],
+        completedDate: request.completedDate ? request.completedDate.toISOString().split('T')[0] : '',
+        assignedTo: request.assignedTo || '',
+        estimatedCost: request.estimatedCost || 0,
+        actualCost: request.actualCost || 0,
+        notes: request.notes || ''
+      });
+    } else {
+      setFormData({
+        propertyId: '',
+        tenantId: '',
+        title: '',
+        description: '',
+        priority: 'medium',
+        category: 'other',
+        status: 'open',
+        reportedDate: new Date().toISOString().split('T')[0],
+        completedDate: '',
+        assignedTo: '',
+        estimatedCost: 0,
+        actualCost: 0,
+        notes: ''
+      });
+    }
+  }, [request]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave({
+      ...formData,
+      reportedDate: new Date(formData.reportedDate),
+      completedDate: formData.completedDate ? new Date(formData.completedDate) : undefined,
+      tenantId: formData.tenantId || undefined,
+      estimatedCost: formData.estimatedCost || undefined,
+      actualCost: formData.actualCost || undefined
+    });
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  // DEBUG: Log para verificar propiedades disponibles
+  console.log('Properties available in MaintenanceForm:', properties);
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200">
+          <h2 className="text-xl font-semibold text-slate-900">
+            {request ? 'Editar Solicitud de Mantenimiento' : 'Crear Solicitud de Mantenimiento'}
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Propiedad
+              </label>
+              {properties.length === 0 ? (
+                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <p className="text-yellow-800 text-sm">
+                    ⚠️ No hay propiedades disponibles. Por favor, cree propiedades primero.
+                  </p>
+                </div>
+              ) : (
+                <select
+                  required
+                  value={formData.propertyId}
+                  onChange={(e) => setFormData({ ...formData, propertyId: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Seleccionar una propiedad</option>
+                  {properties.map((property) => (
+                    <option key={property.id} value={property.id}>
+                      {property.name} - {property.address}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Inquilino (Opcional)
+              </label>
+              <select
+                value={formData.tenantId}
+                onChange={(e) => setFormData({ ...formData, tenantId: e.target.value })}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">Seleccionar un inquilino</option>
+                {tenants.map((tenant) => (
+                  <option key={tenant.id} value={tenant.id}>
+                    {tenant.firstName} {tenant.lastName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Título
+            </label>
+            <input
+              type="text"
+              required
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Descripción breve del problema"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Descripción
+            </label>
+            <textarea
+              required
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              rows={4}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Descripción detallada del problema de mantenimiento"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Prioridad
+              </label>
+              <select
+                value={formData.priority}
+                onChange={(e) => setFormData({ ...formData, priority: e.target.value as MaintenanceRequest['priority'] })}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="low">Baja</option>
+                <option value="medium">Media</option>
+                <option value="high">Alta</option>
+                <option value="emergency">Emergencia</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Categoría
+              </label>
+              <select
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value as MaintenanceRequest['category'] })}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="plumbing">Plomería</option>
+                <option value="electrical">Eléctrico</option>
+                <option value="hvac">Climatización</option>
+                <option value="appliance">Electrodomésticos</option>
+                <option value="structural">Estructural</option>
+                <option value="other">Otro</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Estado
+              </label>
+              <select
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value as MaintenanceRequest['status'] })}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="open">Abierta</option>
+                <option value="in_progress">En Progreso</option>
+                <option value="completed">Completada</option>
+                <option value="cancelled">Cancelada</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Fecha de Reporte
+              </label>
+              <input
+                type="date"
+                required
+                value={formData.reportedDate}
+                onChange={(e) => setFormData({ ...formData, reportedDate: e.target.value })}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Fecha de Completado (Opcional)
+              </label>
+              <input
+                type="date"
+                value={formData.completedDate}
+                onChange={(e) => setFormData({ ...formData, completedDate: e.target.value })}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Asignado a (Opcional)
+            </label>
+            <input
+              type="text"
+              value={formData.assignedTo}
+              onChange={(e) => setFormData({ ...formData, assignedTo: e.target.value })}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Nombre del técnico o contratista"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Costo Estimado ($)
+              </label>
+              <input
+                type="number"
+                value={formData.estimatedCost}
+                onChange={(e) => setFormData({ ...formData, estimatedCost: parseFloat(e.target.value) })}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Costo Real ($)
+              </label>
+              <input
+                type="number"
+                value={formData.actualCost}
+                onChange={(e) => setFormData({ ...formData, actualCost: parseFloat(e.target.value) })}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Notas (Opcional)
+            </label>
+            <textarea
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              rows={3}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Notas adicionales o actualizaciones"
+            />
+          </div>
+
+          <div className="flex justify-end space-x-4 pt-4 border-t border-slate-200">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              disabled={properties.length === 0}
+            >
+              {request ? 'Actualizar Solicitud' : 'Crear Solicitud'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}

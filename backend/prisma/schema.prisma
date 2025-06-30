@@ -1,0 +1,324 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  domain    String?
+  logo      String?
+  address   String?
+  phone     String?
+  email     String?
+  planId    String   @map("plan_id")
+  isActive  Boolean  @default(true) @map("is_active")
+  settings  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  users         User[]
+  subscriptions Subscription[]
+  properties    Property[]
+  tenants       Tenant[]
+  contracts     Contract[]
+  payments      Payment[]
+  maintenance   MaintenanceRequest[]
+  units         Unit[]
+
+  @@map("organizations")
+}
+
+model User {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  email          String   @unique
+  passwordHash   String   @map("password_hash")
+  firstName      String   @map("first_name")
+  lastName       String   @map("last_name")
+  role           UserRole @default(ADMIN)
+  isActive       Boolean  @default(true) @map("is_active")
+  lastLogin      DateTime? @map("last_login")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("users")
+}
+
+model Subscription {
+  id                   String            @id @default(uuid())
+  organizationId       String            @map("organization_id")
+  planId               String            @map("plan_id")
+  status               SubscriptionStatus
+  currentPeriodStart   DateTime          @map("current_period_start")
+  currentPeriodEnd     DateTime          @map("current_period_end")
+  trialEnd             DateTime?         @map("trial_end")
+  canceledAt           DateTime?         @map("canceled_at")
+  stripeSubscriptionId String?           @map("stripe_subscription_id")
+  stripeCustomerId     String?           @map("stripe_customer_id")
+  createdAt            DateTime          @default(now()) @map("created_at")
+  updatedAt            DateTime          @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+model Unit {
+  id           String   @id @default(uuid())
+  organizationId String @map("organization_id")
+  name         String
+  type         UnitType
+  address      String
+  description  String?
+  totalFloors  Int?     @map("total_floors")
+  floors       Int?
+  size         Int?
+  amenities    String[] @default([])
+  photos       String[] @default([])
+  manager      String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  properties   Property[]
+
+  @@map("units")
+}
+
+model Property {
+  id           String        @id @default(uuid())
+  organizationId String      @map("organization_id")
+  unitId       String?       @map("unit_id")
+  name         String
+  type         PropertyType
+  address      String
+  size         Int
+  rooms        Int
+  bathrooms    Float
+  amenities    String[]      @default([])
+  rent         Int
+  status       PropertyStatus @default(AVAILABLE)
+  photos       String[]      @default([])
+  unitNumber   String?       @map("unit_number")
+  floor        Int?
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  unit         Unit?        @relation(fields: [unitId], references: [id], onDelete: SetNull)
+  contracts    Contract[]
+  maintenance  MaintenanceRequest[]
+
+  @@map("properties")
+}
+
+model Tenant {
+  id               String       @id @default(uuid())
+  organizationId   String       @map("organization_id")
+  firstName        String       @map("first_name")
+  lastName         String       @map("last_name")
+  email            String
+  phone            String
+  emergencyContact Json         @map("emergency_contact")
+  employment       Json
+  references       Json[]       @default([])
+  applicationDate  DateTime     @map("application_date")
+  status           TenantStatus @default(PENDING)
+  creditScore      Int?         @map("credit_score")
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  contracts    Contract[]
+  payments     Payment[]
+  maintenance  MaintenanceRequest[]
+
+  @@map("tenants")
+}
+
+model Contract {
+  id              String         @id @default(uuid())
+  organizationId  String         @map("organization_id")
+  propertyId      String         @map("property_id")
+  tenantId        String         @map("tenant_id")
+  startDate       DateTime       @map("start_date")
+  endDate         DateTime       @map("end_date")
+  monthlyRent     Int            @map("monthly_rent")
+  securityDeposit Int            @map("security_deposit")
+  terms           String[]       @default([])
+  status          ContractStatus @default(DRAFT)
+  signedDate      DateTime?      @map("signed_date")
+  terminationDate DateTime?      @map("termination_date")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  property     Property     @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  payments     Payment[]
+
+  @@map("contracts")
+}
+
+model Payment {
+  id             String        @id @default(uuid())
+  organizationId String        @map("organization_id")
+  contractId     String        @map("contract_id")
+  tenantId       String        @map("tenant_id")
+  amount         Int
+  type           PaymentType
+  dueDate        DateTime      @map("due_date")
+  paidDate       DateTime?     @map("paid_date")
+  status         PaymentStatus @default(PENDING)
+  method         PaymentMethod?
+  notes          String?
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  contract     Contract     @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model MaintenanceRequest {
+  id             String              @id @default(uuid())
+  organizationId String              @map("organization_id")
+  propertyId     String              @map("property_id")
+  tenantId       String?             @map("tenant_id")
+  title          String
+  description    String
+  priority       MaintenancePriority
+  category       MaintenanceCategory
+  status         MaintenanceStatus   @default(OPEN)
+  reportedDate   DateTime            @map("reported_date")
+  completedDate  DateTime?           @map("completed_date")
+  assignedTo     String?             @map("assigned_to")
+  estimatedCost  Int?                @map("estimated_cost")
+  actualCost     Int?                @map("actual_cost")
+  photos         String[]            @default([])
+  notes          String?
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  property     Property     @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  tenant       Tenant?      @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+
+  @@map("maintenance_requests")
+}
+
+// Enums
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  MANAGER
+  USER
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  TRIALING
+}
+
+enum UnitType {
+  BUILDING
+  HOUSE
+  COMMERCIAL
+}
+
+enum PropertyType {
+  APARTMENT
+  HOUSE
+  COMMERCIAL
+}
+
+enum PropertyStatus {
+  AVAILABLE
+  RESERVED
+  RENTED
+  MAINTENANCE
+}
+
+enum TenantStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  ACTIVE
+  FORMER
+}
+
+enum ContractStatus {
+  DRAFT
+  ACTIVE
+  EXPIRED
+  TERMINATED
+}
+
+enum PaymentType {
+  RENT
+  DEPOSIT
+  LATE_FEE
+  UTILITY
+  MAINTENANCE
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  OVERDUE
+  PARTIAL
+}
+
+enum PaymentMethod {
+  CASH
+  CHECK
+  BANK_TRANSFER
+  ONLINE
+}
+
+enum MaintenancePriority {
+  LOW
+  MEDIUM
+  HIGH
+  EMERGENCY
+}
+
+enum MaintenanceCategory {
+  PLUMBING
+  ELECTRICAL
+  HVAC
+  APPLIANCE
+  STRUCTURAL
+  OTHER
+}
+
+enum MaintenanceStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}

@@ -1,0 +1,201 @@
+// API Configuration
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
+
+class ApiClient {
+  private baseURL: string;
+  private token: string | null = null;
+
+  constructor(baseURL: string) {
+    this.baseURL = baseURL;
+    this.token = localStorage.getItem('auth_token');
+  }
+
+  setToken(token: string | null) {
+    this.token = token;
+    if (token) {
+      localStorage.setItem('auth_token', token);
+    } else {
+      localStorage.removeItem('auth_token');
+    }
+  }
+
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<T> {
+    const url = `${this.baseURL}${endpoint}`;
+    
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    };
+
+    if (this.token) {
+      headers.Authorization = `Bearer ${this.token}`;
+    }
+
+    const config: RequestInit = {
+      ...options,
+      headers,
+    };
+
+    try {
+      const response = await fetch(url, config);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('API Request failed:', error);
+      throw error;
+    }
+  }
+
+  // Auth endpoints
+  async login(email: string, password: string) {
+    return this.request<any>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+  }
+
+  async register(data: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+    organizationName: string;
+    planId: string;
+  }) {
+    return this.request<any>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getCurrentUser() {
+    return this.request<any>('/auth/me');
+  }
+
+  async logout() {
+    return this.request<any>('/auth/logout', {
+      method: 'POST',
+    });
+  }
+
+  async refreshToken() {
+    return this.request<any>('/auth/refresh', {
+      method: 'POST',
+    });
+  }
+
+  // Properties endpoints
+  async getProperties(params?: {
+    status?: string;
+    type?: string;
+    unitId?: string;
+    page?: number;
+    limit?: number;
+  }) {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString());
+        }
+      });
+    }
+    
+    const query = searchParams.toString();
+    return this.request<any>(`/properties${query ? `?${query}` : ''}`);
+  }
+
+  async getProperty(id: string) {
+    return this.request<any>(`/properties/${id}`);
+  }
+
+  async createProperty(data: any) {
+    return this.request<any>('/properties', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateProperty(id: string, data: any) {
+    return this.request<any>(`/properties/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteProperty(id: string) {
+    return this.request<any>(`/properties/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Units endpoints
+  async getUnits(params?: {
+    type?: string;
+    page?: number;
+    limit?: number;
+  }) {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString());
+        }
+      });
+    }
+    
+    const query = searchParams.toString();
+    return this.request<any>(`/units${query ? `?${query}` : ''}`);
+  }
+
+  async getUnit(id: string) {
+    return this.request<any>(`/units/${id}`);
+  }
+
+  async createUnit(data: any) {
+    return this.request<any>('/units', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateUnit(id: string, data: any) {
+    return this.request<any>(`/units/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteUnit(id: string) {
+    return this.request<any>(`/units/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Organizations endpoints
+  async getOrganizations() {
+    return this.request<any>('/organizations');
+  }
+
+  async getOrganization(id: string) {
+    return this.request<any>(`/organizations/${id}`);
+  }
+
+  async updateOrganization(id: string, data: any) {
+    return this.request<any>(`/organizations/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+}
+
+export const apiClient = new ApiClient(API_BASE_URL);
+export default apiClient;
