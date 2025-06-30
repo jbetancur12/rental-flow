@@ -1,18 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { Header } from '../components/Layout/Header';
 import { TenantForm } from '../components/Tenants/TenantForm';
 import { TenantDetails } from '../components/Tenants/TenantDetails';
 import { TenantCard } from '../components/Tenants/TenantCard';
 import { QuickPaymentModal } from '../components/Payments/QuickPaymentModal';
 import { useApp } from '../context/AppContext';
-import { mockTenants } from '../data/mockData';
 import { generateTenantReport } from '../utils/reportGenerator';
 import { User, AlertTriangle, Download } from 'lucide-react';
 import { Tenant } from '../types';
 
 export function Tenants() {
-  const { state, dispatch } = useApp();
-  const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'active' | 'former' | 'overdue'>('all');
+  const { state, createTenant, updateTenant, getTenants,dispatch } = useApp();
+  const [filter, setFilter] = useState<'all' | 'PENDING' | 'APPROVED' | 'ACTIVE' | 'FORMER' | 'OVERDUE'>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -20,26 +19,34 @@ export function Tenants() {
   const [selectedTenant, setSelectedTenant] = useState<Tenant | undefined>();
   const [paymentTenant, setPaymentTenant] = useState<Tenant | undefined>();
 
+  const fetchTenants = async () => {
+    try {
+      // Simulate fetching tenants from an API
+      await getTenants();
+      
+    } catch (error) {
+      console.error('Failed to fetch tenants:', error);
+    }
+  }
+
   useEffect(() => {
     if (state.tenants.length === 0) {
-      mockTenants.forEach(tenant => {
-        dispatch({ type: 'ADD_TENANT', payload: tenant });
-      });
+      fetchTenants();
     }
   }, [state.tenants.length, dispatch]);
 
-  // Get tenants with overdue payments
+  // Get tenants with OVERDUE payments
   const tenantsWithOverdue = state.tenants.filter(tenant => {
     const overduePayments = state.payments.filter(p => 
       p.tenantId === tenant.id && 
-      p.status === 'pending' && 
+      p.status === 'PENDING' && 
       new Date(p.dueDate) < new Date()
     );
     return overduePayments.length > 0;
   });
 
   const filteredTenants = (() => {
-    if (filter === 'overdue') return tenantsWithOverdue;
+    if (filter === 'OVERDUE') return tenantsWithOverdue;
     if (filter === 'all') return state.tenants;
     return state.tenants.filter(t => t.status === filter);
   })();
@@ -71,23 +78,14 @@ export function Tenants() {
     }
   };
 
-  const handleSaveTenant = (tenantData: Omit<Tenant, 'id'>) => {
+  const handleSaveTenant = async (tenantData: Omit<Tenant, 'id'>) => {
     if (editingTenant) {
-      dispatch({
-        type: 'UPDATE_TENANT',
-        payload: {
-          ...tenantData,
-          id: editingTenant.id
-        }
-      });
+      await updateTenant(editingTenant.id, tenantData);
+      setEditingTenant(undefined);
+      setIsFormOpen(false);
     } else {
-      dispatch({
-        type: 'ADD_TENANT',
-        payload: {
-          ...tenantData,
-          id: `tenant-${Date.now()}`
-        }
-      });
+      await createTenant(tenantData);
+      setIsFormOpen(false);
     }
   };
 
@@ -100,14 +98,14 @@ export function Tenants() {
     if (!paymentTenant) return {};
     
     const activeContract = state.contracts.find(c => 
-      c.tenantId === paymentTenant.id && c.status === 'active'
+      c.tenantId === paymentTenant.id && c.status === 'ACTIVE'
     );
     
     if (!activeContract) return { tenant: paymentTenant };
     
     const overduePayments = state.payments.filter(p => 
       p.contractId === activeContract.id && 
-      p.status === 'pending' && 
+      p.status === 'PENDING' && 
       new Date(p.dueDate) < new Date()
     );
     
@@ -142,7 +140,7 @@ export function Tenants() {
               <div>
                 <p className="text-sm text-slate-600">Active</p>
                 <p className="text-2xl font-bold text-emerald-600">
-                  {state.tenants.filter(t => t.status === 'active').length}
+                  {state.tenants.filter(t => t.status === 'ACTIVE').length}
                 </p>
               </div>
               <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
@@ -156,7 +154,7 @@ export function Tenants() {
               <div>
                 <p className="text-sm text-slate-600">Pending</p>
                 <p className="text-2xl font-bold text-yellow-600">
-                  {state.tenants.filter(t => t.status === 'pending').length}
+                  {state.tenants.filter(t => t.status === 'PENDING').length}
                 </p>
               </div>
               <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
@@ -170,7 +168,7 @@ export function Tenants() {
               <div>
                 <p className="text-sm text-slate-600">Approved</p>
                 <p className="text-2xl font-bold text-blue-600">
-                  {state.tenants.filter(t => t.status === 'approved').length}
+                  {state.tenants.filter(t => t.status === 'APPROVED').length}
                 </p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -195,17 +193,17 @@ export function Tenants() {
         </div>
 
         {/* Overdue Alert */}
-        {tenantsWithOverdue.length > 0 && filter !== 'overdue' && (
+        {tenantsWithOverdue.length > 0 && filter !== 'OVERDUE' && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <AlertTriangle className="w-5 h-5 text-red-600 mr-2" />
                 <span className="font-medium text-red-800">
-                  {tenantsWithOverdue.length} tenant{tenantsWithOverdue.length > 1 ? 's have' : ' has'} overdue payments
+                  {tenantsWithOverdue.length} tenant{tenantsWithOverdue.length > 1 ? 's have' : ' has'} OVERDUE payments
                 </span>
               </div>
               <button
-                onClick={() => setFilter('overdue')}
+                onClick={() => setFilter('OVERDUE')}
                 className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
               >
                 View Overdue
@@ -217,7 +215,7 @@ export function Tenants() {
         {/* Filters and Actions */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex space-x-2">
-            {['all', 'pending', 'approved', 'active', 'former', 'overdue'].map((status) => (
+            {['all', 'PENDING', 'APPROVED', 'ACTIVE', 'FORMER', 'OVERDUE'].map((status) => (
               <button
                 key={status}
                 onClick={() => setFilter(status as any)}
@@ -229,7 +227,7 @@ export function Tenants() {
               >
                 {status.charAt(0).toUpperCase() + status.slice(1)}
                 <span className="ml-2 text-xs">
-                  ({status === 'overdue' ? tenantsWithOverdue.length : 
+                  ({status === 'OVERDUE' ? tenantsWithOverdue.length : 
                     status === 'all' ? state.tenants.length : 
                     state.tenants.filter(t => t.status === status).length})
                 </span>
@@ -269,8 +267,8 @@ export function Tenants() {
             <p className="text-slate-600 mb-4">
               {filter === 'all' 
                 ? "You haven't added any tenants yet."
-                : filter === 'overdue'
-                ? "No tenants have overdue payments."
+                : filter === 'OVERDUE'
+                ? "No tenants have OVERDUE payments."
                 : `No tenants with status "${filter}" found.`
               }
             </p>

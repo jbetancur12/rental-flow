@@ -81,7 +81,7 @@ export interface Tenant {
   };
   references: Reference[];
   applicationDate: Date;
-  status: 'pending' | 'approved' | 'rejected' | 'active' | 'former';
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'ACTIVE' | 'FORMER';
   creditScore?: number;
 }
 
@@ -103,7 +103,7 @@ export interface Contract {
   monthlyRent: number;
   securityDeposit: number;
   terms: string[];
-  status: 'draft' | 'active' | 'expired' | 'terminated';
+  status: 'DRAFT' | 'ACTIVE' | 'EXPIRED' | 'TERMINATED';
   signedDate?: Date;
   renewalNotificationSent?: boolean;
   terminationDate?: Date;
@@ -118,7 +118,7 @@ export interface Payment {
   type: 'rent' | 'deposit' | 'late_fee' | 'utility' | 'maintenance';
   dueDate: Date;
   paidDate?: Date;
-  status: 'pending' | 'paid' | 'overdue' | 'partial';
+  status: 'PENDING' | 'PAID' | 'OVERDUE' | 'PARTIAL';
   method?: 'cash' | 'check' | 'bank_transfer' | 'online';
   notes?: string;
 }

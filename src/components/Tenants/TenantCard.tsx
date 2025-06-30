@@ -1,4 +1,3 @@
-import React from 'react';
 import { Tenant } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { User, Mail, Phone, DollarSign, Calendar, AlertTriangle, CreditCard, Edit, Eye, Trash2 } from 'lucide-react';
@@ -16,23 +15,23 @@ export function TenantCard({ tenant, onEdit, onView, onDelete, onCollectPayment 
 
   const getStatusColor = (status: string) => {
     const colors = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      approved: 'bg-blue-100 text-blue-800',
-      active: 'bg-emerald-100 text-emerald-800',
-      former: 'bg-slate-100 text-slate-800',
-      rejected: 'bg-red-100 text-red-800'
+      PENDING: 'bg-yellow-100 text-yellow-800',
+      APPROVED: 'bg-blue-100 text-blue-800',
+      ACTIVE: 'bg-emerald-100 text-emerald-800',
+      FORMER: 'bg-slate-100 text-slate-800',
+      REJECTED: 'bg-red-100 text-red-800'
     };
-    return colors[status as keyof typeof colors] || colors.pending;
+    return colors[status as keyof typeof colors] || colors.PENDING;
   };
 
   // Get tenant's active contract and overdue payments
   const activeContract = state.contracts.find(c => 
-    c.tenantId === tenant.id && c.status === 'active'
+    c.tenantId === tenant.id && c.status === 'ACTIVE'
   );
 
   const overduePayments = state.payments.filter(p => 
     p.tenantId === tenant.id && 
-    p.status === 'pending' && 
+    p.status === 'PENDING' && 
     new Date(p.dueDate) < new Date()
   );
 
@@ -125,12 +124,12 @@ export function TenantCard({ tenant, onEdit, onView, onDelete, onCollectPayment 
         </div>
         <div className="flex items-center text-slate-600">
           <Calendar className="w-4 h-4 mr-3" />
-          <span className="text-sm">Applied: {tenant.applicationDate.toLocaleDateString()}</span>
+          <span className="text-sm">Applied: {new Date(tenant.applicationDate).toLocaleDateString()}</span>
         </div>
       </div>
 
       {/* Current Property (if active) */}
-      {property && tenant.status === 'active' && (
+      {property && tenant.status === 'ACTIVE' && (
         <div className="mb-4 p-3 bg-blue-50 rounded-lg">
           <p className="text-sm font-medium text-blue-900">Current Property</p>
           <p className="text-sm text-blue-800">{property.name}</p>

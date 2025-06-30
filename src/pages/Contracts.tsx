@@ -10,28 +10,30 @@ import { format } from 'date-fns';
 import { Contract } from '../types';
 
 export function Contracts() {
-  const { state, dispatch } = useApp();
+  const { state, dispatch, createContract, loadContracts, deleteContract } = useApp();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [editingContract, setEditingContract] = useState<Contract | undefined>();
   const [selectedContract, setSelectedContract] = useState<Contract | undefined>();
 
+  const fetchContracts = async () => {
+    await loadContracts();
+  }
+
   useEffect(() => {
     if (state.contracts.length === 0) {
-      mockContracts.forEach(contract => {
-        dispatch({ type: 'ADD_CONTRACT', payload: contract });
-      });
+      fetchContracts();
     }
-  }, [state.contracts.length, dispatch]);
+  }, [state.contracts.length]);
 
   const getStatusColor = (status: string) => {
     const colors = {
-      draft: 'bg-yellow-100 text-yellow-800',
-      active: 'bg-emerald-100 text-emerald-800',
-      expired: 'bg-red-100 text-red-800',
-      terminated: 'bg-slate-100 text-slate-800'
+      DRAFT: 'bg-yellow-100 text-yellow-800',
+      ACTIVE: 'bg-emerald-100 text-emerald-800',
+      EXPIRED: 'bg-red-100 text-red-800',
+      TERMINATED: 'bg-slate-100 text-slate-800'
     };
-    return colors[status as keyof typeof colors] || colors.draft;
+    return colors[status as keyof typeof colors] || colors.DRAFT;
   };
 
   const getPropertyName = (propertyId: string) => {
@@ -59,23 +61,21 @@ export function Contracts() {
     setIsDetailsOpen(true);
   };
 
-  const handleDeleteContract = (id: string) => {
+  const handleDeleteContract = async (id: string) => {
     if (confirm('Are you sure you want to delete this contract?')) {
       // In a real app, you'd dispatch a DELETE_CONTRACT action
-      console.log('Delete contract:', id);
+      await deleteContract(id);
     }
   };
 
-  const handleSaveContract = (contractData: Omit<Contract, 'id'>) => {
+  const handleSaveContract = async (contractData: Omit<Contract, 'id'>) => {
     if (editingContract) {
-      dispatch({
-        type: 'UPDATE_CONTRACT',
-        payload: {
-          ...contractData,
-          id: editingContract.id
-        }
-      });
+      
     } else {
+      await createContract({
+          ...contractData,
+          id: `contract-${Date.now()}`
+        });
       dispatch({
         type: 'ADD_CONTRACT',
         payload: {
@@ -94,6 +94,8 @@ export function Contracts() {
       generateContractPDF(contract, property, tenant);
     }
   };
+
+  console.log("Contracts component rendered with state:", state.contracts);
 
   return (
     <div className="flex-1 overflow-auto">
@@ -178,7 +180,7 @@ export function Contracts() {
                     <div>
                       <span className="text-slate-500">Duration</span>
                       <p className="font-medium text-slate-900">
-                        {Math.round((contract.endDate.getTime() - contract.startDate.getTime()) / (1000 * 60 * 60 * 24 * 30))} months
+                        {Math.round((new Date(contract.endDate).getTime() - new Date(contract.startDate).getTime()) / (1000 * 60 * 60 * 24 * 30))} months
                       </p>
                     </div>
                   </div>

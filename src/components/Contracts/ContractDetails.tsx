@@ -18,12 +18,12 @@ export function ContractDetails({ contract, property, tenant, isOpen, onClose, o
 
   const getStatusColor = (status: string) => {
     const colors = {
-      draft: 'bg-yellow-100 text-yellow-800',
-      active: 'bg-emerald-100 text-emerald-800',
-      expired: 'bg-red-100 text-red-800',
-      terminated: 'bg-slate-100 text-slate-800'
+      DRAFT: 'bg-yellow-100 text-yellow-800',
+      ACTIVE: 'bg-emerald-100 text-emerald-800',
+      EXPIRED: 'bg-red-100 text-red-800',
+      TERMINATED: 'bg-slate-100 text-slate-800'
     };
-    return colors[status as keyof typeof colors] || colors.draft;
+    return colors[status as keyof typeof colors] || colors.DRAFT;
   };
 
   // FIX: Download funcionando
@@ -213,7 +213,7 @@ export function ContractDetails({ contract, property, tenant, isOpen, onClose, o
                 <div>
                   <p className="text-sm text-slate-500">Total Contract Value</p>
                   <p className="text-xl font-bold text-slate-900">
-                    ${(contract.monthlyRent * Math.round((contract.endDate.getTime() - contract.startDate.getTime()) / (1000 * 60 * 60 * 24 * 30))).toLocaleString()}
+                    ${(contract.monthlyRent * Math.round((new Date(contract.endDate).getTime() - new Date(contract.startDate).getTime()) / (1000 * 60 * 60 * 24 * 30))).toLocaleString()}
                   </p>
                 </div>
               </div>

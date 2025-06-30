@@ -25,9 +25,11 @@ type AppAction =
   | { type: 'ADD_UNIT'; payload: Unit }
   | { type: 'UPDATE_UNIT'; payload: Unit }
   | { type: 'DELETE_UNIT'; payload: string }
+  | { type: 'SET_TENANTS'; payload: Tenant[] }
   | { type: 'ADD_TENANT'; payload: Tenant }
   | { type: 'UPDATE_TENANT'; payload: Tenant }
   | { type: 'ADD_CONTRACT'; payload: Contract }
+  | { type: 'DELETE_CONTRACT'; payload: string }
   | { type: 'UPDATE_CONTRACT'; payload: Contract }
   | { type: 'ADD_PAYMENT'; payload: Payment }
   | { type: 'UPDATE_PAYMENT'; payload: Payment }
@@ -67,6 +69,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
       };
     case 'SET_UNITS':
       return { ...state, units: action.payload };
+    case 'SET_TENANTS':
+      return { ...state, tenants: action.payload };
     case 'ADD_UNIT':
       return { ...state, units: [...state.units, action.payload] };
     case 'UPDATE_UNIT':
@@ -93,6 +97,11 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return {
         ...state,
         contracts: state.contracts.map(c => c.id === action.payload.id ? action.payload : c)
+      };
+    case 'DELETE_CONTRACT':
+      return {
+        ...state,
+        contracts: state.contracts.filter(c => c.id !== action.payload)
       };
     case 'ADD_PAYMENT':
       return { ...state, payments: [...state.payments, action.payload] };
@@ -132,6 +141,18 @@ const AppContext = createContext<{
   createUnit: (data: any) => Promise<void>;
   updateUnit: (id: string, data: any) => Promise<void>;
   deleteUnit: (id: string) => Promise<void>;
+  getTenants: () => Promise<void>;
+  createTenant: (data: any) => Promise<void>;
+  updateTenant: (id: string, data: any) => Promise<void>;
+  deleteTenant?: (id: string) => Promise<void>;
+  loadContracts: () => Promise<void>;
+  createContract: (data: any) => Promise<void>;
+  updateContract: (id: string, data: any) => Promise<void>;
+  deleteContract: (id: string) => Promise<void>;
+  createPayment: (data: any) => Promise<void>;
+  updatePayment?: (id: string, data: any) => Promise<void>;
+  createMaintenanceRequest?: (data: any) => Promise<void>;
+  updateMaintenanceRequest?: (id: string, data: any) => Promise<void>;
 } | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -198,13 +219,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
         createdAt: new Date(unit.createdAt),
         updatedAt: new Date(unit.updatedAt),
       }));
-      console.log("🚀 ~ units ~ units:", units)
       
       dispatch({ type: 'SET_UNITS', payload: units });
     } catch (error: any) {
       toast.error('Error', error.message || 'Failed to load units');
     }
   };
+
+
 
   // Create property
   const createProperty = async (data: any) => {
@@ -342,11 +364,110 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Get tenants
+  const getTenants = async () => {
+    if (!authState.isAuthenticated || !authState.organization) return;
+
+    try {
+      const response = await apiClient.getTenants();
+      
+      // Transform backend tenants to frontend format
+      
+      
+      dispatch({ type: 'SET_TENANTS', payload: response.tenants });
+    } catch (error: any) {
+      toast.error('Error', error.message || 'Failed to load tenants');
+    }
+  }
+
+  const createTenant = async (data: any) => {
+    try {
+      const response = await apiClient.createTenant(data);
+      dispatch({ type: 'ADD_TENANT', payload: response.tenant });
+      toast.success('Inquilino Agregado', 'El nuevo inquilino ha sido agregado exitosamente al sistema.');
+    } catch (error: any) {
+      toast.error('Error', error.message || 'Failed to create tenant');
+      throw error;
+    }
+  }
+
+  const updateContract = async (id: string, data: any) => {
+    try {
+      const response = await apiClient.updateContract(id, data);
+      dispatch({ type: 'UPDATE_CONTRACT', payload: response.contract });
+      toast.success('Contrato Actualizado', 'El contrato ha sido actualizado exitosamente.');
+    } catch (error: any) {
+      toast.error('Error', error.message || 'Failed to update contract');
+      throw error;
+    }
+  }
+
+  const updateTenant = async (id: string, data: any) => {
+    try {
+      const response = await apiClient.updateTenant(id, data);
+      dispatch({ type: 'UPDATE_TENANT', payload: response.tenant });
+      toast.success('Inquilino Actualizado', 'La información del inquilino ha sido actualizada exitosamente.');
+    } catch (error: any) {
+      toast.error('Error', error.message || 'Failed to update tenant');
+      throw error;
+    }
+  }
+
+  const loadContracts = async () => {
+    if (!authState.isAuthenticated || !authState.organization) return;
+
+    try {
+      const response = await apiClient.getContracts();
+      
+      // Transform backend contracts to frontend format
+      const { contracts } = response
+      
+      dispatch({ type: 'LOAD_INITIAL_DATA', payload: { contracts } });
+    } catch (error: any) {
+      toast.error('Error', error.message || 'Failed to load contracts');
+    }
+  }
+
+  const createContract = async (data: any) => {
+    try {
+      const response = await apiClient.createContract(data);
+      dispatch({ type: 'ADD_CONTRACT', payload: response.contract });
+      toast.success('Contrato Creado', 'El nuevo contrato de alquiler ha sido creado exitosamente.');
+    } catch (error: any) {
+      toast.error('Error', error.message || 'Failed to create contract');
+      throw error;
+    }
+  }
+
+  const deleteContract = async (id: string) => {
+    try {
+      await apiClient.deleteContract(id);
+      dispatch({ type: 'DELETE_CONTRACT', payload: id });
+      toast.success('Contrato Eliminado', 'El contrato ha sido eliminado exitosamente.');
+    } catch (error: any) {
+      toast.error('Error', error.message || 'Failed to delete contract');
+      throw error;
+    }
+  }
+
+  const createPayment = async (data: any) => {
+    try {
+      const response = await apiClient.createPayment(data);
+      dispatch({ type: 'ADD_PAYMENT', payload: response.payment });
+      toast.success('Pago Registrado', 'El pago ha sido registrado exitosamente en el sistema.');
+    } catch (error: any) {
+      toast.error('Error', error.message || 'Failed to create payment');
+      throw error;
+    }
+  }
+
   // Load initial data when authenticated
   useEffect(() => {
     if (authState.isAuthenticated && authState.organization) {
       loadUnits();
       loadProperties();
+      getTenants();
+      loadContracts();
     }
   }, [authState.isAuthenticated, authState.organization]);
 
@@ -396,6 +517,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
       createUnit,
       updateUnit,
       deleteUnit,
+      createTenant,
+      updateTenant,
+      getTenants,
+      loadContracts,
+      createContract,
+      updateContract,
+      createPayment,
+      deleteContract,
+    
     }}>
       {children}
     </AppContext.Provider>

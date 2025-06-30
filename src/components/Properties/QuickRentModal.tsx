@@ -10,16 +10,16 @@ interface QuickRentModalProps {
 }
 
 export function QuickRentModal({ property, isOpen, onClose }: QuickRentModalProps) {
-  const { state, dispatch } = useApp();
+  const { state, dispatch, updateTenant, createContract, createPayment, updateProperty } = useApp();
   const [selectedTenant, setSelectedTenant] = useState('');
   const [startDate, setStartDate] = useState('');
   const [duration, setDuration] = useState(12); // months
   const [monthlyRent, setMonthlyRent] = useState(property.rent);
   const [securityDeposit, setSecurityDeposit] = useState(property.rent);
 
-  const approvedTenants = state.tenants.filter(t => t.status === 'approved');
+  const approvedTenants = state.tenants.filter(t => t.status === 'APPROVED');
 
-  const handleQuickRent = () => {
+  const handleQuickRent = async () => {
     if (!selectedTenant || !startDate) {
       alert('Please select a tenant and start date');
       return;
@@ -43,7 +43,7 @@ export function QuickRentModal({ property, isOpen, onClose }: QuickRentModalProp
         'Tenant responsible for utilities',
         '24-hour notice required for property entry'
       ],
-      status: 'active' as const,
+      status: 'ACTIVE' as const,
       signedDate: new Date()
     };
 
@@ -59,9 +59,9 @@ export function QuickRentModal({ property, isOpen, onClose }: QuickRentModalProp
     if (tenant) {
       const updatedTenant = {
         ...tenant,
-        status: 'active' as const
+        status: 'ACTIVE' as const
       };
-      dispatch({ type: 'UPDATE_TENANT', payload: updatedTenant });
+      await updateTenant(updatedTenant.id, updatedTenant);
     }
 
     // Create first payment
@@ -75,9 +75,10 @@ export function QuickRentModal({ property, isOpen, onClose }: QuickRentModalProp
       status: 'pending' as const
     };
 
-    dispatch({ type: 'ADD_CONTRACT', payload: newContract });
-    dispatch({ type: 'UPDATE_PROPERTY', payload: updatedProperty });
-    dispatch({ type: 'ADD_PAYMENT', payload: firstPayment });
+    await createContract(newContract);
+    await updateProperty(updatedProperty.id, updatedProperty);
+    await createPayment(firstPayment);
+  
 
     alert('Property rented successfully!');
     onClose();

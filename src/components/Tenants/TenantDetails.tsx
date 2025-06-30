@@ -20,13 +20,13 @@ export function TenantDetails({ tenant, isOpen, onClose, onEdit }: TenantDetails
 
   const getStatusColor = (status: string) => {
     const colors = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      approved: 'bg-blue-100 text-blue-800',
-      active: 'bg-emerald-100 text-emerald-800',
-      former: 'bg-slate-100 text-slate-800',
-      rejected: 'bg-red-100 text-red-800'
+      PENDING: 'bg-yellow-100 text-yellow-800',
+      APPROVED: 'bg-blue-100 text-blue-800',
+      ACTIVE: 'bg-emerald-100 text-emerald-800',
+      FORMER: 'bg-slate-100 text-slate-800',
+      REJECTED: 'bg-red-100 text-red-800'
     };
-    return colors[status as keyof typeof colors] || colors.pending;
+    return colors[status as keyof typeof colors] || colors.PENDING;
   };
 
   return (
@@ -136,7 +136,7 @@ export function TenantDetails({ tenant, isOpen, onClose, onEdit }: TenantDetails
                 <Calendar className="w-5 h-5 text-slate-400 mr-3" />
                 <div>
                   <p className="text-sm text-slate-500">Application Date</p>
-                  <p className="font-medium text-slate-900">{tenant.applicationDate.toLocaleDateString()}</p>
+                  <p className="font-medium text-slate-900">{new Date(tenant.applicationDate).toLocaleDateString()}</p>
                 </div>
               </div>
               {tenant.creditScore && (

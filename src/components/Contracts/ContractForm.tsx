@@ -36,13 +36,13 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
       setFormData({
         propertyId: contract.propertyId,
         tenantId: contract.tenantId,
-        startDate: contract.startDate.toISOString().split('T')[0],
-        endDate: contract.endDate.toISOString().split('T')[0],
+        startDate: new Date(contract.startDate).toISOString().split('T')[0],
+        endDate: new Date(contract.endDate).toISOString().split('T')[0],
         monthlyRent: contract.monthlyRent,
         securityDeposit: contract.securityDeposit,
         terms: [...contract.terms],
         status: contract.status,
-        signedDate: contract.signedDate ? contract.signedDate.toISOString().split('T')[0] : ''
+        signedDate: contract.signedDate ? new Date(contract.signedDate).toISOString().split('T')[0] : ''
       });
     } else {
       setFormData({
@@ -53,7 +53,7 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
         monthlyRent: 0,
         securityDeposit: 0,
         terms: [],
-        status: 'draft',
+        status: 'DRAFT',
         signedDate: ''
       });
     }
@@ -214,10 +214,10 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
                 onChange={(e) => setFormData({ ...formData, status: e.target.value as Contract['status'] })}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="draft">Draft</option>
-                <option value="active">Active</option>
-                <option value="expired">Expired</option>
-                <option value="terminated">Terminated</option>
+                <option value="DRAFT">Draft</option>
+                <option value="ACTIVE">Active</option>
+                <option value="EXPIRED">Expired</option>
+                <option value="TERMINATED">Terminated</option>
               </select>
             </div>
 

@@ -197,6 +197,90 @@ class ApiClient {
     });
   }
 
+  async getTenants(params?: {
+    page?: number;
+    limit?: number;
+  }) {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString());
+        }
+      });
+    }
+    const query = searchParams.toString();
+    return this.request<any>(`/tenants${query ? `?${query}` : ''}`);
+  }
+  async getTenant(id: string) {
+    return this.request<any>(`/tenants/${id}`);
+  }
+
+  async createTenant(data: any) {
+    return this.request<any>('/tenants', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateTenant(id: string, data: any) {
+    return this.request<any>(`/tenants/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteTenant(id: string) {
+    return this.request<any>(`/tenants/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Contracts endpoints
+  async getContracts(params?: {
+    status?: string;
+    tenantId?: string;
+    propertyId?: string;
+    page?: number;
+    limit?: number;
+  }) {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString());
+        }
+      });
+    }
+    
+    const query = searchParams.toString();
+    return this.request<any>(`/contracts${query ? `?${query}` : ''}`);
+  }
+
+  async getContract(id: string) {
+    return this.request<any>(`/contracts/${id}`);
+  }
+
+  async createContract(data: any) {
+    return this.request<any>('/contracts', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateContract(id: string, data: any) {
+    return this.request<any>(`/contracts/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteContract(id: string) {
+    return this.request<any>(`/contracts/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
   // Organizations endpoints
   async getOrganizations() {
     return this.request<any>('/organizations');
@@ -212,7 +296,52 @@ class ApiClient {
       body: JSON.stringify(data),
     });
   }
+
+  async createPayment(data: any) {
+    return this.request<any>('/payments', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+  
+  async getPayments(params?: {
+    contractId?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+  }) {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString());
+        }
+      });
+    }
+    
+    const query = searchParams.toString();
+    return this.request<any>(`/payments${query ? `?${query}` : ''}`);
+  }
+
+  async getPayment(id: string) {
+    return this.request<any>(`/payments/${id}`);
+  }
+
+  async updatePayment(id: string, data: any) {
+    return this.request<any>(`/payments/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deletePayment(id: string) {
+    return this.request<any>(`/payments/${id}`, {
+      method: 'DELETE',
+    });
+  }
 }
+
+
 
 export const apiClient = new ApiClient(API_BASE_URL);
 export default apiClient;

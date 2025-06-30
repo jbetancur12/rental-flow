@@ -10,7 +10,7 @@ interface RentalProcessProps {
 }
 
 export function RentalProcess({ property, isOpen, onClose }: RentalProcessProps) {
-  const { state, dispatch } = useApp();
+  const { state, dispatch, createContract, createPayment, updateProperty } = useApp();
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedTenant, setSelectedTenant] = useState<string>('');
   const [contractData, setContractData] = useState({
@@ -26,9 +26,9 @@ export function RentalProcess({ property, isOpen, onClose }: RentalProcessProps)
     ]
   });
 
-  const availableTenants = state.tenants.filter(t => t.status === 'approved');
+  const availableTenants = state.tenants.filter(t => t.status === 'APPROVED');
 
-  const handleRentProperty = () => {
+  const handleRentProperty = async () => {
     if (!selectedTenant || !contractData.startDate || !contractData.endDate) {
       alert('Please complete all required fields');
       return;
@@ -44,7 +44,7 @@ export function RentalProcess({ property, isOpen, onClose }: RentalProcessProps)
       monthlyRent: contractData.monthlyRent,
       securityDeposit: contractData.securityDeposit,
       terms: contractData.terms,
-      status: 'active',
+      status: 'ACTIVE',
       signedDate: new Date()
     };
 
@@ -60,7 +60,7 @@ export function RentalProcess({ property, isOpen, onClose }: RentalProcessProps)
     if (tenant) {
       const updatedTenant = {
         ...tenant,
-        status: 'active' as Tenant['status']
+        status: 'ACTIVE' as Tenant['status']
       };
       dispatch({ type: 'UPDATE_TENANT', payload: updatedTenant });
     }
@@ -77,9 +77,10 @@ export function RentalProcess({ property, isOpen, onClose }: RentalProcessProps)
     };
 
     // Dispatch updates
-    dispatch({ type: 'ADD_CONTRACT', payload: newContract });
-    dispatch({ type: 'UPDATE_PROPERTY', payload: updatedProperty });
-    dispatch({ type: 'ADD_PAYMENT', payload: initialPayment });
+    await createContract(newContract);
+    await updateProperty(updatedProperty.id, updatedProperty);
+    await createPayment(initialPayment);
+
 
     alert('Property successfully rented! Contract created and tenant activated.');
     onClose();

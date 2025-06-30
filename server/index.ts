@@ -146,20 +146,20 @@ app.post('/api/tenants', (req, res) => {
 app.get('/api/dashboard/stats', (req, res) => {
   const stats = {
     total_properties: properties.length,
-    occupied_properties: properties.filter(p => p.status === 'rented').length,
-    available_properties: properties.filter(p => p.status === 'available').length,
-    maintenance_properties: properties.filter(p => p.status === 'maintenance').length,
-    total_revenue: payments.filter(p => p.status === 'paid').reduce((sum, p) => sum + p.amount, 0),
-    pending_payments: payments.filter(p => p.status === 'pending').length,
-    overdue_payments: payments.filter(p => p.status === 'overdue').length,
-    active_contracts: contracts.filter(c => c.status === 'active').length,
+    occupied_properties: properties.filter(p => p.status === 'RENTED').length,
+    available_properties: properties.filter(p => p.status === 'AVAILABLE').length,
+    maintenance_properties: properties.filter(p => p.status === 'MAINTENACE').length,
+    total_revenue: payments.filter(p => p.status === 'PAID').reduce((sum, p) => sum + p.amount, 0),
+    pending_payments: payments.filter(p => p.status === 'PENDING').length,
+    overdue_payments: payments.filter(p => p.status === 'OVERDUE').length,
+    active_contracts: contracts.filter(c => c.status === 'ACTIVE').length,
     expiring_contracts: contracts.filter(c => {
       const endDate = new Date(c.end_date)
       const thirtyDaysFromNow = new Date()
       thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30)
-      return endDate <= thirtyDaysFromNow && c.status === 'active'
+      return endDate <= thirtyDaysFromNow && c.status === 'ACTIVE'
     }).length,
-    open_maintenance: maintenanceRequests.filter(r => r.status === 'open').length
+    open_maintenance: maintenanceRequests.filter(r => r.status === 'OPEN').length
   }
   
   res.json(stats)

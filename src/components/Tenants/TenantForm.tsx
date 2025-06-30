@@ -27,7 +27,7 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
     },
     references: [] as any[],
     applicationDate: new Date(),
-    status: 'pending' as Tenant['status'],
+    status: 'PENDING' as Tenant['status'],
     creditScore: 0
   });
 
@@ -63,7 +63,7 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
         },
         references: [],
         applicationDate: new Date(),
-        status: 'pending',
+        status: 'PENDING',
         creditScore: 0
       });
     }
@@ -172,11 +172,11 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
                   onChange={(e) => setFormData({ ...formData, status: e.target.value as Tenant['status'] })}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="pending">Pending</option>
-                  <option value="approved">Approved</option>
-                  <option value="active">Active</option>
-                  <option value="former">Former</option>
-                  <option value="rejected">Rejected</option>
+                  <option value="PENDING">Pending</option>
+                  <option value="APPROVED">Approved</option>
+                  <option value="ACTIVE">Active</option>
+                  <option value="FORMER">Former</option>
+                  <option value="REJECTED">Rejected</option>
                 </select>
               </div>
             </div>

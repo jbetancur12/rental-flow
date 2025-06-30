@@ -10,7 +10,7 @@ import { mockProperties } from '../data/mockData';
 import { mockUnits } from '../data/mockUnits';
 
 export function Properties() {
-  const { state, dispatch } = useApp();
+  const { state, dispatch, updateProperty, updateTenant, updateContract } = useApp();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isQuickRentOpen, setIsQuickRentOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -66,11 +66,11 @@ export function Properties() {
     setIsPaymentModalOpen(true);
   };
 
-  const handleTerminateContract = (property: Property) => {
+  const handleTerminateContract = async (property: Property) => {
     if (confirm('¿Está seguro de que desea terminar el contrato de esta propiedad?')) {
       // Find active contract
       const activeContract = state.contracts.find(c => 
-        c.propertyId === property.id && c.status === 'active'
+        c.propertyId === property.id && c.status === 'ACTIVE'
       );
       
       if (activeContract) {
@@ -93,13 +93,13 @@ export function Properties() {
         if (tenant) {
           const updatedTenant = {
             ...tenant,
-            status: 'former' as const
+            status: 'FORMER' as const
           };
-          dispatch({ type: 'UPDATE_TENANT', payload: updatedTenant });
+          await updateTenant(updatedTenant.id, updatedTenant);
+          
         }
-        
-        dispatch({ type: 'UPDATE_CONTRACT', payload: updatedContract });
-        dispatch({ type: 'UPDATE_PROPERTY', payload: updatedProperty });
+        await updateContract(updatedContract.id, updatedContract);
+        await updateProperty(updatedProperty.id, updatedProperty);
         
         alert('Contrato terminado exitosamente. La propiedad ahora está disponible.');
       }
@@ -140,13 +140,13 @@ export function Properties() {
   const overdueProperties = state.properties.filter(property => {
     if (property.status !== 'rented') return false;
     const activeContract = state.contracts.find(c => 
-      c.propertyId === property.id && c.status === 'active'
+      c.propertyId === property.id && c.status === 'ACTIVE'
     );
     if (!activeContract) return false;
     
     const overduePayments = state.payments.filter(p => 
       p.contractId === activeContract.id && 
-      p.status === 'pending' && 
+      p.status === 'PENDING' && 
       new Date(p.dueDate) < new Date()
     );
     
@@ -158,7 +158,7 @@ export function Properties() {
     if (!paymentProperty) return {};
     
     const activeContract = state.contracts.find(c => 
-      c.propertyId === paymentProperty.id && c.status === 'active'
+      c.propertyId === paymentProperty.id && c.status === 'ACTIVE'
     );
     
     if (!activeContract) return {};
@@ -166,7 +166,7 @@ export function Properties() {
     const tenant = state.tenants.find(t => t.id === activeContract.tenantId);
     const overduePayments = state.payments.filter(p => 
       p.contractId === activeContract.id && 
-      p.status === 'pending' && 
+      p.status === 'PENDING' && 
       new Date(p.dueDate) < new Date()
     );
     

@@ -33,7 +33,7 @@ export function PropertyCard({
 
   // Get current tenant and contract info for rented properties
   const activeContract = state.contracts.find(c => 
-    c.propertyId === property.id && c.status === 'active'
+    c.propertyId === property.id && c.status === 'ACTIVE'
   );
   
   const currentTenant = activeContract ? 
@@ -42,7 +42,7 @@ export function PropertyCard({
   // Check for overdue payments
   const overduePayments = state.payments.filter(p => 
     activeContract && p.contractId === activeContract.id && 
-    p.status === 'pending' && 
+    p.status === 'PENDING' && 
     new Date(p.dueDate) < new Date()
   );
 

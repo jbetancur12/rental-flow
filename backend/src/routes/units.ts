@@ -168,7 +168,6 @@ router.put('/:id',
     body('description').optional().trim(),
     body('totalFloors').optional().isInt({ min: 1 }),
     body('floors').optional().isInt({ min: 1 }),
-    body('size').optional().isInt({ min: 1 }),
     body('amenities').optional().isArray(),
     body('photos').optional().isArray(),
     body('manager').optional().trim()
