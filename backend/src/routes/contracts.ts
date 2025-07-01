@@ -290,10 +290,12 @@ router.put('/:id',
         updateData.tenant = { connect: { id: tenantId } };
       }
 
+
+
       // 4. Llama a Prisma con el objeto `data` limpio y correcto
       const contract = await prisma.contract.update({
         where: { id },
-        data: {...updateData, status: 'ACTIVE'}, // 👍
+        data: {...updateData}, // 👍
         include: {
           property: true,
           tenant: true
@@ -301,15 +303,15 @@ router.put('/:id',
       });
 
       // Update property status based on contract status
-      if (req.body.status) {
-        let propertyStatus = 'AVAILABLE';
-        if (req.body.status === 'DRAFT') propertyStatus = 'RENTED';
+      // if (req.body.status) {
+      //   let propertyStatus = 'AVAILABLE';
+      //   if (req.body.status === 'DRAFT') propertyStatus = 'RENTED';
         
-        await prisma.property.update({
-          where: { id: contract.propertyId },
-          data: { status: propertyStatus as any }
-        });
-      }
+      //   await prisma.property.update({
+      //     where: { id: contract.propertyId },
+      //     data: { status: propertyStatus as any }
+      //   });
+      // }
 
       logger.info('Contract updated:', { contractId: contract.id, organizationId });
 

@@ -110,7 +110,6 @@ export function Properties() {
         await updateContract(updatedContract.id, updatedContract);
         await updateProperty(updatedProperty.id, updatedProperty);
         
-        alert('Contrato terminado exitosamente. La propiedad ahora está disponible.');
       }
     }
   };

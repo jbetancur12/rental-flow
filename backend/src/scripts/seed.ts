@@ -94,13 +94,12 @@ async function main() {
   const trialEnd = new Date();
   trialEnd.setDate(trialEnd.getDate() + 14);
 
-  // Find existing subscription by organizationId (assuming only one subscription per organization)
   const existingSubscription = await prisma.subscription.findFirst({
     where: { organizationId: demoOrg.id }
   });
 
   await prisma.subscription.upsert({
-    where: { id: existingSubscription?.id ?? '' }, // If not found, upsert will create new
+    where: { id: existingSubscription?.id ?? '' }, 
     update: {},
     create: {
       organizationId: demoOrg.id,
@@ -132,6 +131,114 @@ async function main() {
     email: demoUser.email,
     role: demoUser.role,
     organizationId: demoUser.organizationId
+  });
+
+  // Create a demo unit for the demo organization
+  // Find existing unit by name (since name is not unique, we need to check manually)
+  let demoUnit = await prisma.unit.findFirst({
+    where: { name: 'Edificio Demo', organizationId: demoOrg.id }
+  });
+
+  if (!demoUnit) {
+    demoUnit = await prisma.unit.create({
+      data: {
+        organizationId: demoOrg.id,
+        name: 'Edificio Demo',
+        type: 'BUILDING',
+        address: '123 Calle Falsa, Ciudad Demo',
+        totalFloors: 5,
+      }
+    });
+  }
+
+  console.log('✅ Demo Unit created:', {
+    id: demoUnit.id, // Now this will be a real UUID
+    name: demoUnit.name,
+  });
+
+  // Create a demo property for the demo organization
+  // Try to find an existing property by name and organization (since name is not unique, we need to check manually)
+  let demoProperty = await prisma.property.findFirst({
+    where: { name: 'Apartamento 101', organizationId: demoOrg.id }
+  });
+
+  if (!demoProperty) {
+    demoProperty = await prisma.property.create({
+      data: {
+        organizationId: demoOrg.id,
+        unitId: demoUnit.id,
+        name: 'Apartamento 101',
+        unitNumber: '101',
+        type: 'APARTMENT',
+        address: '123 Calle Falsa, Apto 101, Ciudad Demo',
+        size: 80,
+        rooms: 2,
+        bathrooms: 1,
+        rent: 1200,
+        status: 'AVAILABLE'
+      }
+    });
+  }
+
+  console.log('✅ Demo Property created:', {
+    id: demoProperty.id, // Now this will be a real UUID
+    name: demoProperty.name,
+  });
+
+  // Create a demo tenant for the demo organization
+  let demoTenant = await prisma.tenant.findFirst({
+    where: { email: 'tenant@demo.com', organizationId: demoOrg.id }
+  });
+
+  if (demoTenant) {
+    demoTenant = await prisma.tenant.update({
+      where: { id: demoTenant.id },
+      data: {
+        firstName: 'Juan',
+        lastName: 'Inquilino',
+        phone: '555-1234',
+        applicationDate: new Date(),
+        status: 'ACTIVE',
+        emergencyContact: {
+          name: 'Maria Inquilino',
+          phone: '555-5678',
+          relationship: 'hermana'
+        },
+        creditScore: 700,
+        employment: {
+          employer: 'Empresa Demo',
+          position: 'Desarrollador',
+          income: 60000
+        }
+      }
+    });
+  } else {
+    demoTenant = await prisma.tenant.create({
+      data: {
+        organizationId: demoOrg.id,
+        firstName: 'Juan',
+        lastName: 'Inquilino',
+        email: 'tenant@demo.com',
+        phone: '555-1234',
+        applicationDate: new Date(),
+        status: 'ACTIVE',
+        emergencyContact: {
+          name: 'Maria Inquilino',
+          phone: '555-5678',
+          relationship: 'hermana'
+        },
+        employment: {
+          employer: 'Empresa Demo',
+          position: 'Desarrollador',
+          income: 60000
+        }
+      }
+    });
+  }
+
+  console.log('✅ Demo Tenant created:', {
+    id: demoTenant.id, // Now this will be a real UUID
+    email: demoTenant.email,
   });
 
   console.log('✅ Database seeded successfully!');

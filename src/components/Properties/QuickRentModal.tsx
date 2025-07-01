@@ -39,6 +39,7 @@ export function QuickRentModal({ property, isOpen, onClose }: QuickRentModalProp
       // Actualizar contrato con propertyId
       const updatedContract = {
         ...contract,
+        status: 'ACTIVE' as const,
         propertyId: property.id
       };
 
@@ -73,10 +74,15 @@ export function QuickRentModal({ property, isOpen, onClose }: QuickRentModalProp
         await createPayment(firstPayment);
       }
 
+      
+      console.log(updatedContract);
+      console.log("------------------------------");
+      console.log(updatedProperty);
+      
+      debugger;
       await updateProperty(updatedProperty.id, updatedProperty);
       await updateContract(updatedContract.id, updatedContract);
 
-      alert('Property rented successfully!');
       onClose();
     } catch (error) {
       console.error('Error assigning contract to property:', error);

@@ -65,7 +65,6 @@ export function QuickPaymentModal({ tenant, contract, overduePayments = [], isOp
       });
     }
 
-    alert('Payment(s) recorded successfully!');
     onClose();
   };
 

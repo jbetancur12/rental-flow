@@ -9,7 +9,7 @@ import { format } from 'date-fns';
 import { Contract } from '../types';
 
 export function Contracts() {
-  const { state, dispatch, createContract, loadContracts, deleteContract } = useApp();
+  const { state, updateContract, createContract, loadContracts, deleteContract } = useApp();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [editingContract, setEditingContract] = useState<Contract | undefined>();
@@ -69,19 +69,17 @@ export function Contracts() {
 
   const handleSaveContract = async (contractData: Omit<Contract, 'id'>) => {
     if (editingContract) {
-      
+      await updateContract(
+        editingContract.id,
+          contractData,
+        );
+      setEditingContract(undefined);
+      setIsFormOpen(false);
     } else {
       await createContract({
           ...contractData,
           id: `contract-${Date.now()}`
         });
-      dispatch({
-        type: 'ADD_CONTRACT',
-        payload: {
-          ...contractData,
-          id: `contract-${Date.now()}`
-        }
-      });
     }
   };
 
@@ -94,7 +92,7 @@ export function Contracts() {
     }
   };
 
-
+console.log(state.contracts);
   return (
     <div className="flex-1 overflow-auto">
       <Header 
@@ -128,8 +126,9 @@ export function Contracts() {
                       <Eye className="w-4 h-4" />
                     </button>
                     <button 
+                    disabled={contract.status === "TERMINATED" || contract.status === "EXPIRED"}
                       onClick={() => handleEditContract(contract)}
-                      className="p-2 text-slate-400 hover:text-blue-600 transition-colors"
+                      className="p-2 text-slate-400 hover:text-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Edit className="w-4 h-4" />
                     </button>
