@@ -26,8 +26,8 @@ export function Reports() {
     if (filters.month && filters.year) {
       filteredPayments = filteredPayments.filter(p => {
         const paymentDate = p.paidDate || p.dueDate;
-        return paymentDate.getMonth() + 1 === filters.month && 
-               paymentDate.getFullYear() === filters.year;
+        return new Date(paymentDate).getMonth() + 1 === filters.month && 
+               new Date(paymentDate).getFullYear() === filters.year;
       });
     }
 
@@ -57,11 +57,11 @@ export function Reports() {
   const { filteredPayments, filteredProperties, filteredContracts } = getFilteredData();
 
   // KPIs calculados con filtros
-  const totalRevenue = filteredPayments.filter(p => p.status === 'paid').reduce((sum, p) => sum + p.amount, 0);
+  const totalRevenue = filteredPayments.filter(p => p.status === 'PAID').reduce((sum, p) => sum + p.amount, 0);
   const averageRent = filteredProperties.length > 0 ? 
     filteredProperties.reduce((sum, p) => sum + p.rent, 0) / filteredProperties.length : 0;
   const occupancyRate = filteredProperties.length > 0 ? 
-    (filteredProperties.filter(p => p.status === 'rented').length / filteredProperties.length) * 100 : 0;
+    (filteredProperties.filter(p => p.status === 'RENTED').length / filteredProperties.length) * 100 : 0;
   const maintenanceCost = state.maintenanceRequests
     .filter(m => filteredProperties.some(p => p.id === m.propertyId))
     .reduce((sum, m) => sum + (m.actualCost || m.estimatedCost || 0), 0);

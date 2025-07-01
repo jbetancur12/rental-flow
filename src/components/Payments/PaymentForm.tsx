@@ -163,11 +163,11 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
                 onChange={(e) => setFormData({ ...formData, type: e.target.value as Payment['type'] })}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="rent">Alquiler</option>
-                <option value="deposit">Depósito</option>
-                <option value="late_fee">Recargo por Mora</option>
-                <option value="utility">Servicios</option>
-                <option value="maintenance">Mantenimiento</option>
+                <option value="RENT">Alquiler</option>
+                <option value="DEPOSIT">Depósito</option>
+                <option value="LATE_FEE">Recargo por Mora</option>
+                <option value="UTILITY">Servicios</option>
+                <option value="MAINTENANCE">Mantenimiento</option>
               </select>
             </div>
           </div>
@@ -226,9 +226,9 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="BANK_TRANSFER">Transferencia Bancaria</option>
-                <option value="check">Cheque</option>
-                <option value="cash">Efectivo</option>
-                <option value="online">Pago en Línea</option>
+                <option value="CHECK">Cheque</option>
+                <option value="CASH">Efectivo</option>
+                <option value="ONLINE">Pago en Línea</option>
               </select>
             </div>
           </div>

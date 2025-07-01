@@ -1,5 +1,8 @@
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import autoTable from 'jspdf-autotable';
+import { Contract, Payment, Property, Tenant } from '../types';
+
 
 export const generatePropertyReport = async (properties: any[]) => {
   const pdf = new jsPDF();
@@ -252,88 +255,118 @@ export const generateContractPDF = async (contract: any, property: any, tenant: 
 };
 
 // NEW: Payment Receipt Generator
-export const generatePaymentReceipt = async (payment: any, tenant: any, property: any, contract: any) => {
+
+
+export const generatePaymentReceipt = (payment: Payment, tenant: Tenant, property:Property, contract:Contract) => {
   const pdf = new jsPDF();
-  
-  // Header
-  pdf.setFontSize(20);
-  pdf.text('COMPROBANTE DE PAGO', 105, 30, { align: 'center' });
-  
-  // Receipt Info
-  pdf.setFontSize(12);
-  pdf.text(`Recibo #: ${payment.id.slice(-8).toUpperCase()}`, 20, 50);
-  pdf.text(`Fecha: ${new Date().toLocaleDateString()}`, 150, 50);
-  
-  // Company Info (Header)
-  pdf.setFontSize(14);
-  pdf.text('RentFlow Gestión de Propiedades', 20, 70);
+
+  // --- Colores y Márgenes ---
+  const primaryColor = '#4A90E2'; // Un azul moderno
+  const secondaryColor = '#F5F5F5'; // Un gris claro para fondos
+  const fontColor = '#333333';
+  const docWidth = pdf.internal.pageSize.getWidth();
+  const margin = 15;
+
+  // --- Encabezado ---
+  pdf.setFillColor(primaryColor);
+  pdf.rect(0, 0, docWidth, 30, 'F'); // Barra de color superior
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(22);
+  pdf.setTextColor('#FFFFFF');
+  pdf.text('RECIBO DE PAGO', docWidth / 2, 20, { align: 'center' });
+
+  // --- Información del Recibo ---
   pdf.setFontSize(10);
-  pdf.text('123 Calle Principal, Ciudad, Estado 12345', 20, 80);
-  pdf.text('Teléfono: (555) 123-4567 | Email: info@rentflow.com', 20, 90);
-  
-  // Divider line
-  pdf.line(20, 100, 190, 100);
-  
-  // Payment Details
-  pdf.setFontSize(14);
-  pdf.text('DETALLES DEL PAGO', 20, 115);
-  
-  pdf.setFontSize(10);
-  pdf.text(`Inquilino: ${tenant.firstName} ${tenant.lastName}`, 20, 130);
-  pdf.text(`Email: ${tenant.email}`, 20, 140);
-  pdf.text(`Teléfono: ${tenant.phone}`, 20, 150);
-  
-  pdf.text(`Propiedad: ${property.name}`, 20, 165);
-  pdf.text(`Dirección: ${property.address}`, 20, 175);
-  
-  // Payment Info
-  pdf.setFontSize(12);
-  pdf.text('INFORMACIÓN DEL PAGO', 20, 195);
-  pdf.setFontSize(10);
-  
+  pdf.setTextColor(fontColor);
+  pdf.text(`Recibo #: ${payment.id.slice(-8).toUpperCase()}`, margin, 45);
+  pdf.text(`Fecha de Emisión: ${new Date().toLocaleDateString()}`, docWidth - margin, 45, { align: 'right' });
+
+  // --- Información de las Partes (Cliente y Empresa) ---
+  pdf.setDrawColor(secondaryColor);
+  pdf.line(margin, 55, docWidth - margin, 55); // Línea divisoria
+
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('Pagado Por:', margin, 65);
+  pdf.setFont('helvetica', 'normal');
+  pdf.text(`${tenant.firstName} ${tenant.lastName}`, margin, 72);
+  pdf.text(tenant.email, margin, 79);
+
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('Pagado A:', docWidth / 2, 65);
+  pdf.setFont('helvetica', 'normal');
+  pdf.text('RentFlow Gestión Inmobiliaria', docWidth / 2, 72);
+  pdf.text('info@rentflow.com', docWidth / 2, 79);
+
+  // --- Tabla de Detalles del Pago ---
   const paymentTypeSpanish = {
-    rent: 'Alquiler',
-    deposit: 'Depósito',
-    late_fee: 'Recargo por Mora',
-    utility: 'Servicios',
-    maintenance: 'Mantenimiento'
+    RENT: 'Alquiler',
+    DEPOSIT: 'Depósito',
+    LATE_FEE: 'Recargo por Mora',
+    UTILITY: 'Servicios',
+    MAINTENANCE: 'Mantenimiento'
   };
-  
   const paymentMethodSpanish = {
-    cash: 'Efectivo',
-    check: 'Cheque',
-    bank_transfer: 'Transferencia Bancaria',
-    online: 'Pago en Línea'
+    CASH: 'Efectivo',
+    CHECK: 'Cheque',
+    BANK_TRANSFER: 'Transferencia',
+    ONLINE: 'Pago en Línea'
   };
-  
-  pdf.text(`Concepto: ${paymentTypeSpanish[payment.type as keyof typeof paymentTypeSpanish] || payment.type}`, 20, 210);
-  pdf.text(`Monto: $${payment.amount.toLocaleString()}`, 20, 220);
-  pdf.text(`Fecha de Vencimiento: ${payment.dueDate.toLocaleDateString()}`, 20, 230);
-  
-  if (payment.paidDate) {
-    pdf.text(`Fecha de Pago: ${payment.paidDate.toLocaleDateString()}`, 20, 240);
-  }
-  
-  if (payment.method) {
-    pdf.text(`Método de Pago: ${paymentMethodSpanish[payment.method as keyof typeof paymentMethodSpanish] || payment.method}`, 20, 250);
-  }
-  
-  if (payment.notes) {
-    pdf.text(`Notas: ${payment.notes}`, 20, 260);
-  }
-  
-  // Total Box
-  pdf.setFontSize(14);
-  pdf.rect(120, 200, 60, 30);
-  pdf.text('TOTAL PAGADO', 125, 215);
+console.log(">>>", payment)
+  const tableHead = [['Descripción', 'Propiedad', 'Método de Pago', 'Monto']];
+  const tableBody = [[
+    paymentTypeSpanish[payment.type] || payment.type,
+    property.name,
+    paymentMethodSpanish[payment.method] || payment.method,
+    `$${payment.amount.toLocaleString('es-CO')}`
+  ]];
+
+  autoTable(pdf, {
+    startY: 95,
+    head: tableHead,
+    body: tableBody,
+    theme: 'grid',
+    headStyles: {
+      fillColor: primaryColor,
+      textColor: '#FFFFFF',
+      fontStyle: 'bold'
+    },
+    styles: {
+      halign: 'center'
+    },
+    columnStyles: {
+      3: { halign: 'right' } // Alinear el monto a la derecha
+    }
+  });
+
+  // --- Resumen y Total ---
+  const finalY = (pdf as any).lastAutoTable.finalY;
+  const total = payment.amount;
+
+  pdf.setFontSize(12);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('TOTAL PAGADO:', docWidth - margin - 75, finalY + 20);
   pdf.setFontSize(16);
-  pdf.text(`$${payment.amount.toLocaleString()}`, 125, 225);
-  
-  // Footer
+  pdf.setTextColor(primaryColor);
+  pdf.text(`$${total.toLocaleString('es-CO')}`, docWidth - margin, finalY + 20, { align: 'right' });
+
+  // --- Notas Adicionales ---
+  if (payment.notes) {
+    pdf.setFontSize(10);
+    pdf.setTextColor(fontColor);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Notas Adicionales:', margin, finalY + 40);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(payment.notes, margin, finalY + 47);
+  }
+
+  // --- Pie de Página ---
   pdf.setFontSize(8);
-  pdf.text('Gracias por su pago puntual. Conserve este comprobante para sus registros.', 105, 280, { align: 'center' });
-  
-  const fileName = `comprobante-pago-${payment.id.slice(-8)}-${new Date().toISOString().split('T')[0]}.pdf`;
+  pdf.setTextColor('#AAAAAA');
+  const footerText = 'Gracias por su pago. Este es un comprobante generado por computadora.';
+  pdf.text(footerText, docWidth / 2, pdf.internal.pageSize.getHeight() - 10, { align: 'center' });
+
+  // --- Guardar el PDF ---
+  const fileName = `recibo-pago-${payment.id.slice(-8)}.pdf`;
   pdf.save(fileName);
 };
 

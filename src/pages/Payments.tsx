@@ -9,7 +9,7 @@ import { Payment } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 export function Payments() {
-  const { state, dispatch, loadPayments } = useApp();
+  const { state, updatePayment, loadPayments, createPayment } = useApp();
   const [filter, setFilter] = useState<'all' | 'PENDING' | 'PAID' | 'OVERDUE'>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPayment, setEditingPayment] = useState<Payment | undefined>();
@@ -120,7 +120,7 @@ export function Payments() {
   const totalCollected = kpiData.filter(p => p.status === 'PAID').reduce((sum, p) => sum + p.amount, 0);
   const pendingAmount = kpiData.filter(p => p.status === 'PENDING').reduce((sum, p) => sum + p.amount, 0);
   const overdueAmount = kpiData.filter(p => getPaymentStatus(p) === 'OVERDUE').reduce((sum, p) => sum + p.amount, 0);
-  const thisMonthAmount = kpiData.filter(p => p.dueDate.getMonth() === new Date().getMonth()).reduce((sum, p) => sum + p.amount, 0);
+  const thisMonthAmount = kpiData.filter(p => new Date(p.dueDate).getMonth() === new Date().getMonth()).reduce((sum, p) => sum + p.amount, 0);
 
   // Datos para gráficos
   const paymentTypeData = [
@@ -134,8 +134,8 @@ export function Payments() {
     const month = new Date();
     month.setMonth(month.getMonth() - (5 - i));
     const monthPayments = state.payments.filter(p => 
-      p.dueDate.getMonth() === month.getMonth() && 
-      p.dueDate.getFullYear() === month.getFullYear()
+      new Date(p.dueDate).getMonth() === month.getMonth() && 
+      new Date(p.dueDate).getFullYear() === month.getFullYear()
     );
     return {
       month: month.toLocaleDateString('default', { month: 'short' }),
@@ -201,30 +201,33 @@ export function Payments() {
     await generateReceiptForPayment(payment.id, state.payments, state.tenants, state.properties, state.contracts);
   };
 
-  const handleSavePayment = (paymentData: Omit<Payment, 'id'>) => {
+  const handleSavePayment = async (paymentData: Omit<Payment, 'id'>) => {
     if (editingPayment) {
-      dispatch({
-        type: 'UPDATE_PAYMENT',
-        payload: {
-          ...paymentData,
-          id: editingPayment.id
-        }
-      });
+      await updatePayment(editingPayment.id, paymentData);
+ 
     } else {
       const newPayment = {
         ...paymentData,
         id: `payment-${Date.now()}`
       };
-      dispatch({
-        type: 'ADD_PAYMENT',
-        payload: newPayment
-      });
+      await createPayment(newPayment)
     }
   };
 
   const handleGenerateReport = () => {
     generateFinancialReport(filteredPayments, state.contracts);
   };
+
+  const getCountForStatus = (statusValue: string) => {
+  if (statusValue === 'all') {
+    return state.payments.length;
+  }
+
+  if (statusValue === 'OVERDUE') {
+    return state.payments.filter(p => getPaymentStatus(p) === 'OVERDUE').length;
+  }
+  return state.payments.filter(p => p.status === statusValue).length;
+};
 
   return (
     <div className="flex-1 overflow-auto">
@@ -453,7 +456,7 @@ export function Payments() {
               <div>
                 <p className="text-sm text-slate-600">Este Mes</p>
                 <p className="text-2xl font-bold text-blue-600">
-                  ${state.payments.filter(p => p.dueDate.getMonth() === new Date().getMonth()).reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
+                  ${state.payments.filter(p => new Date(p.dueDate).getMonth() === new Date().getMonth()).reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
                 </p>
               </div>
               <CreditCard className="w-8 h-8 text-blue-600" />
@@ -478,9 +481,7 @@ export function Payments() {
                  status === 'PENDING' ? 'Pendientes' :
                  status === 'PAID' ? 'Pagados' : 'Vencidos'}
                 <span className="ml-2 text-xs">
-                  ({filter === 'all' ? state.payments.length : 
-                    filter === 'OVERDUE' ? filteredPayments.filter(p => getPaymentStatus(p) === 'OVERDUE').length :
-                    state.payments.filter(p => p.status === status).length})
+                  ({getCountForStatus(status)})
                 </span>
               </button>
             ))}
