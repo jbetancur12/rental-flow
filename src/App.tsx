@@ -16,6 +16,7 @@ import { Maintenance } from './pages/Maintenance';
 import { Reports } from './pages/Reports';
 import { Settings } from './pages/Settings';
 import { ToastContainer } from './components/UI/ToastContainer';
+import { ToastProvider } from './hooks/useToast';
 
 // Component to handle routing based on user role
 function AppRoutes() {
@@ -67,12 +68,14 @@ function AppRoutes() {
 function App() {
   return (
     <AuthProvider>
+      <ToastProvider>
       <Router>
         <AuthGuard fallback={<Auth />}>
           <AppRoutes />
           <ToastContainer />
         </AuthGuard>
       </Router>
+      </ToastProvider>
     </AuthProvider>
   );
 }

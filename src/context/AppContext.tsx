@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
 import { Property, Tenant, Contract, Payment, MaintenanceRequest, Building, Unit } from '../types';
-import { useToast } from '../hooks/useToast';
+
 import { useAuth } from './AuthContext';
 import { apiClient } from '../config/api';
+import { useToast } from '../hooks/useToast';
 
 interface AppState {
   properties: Property[];
@@ -151,7 +152,7 @@ const AppContext = createContext<{
   deleteContract: (id: string) => Promise<void>;
   createPayment: (data: any) => Promise<void>;
   loadPayments: () => Promise<void>;
-  updatePayment?: (id: string, data: any) => Promise<void>;
+  updatePayment: (id: string, data: any) => Promise<void>;
   createMaintenanceRequest?: (data: any) => Promise<void>;
   updateMaintenanceRequest?: (id: string, data: any) => Promise<void>;
 } | null>(null);
@@ -482,6 +483,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const updatePayment = async (id: string, data: any) => {
+    try {
+      const response = await apiClient.updatePayment(id, data);
+      dispatch({ type: 'UPDATE_PAYMENT', payload: response.payment });
+      toast.success('Pago Actualizado', 'La información del pago ha sido actualizada exitosamente.');
+    } catch (error: any) {
+      toast.error('Error', error.message || 'Failed to update payment');
+      throw error;
+    }
+  };
+
   // Load initial data when authenticated
   useEffect(() => {
     if (authState.isAuthenticated && authState.organization) {
@@ -547,6 +559,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       updateContract,
       loadPayments,
       createPayment,
+      updatePayment,
       deleteContract,
     
     }}>

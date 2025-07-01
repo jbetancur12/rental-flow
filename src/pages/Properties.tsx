@@ -8,9 +8,13 @@ import { Property } from '../types';
 import { useApp } from '../context/AppContext';
 import { mockProperties } from '../data/mockData';
 import { mockUnits } from '../data/mockUnits';
+import { ConfirmDialog } from '../components/UI/ConfirmDialog';
+import { useConfirm } from '../hooks/useConfirm';
 
 export function Properties() {
-  const { state, dispatch, updateProperty, updateTenant, updateContract } = useApp();
+  const { state, dispatch, updateProperty, updateTenant, updateContract, deleteProperty } = useApp();
+  const { isOpen: isConfirmOpen, options: confirmOptions, confirm, handleConfirm, handleCancel } = useConfirm();
+  
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isQuickRentOpen, setIsQuickRentOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -67,7 +71,14 @@ export function Properties() {
   };
 
   const handleTerminateContract = async (property: Property) => {
-    if (confirm('¿Está seguro de que desea terminar el contrato de esta propiedad?')) {
+
+     const confirmed = await confirm({
+      title: 'Delete Unit',
+      message: `¿Está seguro de que desea terminar el contrato de esta propiedad?`,
+      confirmText: 'Delete',
+      type: 'danger'
+    });
+    if (confirmed) {
       // Find active contract
       const activeContract = state.contracts.find(c => 
         c.propertyId === property.id && c.status === 'ACTIVE'
@@ -106,9 +117,17 @@ export function Properties() {
     }
   };
 
-  const handleDeleteProperty = (id: string) => {
-    if (confirm('¿Está seguro de que desea eliminar esta propiedad?')) {
-      dispatch({ type: 'DELETE_PROPERTY', payload: id });
+  const handleDeleteProperty = async (id: string) => {
+
+    const confirmed = await confirm({
+      title: 'Delete Unit',
+      message: `¿Está seguro de que desea eliminar esta propiedad?`,
+      confirmText: 'Delete',
+      type: 'danger'
+    });
+    
+    if (confirmed) {
+      await deleteProperty(id);
     }
   };
 
@@ -336,6 +355,17 @@ export function Properties() {
           onClose={() => setIsPaymentModalOpen(false)}
         />
       )}
+
+          <ConfirmDialog
+              isOpen={isConfirmOpen}
+              title={confirmOptions.title}
+              message={confirmOptions.message}
+              confirmText={confirmOptions.confirmText}
+              cancelText={confirmOptions.cancelText}
+              type={confirmOptions.type}
+              onConfirm={handleConfirm}
+              onCancel={handleCancel}
+            />
     </div>
   );
 }

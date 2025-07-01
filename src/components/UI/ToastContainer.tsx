@@ -1,6 +1,5 @@
-import React from 'react';
-import { Toast } from './Toast';
 import { useToast } from '../../hooks/useToast';
+import { Toast } from './Toast';
 
 export function ToastContainer() {
   const { toasts, removeToast } = useToast();

@@ -85,8 +85,8 @@ export function Payments() {
     if (kpiFilters.month && kpiFilters.year) {
       filtered = filtered.filter(p => {
         const paymentDate = p.paidDate || p.dueDate;
-        return paymentDate.getMonth() + 1 === kpiFilters.month && 
-               paymentDate.getFullYear() === kpiFilters.year;
+        return new Date(paymentDate).getMonth() + 1 === kpiFilters.month && 
+               new Date(paymentDate).getFullYear() === kpiFilters.year;
       });
     }
 

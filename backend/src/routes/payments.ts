@@ -189,7 +189,7 @@ router.put('/:id',
   requireRole(['ADMIN', 'MANAGER']),
   validateOrganizationAccess,
   [
-    param('id').isUUID(),
+    param('id').isString(),
     body('amount').optional().isInt({ min: 0 }),
     body('type').optional().isIn(['RENT', 'DEPOSIT', 'LATE_FEE', 'UTILITY', 'MAINTENANCE']),
     body('dueDate').optional().isISO8601(),
@@ -215,13 +215,37 @@ router.put('/:id',
         });
       }
 
-      const updateData: any = { ...req.body };
-      if (req.body.dueDate) updateData.dueDate = new Date(req.body.dueDate);
-      if (req.body.paidDate) updateData.paidDate = new Date(req.body.paidDate);
+      const {
+        amount,
+        type,
+        dueDate,
+        paidDate,
+        status,
+        method,
+        notes
+      } = req.body;
 
-      const payment = await prisma.payment.update({
+      const updateData: any = { };
+
+      if (amount !== undefined) updateData.amount = amount;
+      if (type !== undefined) updateData.type = type;
+      if (status !== undefined) updateData.status = status;
+      if (method !== undefined) updateData.method = method;
+      if (notes !== undefined) updateData.notes = notes;
+
+      // Maneja las fechas correctamente (permitiendo null)
+      if (dueDate) {
+        updateData.dueDate = new Date(dueDate);
+      }
+      if (paidDate) {
+        updateData.paidDate = new Date(paidDate);
+      } else if (req.body.hasOwnProperty('paidDate') && req.body.paidDate === null) {
+        updateData.paidDate = null;
+      }
+
+       const payment = await prisma.payment.update({
         where: { id },
-        data: updateData,
+        data: updateData, // 👍 ¡CORRECTO!
         include: {
           contract: {
             include: { property: true }
@@ -229,6 +253,8 @@ router.put('/:id',
           tenant: true
         }
       });
+
+     
 
       logger.info('Payment updated:', { paymentId: payment.id, organizationId });
 

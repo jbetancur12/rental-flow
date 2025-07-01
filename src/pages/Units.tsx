@@ -11,7 +11,7 @@ import { Building2, Home, Store } from 'lucide-react';
 import { Unit } from '../types';
 
 export function Units() {
-  const { state, dispatch, loadUnits } = useApp();
+  const { state, dispatch, loadUnits, deleteUnit } = useApp();
   const { isOpen: isConfirmOpen, options: confirmOptions, confirm, handleConfirm, handleCancel } = useConfirm();
   const [filter, setFilter] = useState<'all' | 'building' | 'house' | 'commercial'>('all');
   const [isUnitFormOpen, setIsUnitFormOpen] = useState(false);
@@ -65,7 +65,7 @@ export function Units() {
     });
 
     if (confirmed) {
-      dispatch({ type: 'DELETE_UNIT', payload: id });
+      await deleteUnit(id);
     }
   };
 

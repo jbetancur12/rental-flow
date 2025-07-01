@@ -12,16 +12,16 @@ interface QuickPaymentModalProps {
 }
 
 export function QuickPaymentModal({ tenant, contract, overduePayments, isOpen, onClose }: QuickPaymentModalProps) {
-  const { state, dispatch } = useApp();
+  const { createPayment, updatePayment} = useApp();
   const [paymentData, setPaymentData] = useState({
     amount: overduePayments ? overduePayments.reduce((sum, p) => sum + p.amount, 0) : 0,
-    method: 'bank_transfer' as Payment['method'],
+    method: 'BANK_TRANSFER' as Payment['method'],
     paidDate: new Date().toISOString().split('T')[0],
     notes: ''
   });
 
   // FIX: Record Payment funcionando
-  const handleRecordPayment = () => {
+  const handleRecordPayment = async () => {
     if (!tenant || !contract) {
       alert('Missing tenant or contract information');
       return;
@@ -29,15 +29,15 @@ export function QuickPaymentModal({ tenant, contract, overduePayments, isOpen, o
 
     if (overduePayments && overduePayments.length > 0) {
       // Mark overdue payments as paid
-      overduePayments.forEach(payment => {
+      overduePayments.forEach(async payment => {
         const updatedPayment = {
           ...payment,
-          status: 'paid' as const,
+          status: 'PAID' as const,
           paidDate: new Date(paymentData.paidDate),
           method: paymentData.method,
           notes: paymentData.notes
         };
-        dispatch({ type: 'UPDATE_PAYMENT', payload: updatedPayment });
+        await updatePayment(updatedPayment.id, updatedPayment);
       });
     } else {
       // Create new payment record
@@ -46,14 +46,14 @@ export function QuickPaymentModal({ tenant, contract, overduePayments, isOpen, o
         contractId: contract.id,
         tenantId: tenant.id,
         amount: paymentData.amount,
-        type: 'rent',
+        type: 'RENT',
         dueDate: new Date(),
         paidDate: new Date(paymentData.paidDate),
-        status: 'paid',
+        status: 'PAID',
         method: paymentData.method,
         notes: paymentData.notes
       };
-      dispatch({ type: 'ADD_PAYMENT', payload: newPayment });
+      await createPayment(newPayment);
     }
 
     onClose();
@@ -109,10 +109,10 @@ export function QuickPaymentModal({ tenant, contract, overduePayments, isOpen, o
               onChange={(e) => setPaymentData({ ...paymentData, method: e.target.value as Payment['method'] })}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             >
-              <option value="bank_transfer">Bank Transfer</option>
-              <option value="check">Check</option>
-              <option value="cash">Cash</option>
-              <option value="online">Online Payment</option>
+              <option value="BANK_TRANSFER">Bank Transfer</option>
+              <option value="CHECK">Check</option>
+              <option value="CASH">Cash</option>
+              <option value="ONLINE">Online Payment</option>
             </select>
           </div>
 
