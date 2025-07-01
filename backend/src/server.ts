@@ -28,6 +28,7 @@ import reportRoutes from './routes/reports';
 import subscriptionRoutes from './routes/subscriptions';
 import webhookRoutes from './routes/webhooks';
 import superAdminRoutes from './routes/superAdmin';
+import { generatePendingPayments } from './cron/paymentGenerator';
 
 // Load environment variables
 dotenv.config();
@@ -83,6 +84,8 @@ app.use(morgan('combined', {
     write: (message: string) => logger.info(message.trim())
   }
 }));
+
+generatePendingPayments()
 
 // Rate limiting
 const limiter = rateLimit({

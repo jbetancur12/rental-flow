@@ -150,11 +150,50 @@ router.post('/',
         });
       }
 
+      let periodStart;
+    let periodEnd;
+    const dueDateFromRequest = new Date(req.body.dueDate);
+
+       const lastRentPayment = await prisma.payment.findFirst({
+      where: { contractId: req.body.contractId, type: 'RENT' },
+      orderBy: { dueDate: 'desc' },
+    });
+
+      if (req.body.type === 'RENT') {
+      if (lastRentPayment) {
+        // Es un pago de alquiler subsecuente. El período empieza donde terminó el anterior.
+        periodStart = lastRentPayment.periodEnd;
+        periodEnd = dueDateFromRequest;
+      } else {
+        // ¡Es el PRIMER pago de alquiler!
+        // El período empieza y vence en la misma fecha del contrato.
+        periodStart = dueDateFromRequest;
+
+        // Debemos CALCULAR el fin del período (un mes después).
+        const year = periodStart.getFullYear();
+        const month = periodStart.getMonth() + 1;
+        const day = periodStart.getDate();
+
+        let calculatedEnd = new Date(year, month, day);
+        // Corregimos el desbordamiento de mes (ej. 31 de Ene -> 28 de Feb)
+        if (calculatedEnd.getMonth() !== (month % 12)) {
+          calculatedEnd = new Date(year, month + 1, 0);
+        }
+        periodEnd = calculatedEnd;
+      }
+    } else {
+      // Para otros tipos de pago (Depósito, Multa), el período es solo el día del vencimiento.
+      periodStart = dueDateFromRequest;
+      periodEnd = dueDateFromRequest;
+    }
+
       const paymentData = {
         ...req.body,
         organizationId,
         dueDate: new Date(req.body.dueDate),
-        paidDate: req.body.paidDate ? new Date(req.body.paidDate) : undefined
+        paidDate: req.body.paidDate ? new Date(req.body.paidDate) : undefined,
+        periodStart,
+        periodEnd,
       };
 
       const payment = await prisma.payment.create({

@@ -86,7 +86,7 @@ export function Properties() {
         // Update contract status
         const updatedContract = {
           ...activeContract,
-          status: 'terminated' as const,
+          status: 'TERMINATED' as const,
           terminationDate: new Date()
         };
         

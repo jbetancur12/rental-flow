@@ -121,6 +121,8 @@ export interface Payment {
   status: 'PENDING' | 'PAID' | 'OVERDUE' | 'PARTIAL';
   method: 'CASH' | 'CHECK' | 'BANK_TRANSFER' | 'ONLINE';
   notes?: string;
+  periodStart?: Date; // Start date of the billing period
+  periodEnd?: Date; // End date of the billing period
 }
 
 export interface MaintenanceRequest {

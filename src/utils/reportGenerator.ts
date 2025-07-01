@@ -2,6 +2,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import autoTable from 'jspdf-autotable';
 import { Contract, Payment, Property, Tenant } from '../types';
+import { formatDate } from '../lib/utils';
 
 
 export const generatePropertyReport = async (properties: any[]) => {
@@ -311,10 +312,14 @@ export const generatePaymentReceipt = (payment: Payment, tenant: Tenant, propert
     BANK_TRANSFER: 'Transferencia',
     ONLINE: 'Pago en Línea'
   };
-console.log(">>>", payment)
-  const tableHead = [['Descripción', 'Propiedad', 'Método de Pago', 'Monto']];
+  const tableHead = [['Descripción', 'Período Cubierto', 'Propiedad', 'Método de Pago', 'Monto']];
+  const periodText = (payment.periodStart && payment.periodEnd)
+    ? `${formatDate(payment.periodStart)} - ${formatDate(payment.periodEnd)}`
+    : formatDate(payment.dueDate);
+
   const tableBody = [[
     paymentTypeSpanish[payment.type] || payment.type,
+    periodText,
     property.name,
     paymentMethodSpanish[payment.method] || payment.method,
     `$${payment.amount.toLocaleString('es-CO')}`
