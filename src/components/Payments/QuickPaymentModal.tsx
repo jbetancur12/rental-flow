@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Payment, Contract, Tenant } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { X, CreditCard, Calendar, DollarSign } from 'lucide-react';

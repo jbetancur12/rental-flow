@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Building2, ChevronDown, Settings, Users, CreditCard, Crown } from 'lucide-react';
 

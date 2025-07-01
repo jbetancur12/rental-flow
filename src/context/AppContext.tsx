@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
+import { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
 import { Property, Tenant, Contract, Payment, MaintenanceRequest, Building, Unit } from '../types';
 
 import { useAuth } from './AuthContext';
@@ -28,6 +28,7 @@ type AppAction =
   | { type: 'DELETE_UNIT'; payload: string }
   | { type: 'SET_TENANTS'; payload: Tenant[] }
   | { type: 'ADD_TENANT'; payload: Tenant }
+  | { type: 'DELETE_TENANT'; payload: string }
   | { type: 'UPDATE_TENANT'; payload: Tenant }
   | { type: 'ADD_CONTRACT'; payload: Contract }
   | { type: 'DELETE_CONTRACT'; payload: string }
@@ -92,6 +93,12 @@ function appReducer(state: AppState, action: AppAction): AppState {
         ...state,
         tenants: state.tenants.map(t => t.id === action.payload.id ? action.payload : t)
       };
+    case 'DELETE_TENANT':
+      return {
+        ...state,
+        tenants: state.tenants.filter(t => t.id !== action.payload),
+        contracts: state.contracts.filter(c => c.tenantId !== action.payload)
+      };
     case 'ADD_CONTRACT':
       return { ...state, contracts: [...state.contracts, action.payload] };
     case 'UPDATE_CONTRACT':
@@ -145,7 +152,7 @@ const AppContext = createContext<{
   getTenants: () => Promise<void>;
   createTenant: (data: any) => Promise<void>;
   updateTenant: (id: string, data: any) => Promise<void>;
-  deleteTenant?: (id: string) => Promise<void>;
+  deleteTenant: (id: string) => Promise<void>;
   loadContracts: () => Promise<void>;
   createContract: (data: any) => Promise<void>;
   updateContract: (id: string, data: any) => Promise<void>;
@@ -393,6 +400,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const deleteTenant = async (id: string) => {
+    try {
+      await apiClient.deleteTenant(id);
+      dispatch({ type: 'DELETE_TENANT', payload: id });
+      toast.success('Inquilino Eliminado', 'El inquilino ha sido eliminado exitosamente del sistema.');
+    } catch (error: any) {
+      toast.error('Error', error.message || 'Failed to delete tenant');
+      throw error;
+    }
+  }
+
   const updateContract = async (id: string, data: any) => {
     try {
       const response = await apiClient.updateContract(id, data);
@@ -553,6 +571,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       deleteUnit,
       createTenant,
       updateTenant,
+      deleteTenant,
       getTenants,
       loadContracts,
       createContract,

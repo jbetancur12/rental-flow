@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { DivideIcon as LucideIcon } from 'lucide-react';
 
 interface StatsCardProps {
@@ -6,7 +6,7 @@ interface StatsCardProps {
   value: string | number;
   change?: string;
   changeType?: 'positive' | 'negative' | 'neutral';
-  icon: LucideIcon;
+  icon: typeof LucideIcon;
   iconColor?: string;
 }
 
@@ -32,7 +32,7 @@ export function StatsCard({
         </div>
         {change && (
           <span className={`text-sm font-medium ${changeColorClass}`}>
-            {change}
+            {change} 
           </span>
         )}
       </div>

@@ -119,7 +119,7 @@ export interface Payment {
   dueDate: Date;
   paidDate?: Date;
   status: 'PENDING' | 'PAID' | 'OVERDUE' | 'PARTIAL';
-  method?: 'cash' | 'check' | 'bank_transfer' | 'online';
+  method?: 'CASH' | 'CHECK' | 'BANK_TRANSFER' | 'ONLINE';
   notes?: string;
 }
 

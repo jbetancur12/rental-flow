@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/Layout/Header';
 import { StatsCard } from '../components/Dashboard/StatsCard';
@@ -20,15 +20,15 @@ export function Dashboard() {
   const navigate = useNavigate();
 
   const totalProperties = state.properties.length;
-  const occupiedProperties = state.properties.filter(p => p.status === 'rented').length;
+  const occupiedProperties = state.properties.filter(p => p.status === 'RENTED').length;
   const occupancyRate = totalProperties > 0 ? ((occupiedProperties / totalProperties) * 100).toFixed(1) : '0';
   
   const totalRevenue = state.payments
-    .filter(p => p.status === 'paid' && p.type === 'rent')
+    .filter(p => p.status === 'PAID' && p.type === 'RENT')
     .reduce((sum, p) => sum + p.amount, 0);
   
   const overduePayments = state.payments.filter(p => {
-    if (p.status !== 'pending') return false;
+    if (p.status !== 'PENDING') return false;
     return new Date(p.dueDate) < new Date();
   }).length;
 
@@ -71,7 +71,7 @@ export function Dashboard() {
           />
           <StatsCard
             title="Inquilinos Activos"
-            value={state.tenants.filter(t => t.status === 'active').length}
+            value={state.tenants.filter(t => t.status === 'ACTIVE').length}
             change="+2 este mes"
             changeType="positive"
             icon={Users}

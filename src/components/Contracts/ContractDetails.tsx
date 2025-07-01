@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Contract, Property, Tenant } from '../../types';
 import { X, FileText, Download, Edit, Calendar, DollarSign, User, Home } from 'lucide-react';
 import { format } from 'date-fns';

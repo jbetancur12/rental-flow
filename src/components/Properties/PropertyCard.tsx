@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Property } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { MapPin, Home, Users, DollarSign, Edit, Trash2, Key, FileText, CreditCard, XCircle } from 'lucide-react';

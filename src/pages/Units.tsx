@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from '../components/Layout/Header';
 import { UnitCard } from '../components/Units/UnitCard';
 import { UnitForm } from '../components/Units/UnitForm';
@@ -6,7 +6,6 @@ import { UnitDetails } from '../components/Units/UnitDetails';
 import { useApp } from '../context/AppContext';
 import { useConfirm } from '../hooks/useConfirm';
 import { ConfirmDialog } from '../components/UI/ConfirmDialog';
-import { mockUnits } from '../data/mockUnits';
 import { Building2, Home, Store } from 'lucide-react';
 import { Unit } from '../types';
 

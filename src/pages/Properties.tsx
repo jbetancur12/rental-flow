@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from '../components/Layout/Header';
 import { PropertyCard } from '../components/Properties/PropertyCard';
 import { PropertyForm } from '../components/Properties/PropertyForm';
@@ -6,8 +6,6 @@ import { QuickRentModal } from '../components/Properties/QuickRentModal';
 import { QuickPaymentModal } from '../components/Payments/QuickPaymentModal';
 import { Property } from '../types';
 import { useApp } from '../context/AppContext';
-import { mockProperties } from '../data/mockData';
-import { mockUnits } from '../data/mockUnits';
 import { ConfirmDialog } from '../components/UI/ConfirmDialog';
 import { useConfirm } from '../hooks/useConfirm';
 

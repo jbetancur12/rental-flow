@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { MaintenanceRequest, Property, Tenant } from '../../types';
 import { X, Upload } from 'lucide-react';
 

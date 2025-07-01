@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Tenant } from '../../types';
 import { X, User, Mail, Phone, Building, DollarSign, Calendar, Star } from 'lucide-react';
 

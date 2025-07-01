@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from '../components/Layout/Header';
 import { PaymentForm } from '../components/Payments/PaymentForm';
 import { useApp } from '../context/AppContext';
-import { mockPayments } from '../data/mockData';
-import { generateFinancialReport, generatePaymentReceipt, generateReceiptForPayment } from '../utils/reportGenerator';
+import { generateFinancialReport,  generateReceiptForPayment } from '../utils/reportGenerator';
 import { CreditCard, Calendar, User, Home, AlertCircle, CheckCircle, Clock, Download, Edit, Trash2, Filter, BarChart3, Receipt } from 'lucide-react';
 import { format, isAfter } from 'date-fns';
 import { Payment } from '../types';

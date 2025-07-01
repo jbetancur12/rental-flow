@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Property, Tenant } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { X, FileText, Calendar, DollarSign, User } from 'lucide-react';

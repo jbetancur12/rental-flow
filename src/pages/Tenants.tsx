@@ -1,4 +1,4 @@
-import  { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from '../components/Layout/Header';
 import { TenantForm } from '../components/Tenants/TenantForm';
 import { TenantDetails } from '../components/Tenants/TenantDetails';
@@ -8,9 +8,12 @@ import { useApp } from '../context/AppContext';
 import { generateTenantReport } from '../utils/reportGenerator';
 import { User, AlertTriangle, Download } from 'lucide-react';
 import { Tenant } from '../types';
+import { useConfirm } from '../hooks/useConfirm';
+import { ConfirmDialog } from '../components/UI/ConfirmDialog';
 
 export function Tenants() {
-  const { state, createTenant, updateTenant, getTenants,dispatch } = useApp();
+  const { state, createTenant, updateTenant, getTenants, deleteTenant } = useApp();
+  const { isOpen: isConfirmOpen, options: confirmOptions, confirm, handleConfirm, handleCancel } = useConfirm();
   const [filter, setFilter] = useState<'all' | 'PENDING' | 'APPROVED' | 'ACTIVE' | 'FORMER' | 'OVERDUE'>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
@@ -23,7 +26,7 @@ export function Tenants() {
     try {
       // Simulate fetching tenants from an API
       await getTenants();
-      
+
     } catch (error) {
       console.error('Failed to fetch tenants:', error);
     }
@@ -37,9 +40,9 @@ export function Tenants() {
 
   // Get tenants with OVERDUE payments
   const tenantsWithOverdue = state.tenants.filter(tenant => {
-    const overduePayments = state.payments.filter(p => 
-      p.tenantId === tenant.id && 
-      p.status === 'PENDING' && 
+    const overduePayments = state.payments.filter(p =>
+      p.tenantId === tenant.id &&
+      p.status === 'PENDING' &&
       new Date(p.dueDate) < new Date()
     );
     return overduePayments.length > 0;
@@ -71,11 +74,17 @@ export function Tenants() {
     setIsPaymentModalOpen(true);
   };
 
-  const handleDeleteTenant = (id: string) => {
-    if (confirm('Are you sure you want to delete this tenant?')) {
-      // In a real app, you'd dispatch a DELETE_TENANT action
-      console.log('Delete tenant:', id);
+  const handleDeleteTenant = async (id: string) => {
+    const confirmed = await confirm({
+      title: 'Delete Tenant',
+      message: 'Are you sure you want to delete this tenant?',
+      confirmText: 'Delete',
+      type: 'danger'
+    });
+    if (confirmed) {
+      await deleteTenant(id);
     }
+
   };
 
   const handleSaveTenant = async (tenantData: Omit<Tenant, 'id'>) => {
@@ -96,30 +105,30 @@ export function Tenants() {
   // Get payment modal data
   const getPaymentModalData = () => {
     if (!paymentTenant) return {};
-    
-    const activeContract = state.contracts.find(c => 
+
+    const activeContract = state.contracts.find(c =>
       c.tenantId === paymentTenant.id && c.status === 'ACTIVE'
     );
-    
+
     if (!activeContract) return { tenant: paymentTenant };
-    
-    const overduePayments = state.payments.filter(p => 
-      p.contractId === activeContract.id && 
-      p.status === 'PENDING' && 
+
+    const overduePayments = state.payments.filter(p =>
+      p.contractId === activeContract.id &&
+      p.status === 'PENDING' &&
       new Date(p.dueDate) < new Date()
     );
-    
+
     return { tenant: paymentTenant, contract: activeContract, overduePayments };
   };
 
   return (
     <div className="flex-1 overflow-auto">
-      <Header 
-        title="Tenants" 
+      <Header
+        title="Tenants"
         onNewItem={handleNewTenant}
         newItemLabel="Add Tenant"
       />
-      
+
       <div className="p-6">
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
@@ -134,7 +143,7 @@ export function Tenants() {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-xl border border-slate-200 p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -148,7 +157,7 @@ export function Tenants() {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-xl border border-slate-200 p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -162,7 +171,7 @@ export function Tenants() {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-xl border border-slate-200 p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -176,7 +185,7 @@ export function Tenants() {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-xl border border-slate-200 p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -219,22 +228,21 @@ export function Tenants() {
               <button
                 key={status}
                 onClick={() => setFilter(status as any)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  filter === status
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === status
                     ? 'bg-blue-600 text-white'
                     : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
-                }`}
+                  }`}
               >
                 {status.charAt(0).toUpperCase() + status.slice(1)}
                 <span className="ml-2 text-xs">
-                  ({status === 'OVERDUE' ? tenantsWithOverdue.length : 
-                    status === 'all' ? state.tenants.length : 
-                    state.tenants.filter(t => t.status === status).length})
+                  ({status === 'OVERDUE' ? tenantsWithOverdue.length :
+                    status === 'all' ? state.tenants.length :
+                      state.tenants.filter(t => t.status === status).length})
                 </span>
               </button>
             ))}
           </div>
-          
+
           <button
             onClick={handleGenerateReport}
             className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
@@ -265,11 +273,11 @@ export function Tenants() {
             </div>
             <h3 className="text-lg font-medium text-slate-900 mb-2">No tenants found</h3>
             <p className="text-slate-600 mb-4">
-              {filter === 'all' 
+              {filter === 'all'
                 ? "You haven't added any tenants yet."
                 : filter === 'OVERDUE'
-                ? "No tenants have OVERDUE payments."
-                : `No tenants with status "${filter}" found.`
+                  ? "No tenants have OVERDUE payments."
+                  : `No tenants with status "${filter}" found.`
               }
             </p>
             {filter === 'all' && (
@@ -310,6 +318,17 @@ export function Tenants() {
           onClose={() => setIsPaymentModalOpen(false)}
         />
       )}
+
+      <ConfirmDialog
+        isOpen={isConfirmOpen}
+        title={confirmOptions.title}
+        message={confirmOptions.message}
+        confirmText={confirmOptions.confirmText}
+        cancelText={confirmOptions.cancelText}
+        type={confirmOptions.type}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
     </div>
   );
 }

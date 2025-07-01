@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Unit, Property } from '../../types';
 import { X, Building2, Home, Store, MapPin, Edit } from 'lucide-react';
 

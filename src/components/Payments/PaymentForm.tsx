@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Payment, Contract, Tenant } from '../../types';
 import { X } from 'lucide-react';
 
@@ -19,8 +19,8 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
     type: 'rent' as Payment['type'],
     dueDate: '',
     paidDate: '',
-    status: 'pending' as Payment['status'],
-    method: 'bank_transfer' as Payment['method'],
+    status: 'PENDING' as Payment['status'],
+    method: 'BANK_TRANSFER' as Payment['method'],
     notes: ''
   });
 
@@ -36,7 +36,7 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
         dueDate: payment.dueDate.toISOString().split('T')[0],
         paidDate: payment.paidDate ? payment.paidDate.toISOString().split('T')[0] : '',
         status: payment.status,
-        method: payment.method || 'bank_transfer',
+        method: payment.method || 'BANK_TRANSFER',
         notes: payment.notes || ''
       });
     } else {
@@ -44,11 +44,11 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
         contractId: '',
         tenantId: '',
         amount: 0,
-        type: 'rent',
+        type: 'RENT',
         dueDate: '',
         paidDate: '',
-        status: 'pending',
-        method: 'bank_transfer',
+        status: 'PENDING',
+        method: 'BANK_TRANSFER',
         notes: ''
       });
     }
@@ -65,8 +65,8 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
     
     onSave(paymentData);
     
-    // NEW: Generate receipt if payment is marked as paid and option is checked
-    if (formData.status === 'paid' && formData.paidDate && generateReceipt) {
+    // NEW: Generate receipt if payment is marked as PAID and option is checked
+    if (formData.status === 'PAID' && formData.paidDate && generateReceipt) {
       // This will be handled in the parent component
       setTimeout(() => {
         const event = new CustomEvent('generateReceipt', { 
@@ -209,8 +209,8 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
                 onChange={(e) => setFormData({ ...formData, status: e.target.value as Payment['status'] })}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="pending">Pendiente</option>
-                <option value="paid">Pagado</option>
+                <option value="PENDING">Pendiente</option>
+                <option value="PAID">Pagado</option>
                 <option value="overdue">Vencido</option>
                 <option value="partial">Parcial</option>
               </select>
@@ -225,7 +225,7 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
                 onChange={(e) => setFormData({ ...formData, method: e.target.value as Payment['method'] })}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="bank_transfer">Transferencia Bancaria</option>
+                <option value="BANK_TRANSFER">Transferencia Bancaria</option>
                 <option value="check">Cheque</option>
                 <option value="cash">Efectivo</option>
                 <option value="online">Pago en Línea</option>
@@ -234,7 +234,7 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
           </div>
 
           {/* NEW: Generate Receipt Option */}
-          {formData.status === 'paid' && formData.paidDate && (
+          {formData.status === 'PAID' && formData.paidDate && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <div className="flex items-center">
                 <input
