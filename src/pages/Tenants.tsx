@@ -36,7 +36,7 @@ export function Tenants() {
     if (state.tenants.length === 0) {
       fetchTenants();
     }
-  }, [state.tenants.length]);
+  }, [state.tenants.length, fetchTenants]);
 
   // Get tenants with OVERDUE payments
   const tenantsWithOverdue = state.tenants.filter(tenant => {
@@ -227,7 +227,7 @@ export function Tenants() {
             {['all', 'PENDING', 'APPROVED', 'ACTIVE', 'FORMER', 'OVERDUE'].map((status) => (
               <button
                 key={status}
-                onClick={() => setFilter(status as any)}
+                onClick={() => setFilter(status as 'all' | 'PENDING' | 'APPROVED' | 'ACTIVE' | 'FORMER' | 'OVERDUE')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === status
                     ? 'bg-blue-600 text-white'
                     : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
@@ -299,17 +299,27 @@ export function Tenants() {
         onSave={handleSaveTenant}
       />
 
-      {selectedTenant && (
-        <TenantDetails
-          tenant={selectedTenant}
-          isOpen={isDetailsOpen}
-          onClose={() => setIsDetailsOpen(false)}
-          onEdit={() => {
-            setIsDetailsOpen(false);
-            handleEditTenant(selectedTenant);
-          }}
-        />
-      )}
+   {selectedTenant && (
+        (() => {
+            // 1. Filtra los pagos para el inquilino seleccionado
+            const paymentsForSelectedTenant = state.payments
+                .filter(p => p.tenantId === selectedTenant.id)
+                .sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime()); // Opcional: ordenar por fecha
+
+            return (
+                <TenantDetails
+                    tenant={selectedTenant}
+                    payments={paymentsForSelectedTenant} // 2. Pasa los pagos como prop
+                    isOpen={isDetailsOpen}
+                    onClose={() => setIsDetailsOpen(false)}
+                    onEdit={() => {
+                        setIsDetailsOpen(false);
+                        handleEditTenant(selectedTenant);
+                    }}
+                />
+            );
+        })()
+    )}
 
       {paymentTenant && (
         <QuickPaymentModal

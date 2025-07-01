@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Property, Unit } from '../../types';
+import { Property } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { X, Upload } from 'lucide-react';
 
@@ -10,7 +10,7 @@ interface PropertyFormProps {
   onSave: (property: Omit<Property, 'id' | 'createdAt' | 'updatedAt'>) => void;
 }
 
-export function PropertyForm({ property, isOpen, onClose, onSave }: PropertyFormProps) {
+export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
   const { state, createProperty, updateProperty } = useApp();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({

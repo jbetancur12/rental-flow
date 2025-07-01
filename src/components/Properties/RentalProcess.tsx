@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Property, Tenant, Contract } from '../../types';
 import { useApp } from '../../context/AppContext';
-import { X, User, FileText, DollarSign, Calendar, CheckCircle } from 'lucide-react';
+import { X, User,  CheckCircle } from 'lucide-react';
 
 interface RentalProcessProps {
   property: Property;

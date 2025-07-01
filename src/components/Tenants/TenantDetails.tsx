@@ -1,15 +1,17 @@
 
-import { Tenant } from '../../types';
+import { Payment, Tenant } from '../../types';
 import { X, User, Mail, Phone, Building, DollarSign, Calendar, Star } from 'lucide-react';
+import { PaymentHistory } from '../Payments/PaymentHistory';
 
 interface TenantDetailsProps {
   tenant: Tenant;
+  payments: Payment[];
   isOpen: boolean;
   onClose: () => void;
   onEdit: () => void;
 }
 
-export function TenantDetails({ tenant, isOpen, onClose, onEdit }: TenantDetailsProps) {
+export function TenantDetails({ tenant, isOpen, payments=[], onClose, onEdit }: TenantDetailsProps) {
   if (!isOpen) return null;
 
   const getCreditScoreColor = (score: number) => {
@@ -153,12 +155,15 @@ export function TenantDetails({ tenant, isOpen, onClose, onEdit }: TenantDetails
             </div>
           </div>
 
+          {/* Payment History*/}
+          <PaymentHistory payments={payments} />
+
           {/* References */}
           {tenant.references.length > 0 && (
             <div>
               <h3 className="text-lg font-semibold text-slate-900 mb-4">References</h3>
               <div className="space-y-4">
-                {tenant.references.map((reference, index) => (
+                {tenant.references.map((reference) => (
                   <div key={reference.id} className="bg-slate-50 rounded-lg p-4">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                       <div>

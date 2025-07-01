@@ -58,7 +58,7 @@ export function Properties() {
     setIsQuickRentOpen(true);
   };
 
-  const handleViewContract = (property: Property) => {
+  const handleViewContract = (_property: Property) => {
     // Navigate to contracts page with filter
     window.location.href = '/contracts';
   };
@@ -99,6 +99,7 @@ export function Properties() {
         
         // Update tenant status
         const tenant = state.tenants.find(t => t.id === activeContract.tenantId);
+
         if (tenant) {
           const updatedTenant = {
             ...tenant,
@@ -261,7 +262,7 @@ export function Properties() {
             {['all', 'AVAILABLE', 'RENTED', 'RESERVED', 'MAINTENANCE'].map((status) => (
               <button
                 key={status}
-                onClick={() => setFilter(status as any)}
+                onClick={() => setFilter(status as 'all' | 'AVAILABLE' | 'RENTED' | 'RESERVED' | 'MAINTENANCE')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   filter === status
                     ? 'bg-blue-600 text-white'

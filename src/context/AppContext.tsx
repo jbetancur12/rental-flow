@@ -253,7 +253,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const property = {
         ...response.property,
         type: response.property.type.toLowerCase(),
-        status: response.property.status.toLowerCase(),
+        status: response.property.status,
         createdAt: new Date(response.property.createdAt),
         updatedAt: new Date(response.property.updatedAt),
       };
@@ -282,7 +282,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const property = {
         ...response.property,
         type: response.property.type.toLowerCase(),
-        status: response.property.status.toLowerCase(),
+        status: response.property.status,
         createdAt: new Date(response.property.createdAt),
         updatedAt: new Date(response.property.updatedAt),
       };

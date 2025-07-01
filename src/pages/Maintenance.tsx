@@ -332,7 +332,7 @@ export function Maintenance() {
             {['all', 'open', 'in_progress', 'completed', 'cancelled'].map((status) => (
               <button
                 key={status}
-                onClick={() => setStatusFilter(status as any)}
+                onClick={() => setStatusFilter(status as 'open' | 'in_progress' | 'completed' | 'cancelled' | 'all')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   statusFilter === status
                     ? 'bg-blue-600 text-white'

@@ -19,7 +19,7 @@ interface QuickPaymentModalProps {
   onClose: () => void;
 }
 
-export function QuickPaymentModal({ tenant, contract, overduePayments = [], isOpen, onClose }: QuickPaymentModalProps) {
+export function QuickPaymentModal({ tenant, overduePayments = [], isOpen, onClose }: QuickPaymentModalProps) {
   const { updatePayment } = useApp();
 
   // Guarda los IDs de los pagos seleccionados. Por defecto, todos están seleccionados.

@@ -25,18 +25,16 @@ export function Payments() {
   const [showKPIs, setShowKPIs] = useState(true);
 
   const fetchPayments = async () => {
-    try {
+    
       await loadPayments();
-    } catch (error) {
-      
-    }
+    
   }
 
   useEffect(() => {
     if (state.payments.length === 0) {
       fetchPayments()
     }
-  }, [state.payments.length]);
+  }, [state.payments.length, fetchPayments]);
 
   // NEW: Listen for receipt generation events
   useEffect(() => {
@@ -64,7 +62,7 @@ export function Payments() {
     return () => window.removeEventListener('generateReceipt', handleGenerateReceipt);
   }, [state.payments, state.tenants, state.properties, state.contracts]);
 
-  const getPaymentStatus = (payment: any) => {
+  const getPaymentStatus = (payment: Payment ) => {
     if (payment.status === 'PAID') return 'PAID';
     if (payment.status === 'PENDING' && isAfter(new Date(), payment.dueDate)) return 'OVERDUE';
     return payment.status;
@@ -470,7 +468,7 @@ export function Payments() {
             {['all', 'PENDING', 'PAID', 'OVERDUE'].map((status) => (
               <button
                 key={status}
-                onClick={() => setFilter(status as any)}
+                onClick={() => setFilter(status as 'all' | 'PENDING' | 'PAID' | 'OVERDUE')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   filter === status
                     ? 'bg-blue-600 text-white'

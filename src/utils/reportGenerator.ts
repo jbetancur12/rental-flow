@@ -1,11 +1,10 @@
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import autoTable from 'jspdf-autotable';
-import { Contract, Payment, Property, Tenant } from '../types';
+import { Contract, Payment, Property, Tenant, Unit } from '../types';
 import { formatDate } from '../lib/utils';
 
 
-export const generatePropertyReport = async (properties: any[]) => {
+export const generatePropertyReport = async (properties: Property[]) => {
   const pdf = new jsPDF();
   
   // Title
@@ -21,9 +20,9 @@ export const generatePropertyReport = async (properties: any[]) => {
   pdf.text('Resumen', 20, 65);
   pdf.setFontSize(10);
   pdf.text(`Total de Propiedades: ${properties.length}`, 20, 80);
-  pdf.text(`Disponibles: ${properties.filter(p => p.status === 'available').length}`, 20, 90);
-  pdf.text(`Alquiladas: ${properties.filter(p => p.status === 'rented').length}`, 20, 100);
-  pdf.text(`En Mantenimiento: ${properties.filter(p => p.status === 'maintenance').length}`, 20, 110);
+  pdf.text(`Disponibles: ${properties.filter(p => p.status === 'AVAILABLE').length}`, 20, 90);
+  pdf.text(`Alquiladas: ${properties.filter(p => p.status === 'RENTED').length}`, 20, 100);
+  pdf.text(`En Mantenimiento: ${properties.filter(p => p.status === 'MAINTENANCE').length}`, 20, 110);
   
   // Property details
   let yPosition = 130;
@@ -50,7 +49,7 @@ export const generatePropertyReport = async (properties: any[]) => {
 };
 
 // NEW: Unit Report Generator
-export const generateUnitReport = async (units: any[], properties: any[]) => {
+export const generateUnitReport = async (units: Unit[], properties: Property[]) => {
   const pdf = new jsPDF();
   
   pdf.setFontSize(20);
@@ -86,15 +85,15 @@ export const generateUnitReport = async (units: any[], properties: any[]) => {
     pdf.text(`Tipo: ${unit.type}`, 30, yPosition + 10);
     pdf.text(`Dirección: ${unit.address}`, 30, yPosition + 20);
     pdf.text(`Propiedades: ${unitProperties.length}`, 30, yPosition + 30);
-    pdf.text(`Disponibles: ${unitProperties.filter(p => p.status === 'available').length}`, 30, yPosition + 40);
-    pdf.text(`Alquiladas: ${unitProperties.filter(p => p.status === 'rented').length}`, 30, yPosition + 50);
+    pdf.text(`Disponibles: ${unitProperties.filter(p => p.status === 'AVAILABLE').length}`, 30, yPosition + 40);
+    pdf.text(`Alquiladas: ${unitProperties.filter(p => p.status === 'RENTED').length}`, 30, yPosition + 50);
     yPosition += 65;
   });
   
   pdf.save('reporte-unidades.pdf');
 };
 
-export const generateTenantReport = async (tenants: any[]) => {
+export const generateTenantReport = async (tenants: Tenant[]) => {
   const pdf = new jsPDF();
   
   pdf.setFontSize(20);
@@ -107,8 +106,8 @@ export const generateTenantReport = async (tenants: any[]) => {
   pdf.text('Resumen', 20, 65);
   pdf.setFontSize(10);
   pdf.text(`Total de Inquilinos: ${tenants.length}`, 20, 80);
-  pdf.text(`Activos: ${tenants.filter(t => t.status === 'active').length}`, 20, 90);
-  pdf.text(`Pendientes: ${tenants.filter(t => t.status === 'pending').length}`, 20, 100);
+  pdf.text(`Activos: ${tenants.filter(t => t.status === 'ACTIVE').length}`, 20, 90);
+  pdf.text(`Pendientes: ${tenants.filter(t => t.status === 'PENDING').length}`, 20, 100);
   
   let yPosition = 120;
   pdf.setFontSize(14);
@@ -133,7 +132,7 @@ export const generateTenantReport = async (tenants: any[]) => {
   pdf.save('reporte-inquilinos.pdf');
 };
 
-export const generateFinancialReport = async (payments: any[], contracts: any[]) => {
+export const generateFinancialReport = async (payments: Payment[], contracts: Contract[]) => {
   const pdf = new jsPDF();
   
   pdf.setFontSize(20);
@@ -142,9 +141,9 @@ export const generateFinancialReport = async (payments: any[], contracts: any[])
   pdf.setFontSize(12);
   pdf.text(`Generado el: ${new Date().toLocaleDateString()}`, 20, 45);
   
-  const totalRevenue = payments.filter(p => p.status === 'paid').reduce((sum, p) => sum + p.amount, 0);
-  const pendingPayments = payments.filter(p => p.status === 'pending').reduce((sum, p) => sum + p.amount, 0);
-  const overduePayments = payments.filter(p => p.status === 'overdue').reduce((sum, p) => sum + p.amount, 0);
+  const totalRevenue = payments.filter(p => p.status === 'PAID').reduce((sum, p) => sum + p.amount, 0);
+  const pendingPayments = payments.filter(p => p.status === 'PENDING').reduce((sum, p) => sum + p.amount, 0);
+  const overduePayments = payments.filter(p => p.status === 'OVERDUE').reduce((sum, p) => sum + p.amount, 0);
   
   pdf.setFontSize(14);
   pdf.text('Resumen Financiero', 20, 65);
@@ -152,7 +151,7 @@ export const generateFinancialReport = async (payments: any[], contracts: any[])
   pdf.text(`Ingresos Totales: $${totalRevenue.toLocaleString()}`, 20, 80);
   pdf.text(`Pagos Pendientes: $${pendingPayments.toLocaleString()}`, 20, 90);
   pdf.text(`Pagos Vencidos: $${overduePayments.toLocaleString()}`, 20, 100);
-  pdf.text(`Contratos Activos: ${contracts.filter(c => c.status === 'active').length}`, 20, 110);
+  pdf.text(`Contratos Activos: ${contracts.filter(c => c.status === 'ACTIVE').length}`, 20, 110);
   
   pdf.save('reporte-financiero.pdf');
 };
@@ -199,7 +198,7 @@ export const generateMaintenanceReport = async (requests: any[]) => {
   pdf.save('reporte-mantenimiento.pdf');
 };
 
-export const generateContractPDF = async (contract: any, property: any, tenant: any) => {
+export const generateContractPDF = async (contract: Contract, property: Property, tenant: Tenant) => {
   const pdf = new jsPDF();
   
   // Header
@@ -258,7 +257,7 @@ export const generateContractPDF = async (contract: any, property: any, tenant: 
 // NEW: Payment Receipt Generator
 
 
-export const generatePaymentReceipt = (payment: Payment, tenant: Tenant, property:Property, contract:Contract) => {
+export const generatePaymentReceipt = (payment: Payment, tenant: Tenant, property:Property) => {
   const pdf = new jsPDF();
 
   // --- Colores y Márgenes ---
@@ -376,7 +375,7 @@ export const generatePaymentReceipt = (payment: Payment, tenant: Tenant, propert
 };
 
 // NEW: Generate receipt for existing payment
-export const generateReceiptForPayment = async (paymentId: string, payments: any[], tenants: any[], properties: any[], contracts: any[]) => {
+export const generateReceiptForPayment = async (paymentId: string, payments: Payment[], tenants: Tenant[], properties: Property[], contracts: Contract[]) => {
   const payment = payments.find(p => p.id === paymentId);
   if (!payment) {
     alert('Pago no encontrado');

@@ -31,7 +31,7 @@ export function Units() {
     if (state.units.length === 0) {
       fetchUnits();
     }
-  }, [state.units.length, ]);
+  }, [state.units.length, fetchUnits ]);
 
   const filteredUnits = filter === 'all' 
     ? state.units 
@@ -163,7 +163,7 @@ export function Units() {
             {['all', 'building', 'house', 'commercial'].map((type) => (
               <button
                 key={type}
-                onClick={() => setFilter(type as any)}
+                onClick={() => setFilter(type as 'all' | 'building' | 'house' | 'commercial')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   filter === type
                     ? 'bg-blue-600 text-white'

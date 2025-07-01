@@ -11,7 +11,7 @@ import {
   DollarSign,
   Crown,
   Search,
-  Filter,
+  
   Download,
   Eye,
   Ban,

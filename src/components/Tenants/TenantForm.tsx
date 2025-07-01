@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Tenant } from '../../types';
-import { X, Upload } from 'lucide-react';
+import { X } from 'lucide-react';
 
 interface TenantFormProps {
   tenant?: Tenant;

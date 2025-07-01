@@ -10,7 +10,7 @@ interface UnitFormProps {
   onSave: (unit: Omit<Unit, 'id' | 'createdAt' | 'updatedAt'>) => void;
 }
 
-export function UnitForm({ unit, isOpen, onClose, onSave }: UnitFormProps) {
+export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
   const { createUnit, updateUnit } = useApp();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({

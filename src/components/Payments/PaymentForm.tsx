@@ -54,31 +54,45 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
     }
   }, [payment]);
 
+  const handleContractChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedContractId = e.target.value;
+    const selectedContract = contracts.find(c => c.id === selectedContractId);
+
+    setFormData(prev => ({
+      ...prev,
+      contractId: selectedContractId,
+      // Llena el tenantId basado en el contrato seleccionado
+      tenantId: selectedContract ? selectedContract.tenantId : '',
+      // Opcional: También puedes llenar el monto de la renta mensual del contrato
+      amount: selectedContract ? selectedContract.monthlyRent : 0,
+    }));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const paymentData = {
       ...formData,
       dueDate: new Date(formData.dueDate),
       paidDate: formData.paidDate ? new Date(formData.paidDate) : undefined
     };
-    
+
     onSave(paymentData);
-    
+
     // NEW: Generate receipt if payment is marked as PAID and option is checked
     if (formData.status === 'PAID' && formData.paidDate && generateReceipt) {
       // This will be handled in the parent component
       setTimeout(() => {
-        const event = new CustomEvent('generateReceipt', { 
-          detail: { 
+        const event = new CustomEvent('generateReceipt', {
+          detail: {
             paymentData,
-            isNewPayment: !payment 
-          } 
+            isNewPayment: !payment
+          }
         });
         window.dispatchEvent(event);
       }, 100);
     }
-    
+
     onClose();
   };
 
@@ -108,7 +122,7 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
               <select
                 required
                 value={formData.contractId}
-                onChange={(e) => setFormData({ ...formData, contractId: e.target.value })}
+                onChange={handleContractChange}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Seleccionar un contrato</option>
@@ -127,9 +141,10 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
               <select
                 required
                 value={formData.tenantId}
+                disabled
                 onChange={(e) => setFormData({ ...formData, tenantId: e.target.value })}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
+                className={`w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${formData.contractId ? 'bg-slate-50 cursor-not-allowed' : ''
+                  }`}              >
                 <option value="">Seleccionar un inquilino</option>
                 {tenants.map((tenant) => (
                   <option key={tenant.id} value={tenant.id}>

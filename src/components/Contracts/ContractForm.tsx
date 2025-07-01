@@ -111,6 +111,18 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
     
   }, [isOpen, formData.startDate, contractPeriod]);
 
+  const handlePropertyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedPropertyId = e.target.value;
+    const selectedProperty = properties.find(p => p.id === selectedPropertyId);
+
+    setFormData(prev => ({
+      ...prev,
+      propertyId: selectedPropertyId,
+      // Si se encuentra la propiedad, usa su renta; si no, vuelve a 0.
+      monthlyRent: selectedProperty ? selectedProperty.rent : 0
+    }));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({
@@ -174,7 +186,7 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
               <select
                 required
                 value={formData.propertyId}
-                onChange={(e) => setFormData({ ...formData, propertyId: e.target.value })}
+                onChange={handlePropertyChange} 
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Select a property</option>

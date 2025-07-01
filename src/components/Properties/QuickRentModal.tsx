@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Property, Tenant } from '../../types';
+import { Property } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { X, FileText, Calendar, DollarSign, User } from 'lucide-react';
 
@@ -71,15 +71,21 @@ export function QuickRentModal({ property, isOpen, onClose }: QuickRentModalProp
           dueDate: new Date(new Date(contract.startDate)),
           status: 'PENDING' as const
         };
+        const depositPayment = {
+          id: `payment-${Date.now()}-deposit`,
+          contractId: contract.id,
+          tenantId: contract.tenantId,
+          amount: contract.securityDeposit,
+          type: 'DEPOSIT' as const,
+          dueDate: new Date(new Date(contract.startDate)),
+          status: 'PENDING' as const
+        };
+        await createPayment(depositPayment);
         await createPayment(firstPayment);
       }
 
       
-      console.log(updatedContract);
-      console.log("------------------------------");
-      console.log(updatedProperty);
-      
-      debugger;
+    
       await updateProperty(updatedProperty.id, updatedProperty);
       await updateContract(updatedContract.id, updatedContract);
 

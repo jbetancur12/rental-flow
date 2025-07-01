@@ -23,7 +23,7 @@ export function Contracts() {
     if (state.contracts.length === 0) {
       fetchContracts();
     }
-  }, [state.contracts.length]);
+  }, [state.contracts.length, fetchContracts]);
 
   const getStatusColor = (status: string) => {
     const colors = {

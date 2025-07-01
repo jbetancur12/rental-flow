@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Building2, DollarSign, FileText, Wrench } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { DashboardStats } from '@/types'

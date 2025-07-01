@@ -3,7 +3,7 @@ import { Header } from '../components/Layout/Header';
 import { useApp } from '../context/AppContext';
 import { generatePropertyReport, generateTenantReport, generateFinancialReport, generateMaintenanceReport, generateUnitReport } from '../utils/reportGenerator';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
-import { DollarSign, TrendingUp, FileText, Download, Filter, Calendar } from 'lucide-react';
+import { DollarSign, TrendingUp, FileText, Download, Filter } from 'lucide-react';
 
 export function Reports() {
   const { state } = useApp();
