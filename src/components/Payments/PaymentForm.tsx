@@ -26,6 +26,9 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
 
   const [generateReceipt, setGenerateReceipt] = useState(true);
 
+    const isFinalized = payment?.status === 'CANCELLED' || payment?.status === 'REFUNDED';
+  const isPaid = payment?.status === 'PAID';
+
   useEffect(() => {
     if (payment) {
       setFormData({
@@ -122,8 +125,9 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
               <select
                 required
                 value={formData.contractId}
+                disabled={isPaid || isFinalized}
                 onChange={handleContractChange}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:cursor-not-allowed"
               >
                 <option value="">Seleccionar un contrato</option>
                 {contracts.map((contract) => (
@@ -162,10 +166,11 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
               </label>
               <input
                 type="number"
+                disabled={isPaid || isFinalized}
                 required
                 value={formData.amount}
                 onChange={(e) => setFormData({ ...formData, amount: parseFloat(e.target.value) })}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -175,8 +180,9 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
               </label>
               <select
                 value={formData.type}
+                disabled={isPaid || isFinalized}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value as Payment['type'] })}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:cursor-not-allowed"
               >
                 <option value="RENT">Alquiler</option>
                 <option value="DEPOSIT">Depósito</option>
@@ -208,6 +214,7 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
               <input
                 type="date"
                 value={formData.paidDate}
+                disabled={isFinalized}
                 onChange={(e) => setFormData({ ...formData, paidDate: e.target.value })}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />

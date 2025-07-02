@@ -29,7 +29,7 @@ import subscriptionRoutes from './routes/subscriptions';
 import webhookRoutes from './routes/webhooks';
 import superAdminRoutes from './routes/superAdmin';
 import { generatePendingPayments, startPaymentGeneratorCron } from './cron/paymentGenerator';
-import { startContractStatusCron } from './cron/contractStatusUpdater';
+import { expireContracts, startContractStatusCron } from './cron/contractStatusUpdater';
 
 // Load environment variables
 dotenv.config();
@@ -86,6 +86,8 @@ app.use(morgan('combined', {
   }
 }));
 
+generatePendingPayments()
+expireContracts()
 startPaymentGeneratorCron()
 startContractStatusCron()
 

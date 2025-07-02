@@ -293,6 +293,8 @@ enum PaymentStatus {
   PAID
   OVERDUE
   PARTIAL
+  CANCELLED
+  REFUNDED
 }
 
 enum PaymentMethod {

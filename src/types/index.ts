@@ -118,7 +118,7 @@ export interface Payment {
   type: 'RENT' | 'DEPOSIT' | 'LATE_FEE' | 'UTILITY' | 'MAINTENANCE';
   dueDate: Date;
   paidDate?: Date;
-  status: 'PENDING' | 'PAID' | 'OVERDUE' | 'PARTIAL';
+  status: 'PENDING' | 'PAID' | 'OVERDUE' | 'PARTIAL' | 'CANCELLED' | 'REFUNDED';
   method: 'CASH' | 'CHECK' | 'BANK_TRANSFER' | 'ONLINE';
   notes?: string;
   periodStart?: Date; // Start date of the billing period

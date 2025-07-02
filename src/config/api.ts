@@ -334,9 +334,10 @@ class ApiClient {
     });
   }
 
-  async deletePayment(id: string) {
+  async updatePaymentStatus(id: string, status: 'CANCELLED' | 'REFUNDED') {
     return this.request<any>(`/payments/${id}`, {
-      method: 'DELETE',
+      method: 'PATCH',
+      body: JSON.stringify({status}),
     });
   }
 }

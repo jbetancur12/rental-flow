@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { Contract, Payment, Property, Tenant, Unit } from '../types';
+import { Contract, MaintenanceRequest, Payment, Property, Tenant, Unit } from '../types';
 import { formatDate } from '../lib/utils';
 
 
@@ -156,7 +156,7 @@ export const generateFinancialReport = async (payments: Payment[], contracts: Co
   pdf.save('reporte-financiero.pdf');
 };
 
-export const generateMaintenanceReport = async (requests: any[]) => {
+export const generateMaintenanceReport = async (requests: MaintenanceRequest[]) => {
   const pdf = new jsPDF();
   
   pdf.setFontSize(20);
@@ -396,5 +396,5 @@ export const generateReceiptForPayment = async (paymentId: string, payments: Pay
     return;
   }
   
-  await generatePaymentReceipt(payment, tenant, property, contract);
+  await generatePaymentReceipt(payment, tenant, property);
 };

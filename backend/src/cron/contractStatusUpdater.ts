@@ -5,7 +5,7 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-const expireContracts = async () => {
+export const expireContracts = async () => {
   console.log('▶️  Ejecutando cron job: Verificando contratos expirados...');
 
   const today = new Date();

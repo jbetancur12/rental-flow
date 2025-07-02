@@ -2,18 +2,30 @@ import { useState, useEffect } from 'react';
 import { Header } from '../components/Layout/Header';
 import { PaymentForm } from '../components/Payments/PaymentForm';
 import { useApp } from '../context/AppContext';
-import { generateFinancialReport,  generateReceiptForPayment } from '../utils/reportGenerator';
-import { CreditCard, Calendar, User, Home, AlertCircle, CheckCircle, Clock, Download, Edit, Trash2, Filter, BarChart3, Receipt } from 'lucide-react';
+import { generateFinancialReport, generateReceiptForPayment } from '../utils/reportGenerator';
+import { CreditCard, Calendar, User, Home, AlertCircle, CheckCircle, Clock, Download, Edit, Trash2, Filter, BarChart3, Receipt, XCircle, Undo2 } from 'lucide-react';
 import { format, isAfter } from 'date-fns';
 import { Payment } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { useConfirm } from '../hooks/useConfirm';
+import { ConfirmDialog } from '../components/UI/ConfirmDialog';
+
+const statusDisplayNames = {
+  PAID: 'Pagado',
+  PENDING: 'Pendiente',
+  OVERDUE: 'Vencido',
+  PARTIAL: 'Parcial',
+  CANCELLED: 'Anulado',   // <- Nuevo
+  REFUNDED: 'Reembolsado' // <- Nuevo
+};
 
 export function Payments() {
-  const { state, updatePayment, loadPayments, createPayment } = useApp();
+  const { isOpen: isConfirmOpen, options: confirmOptions, confirm, handleConfirm, handleCancel } = useConfirm();
+  const { state, updatePayment, loadPayments, createPayment, updatePaymentStatus } = useApp();
   const [filter, setFilter] = useState<'all' | 'PENDING' | 'PAID' | 'OVERDUE'>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPayment, setEditingPayment] = useState<Payment | undefined>();
-  
+
   // NEW: Filtros para KPIs
   const [kpiFilters, setKpiFilters] = useState({
     month: new Date().getMonth() + 1,
@@ -21,13 +33,13 @@ export function Payments() {
     unitId: '',
     propertyType: 'all'
   });
-  
+
   const [showKPIs, setShowKPIs] = useState(true);
 
   const fetchPayments = async () => {
-    
-      await loadPayments();
-    
+
+    await loadPayments();
+
   }
 
   useEffect(() => {
@@ -40,7 +52,7 @@ export function Payments() {
   useEffect(() => {
     const handleGenerateReceipt = async (event: any) => {
       const { paymentData, isNewPayment } = event.detail;
-      
+
       if (isNewPayment) {
         // For new payments, we need to wait for the payment to be created
         setTimeout(async () => {
@@ -62,7 +74,7 @@ export function Payments() {
     return () => window.removeEventListener('generateReceipt', handleGenerateReceipt);
   }, [state.payments, state.tenants, state.properties, state.contracts]);
 
-  const getPaymentStatus = (payment: Payment ) => {
+  const getPaymentStatus = (payment: Payment) => {
     if (payment.status === 'PAID') return 'PAID';
     if (payment.status === 'PENDING' && isAfter(new Date(), payment.dueDate)) return 'OVERDUE';
     return payment.status;
@@ -82,18 +94,18 @@ export function Payments() {
     if (kpiFilters.month && kpiFilters.year) {
       filtered = filtered.filter(p => {
         const paymentDate = p.paidDate || p.dueDate;
-        return new Date(paymentDate).getMonth() + 1 === kpiFilters.month && 
-               new Date(paymentDate).getFullYear() === kpiFilters.year;
+        return new Date(paymentDate).getMonth() + 1 === kpiFilters.month &&
+          new Date(paymentDate).getFullYear() === kpiFilters.year;
       });
     }
 
     // Filtro por unidad
     if (kpiFilters.unitId) {
       const unitProperties = state.properties.filter(p => p.unitId === kpiFilters.unitId);
-      const unitContracts = state.contracts.filter(c => 
+      const unitContracts = state.contracts.filter(c =>
         unitProperties.some(p => p.id === c.propertyId)
       );
-      filtered = filtered.filter(p => 
+      filtered = filtered.filter(p =>
         unitContracts.some(c => c.id === p.contractId)
       );
     }
@@ -101,10 +113,10 @@ export function Payments() {
     // Filtro por tipo de propiedad
     if (kpiFilters.propertyType !== 'all') {
       const typeProperties = state.properties.filter(p => p.type === kpiFilters.propertyType);
-      const typeContracts = state.contracts.filter(c => 
+      const typeContracts = state.contracts.filter(c =>
         typeProperties.some(p => p.id === c.propertyId)
       );
-      filtered = filtered.filter(p => 
+      filtered = filtered.filter(p =>
         typeContracts.some(c => c.id === p.contractId)
       );
     }
@@ -128,11 +140,11 @@ export function Payments() {
     { name: 'Servicios', value: kpiData.filter(p => p.type === 'UTILITY').reduce((sum, p) => sum + p.amount, 0) },
   ].filter(item => item.value > 0);
 
-  const monthlyTrendData = Array.from({length: 6}, (_, i) => {
+  const monthlyTrendData = Array.from({ length: 6 }, (_, i) => {
     const month = new Date();
     month.setMonth(month.getMonth() - (5 - i));
-    const monthPayments = state.payments.filter(p => 
-      new Date(p.dueDate).getMonth() === month.getMonth() && 
+    const monthPayments = state.payments.filter(p =>
+      new Date(p.dueDate).getMonth() === month.getMonth() &&
       new Date(p.dueDate).getFullYear() === month.getFullYear()
     );
     return {
@@ -160,7 +172,9 @@ export function Payments() {
       PAID: 'bg-emerald-100 text-emerald-800',
       PENDING: 'bg-yellow-100 text-yellow-800',
       OVERDUE: 'bg-red-100 text-red-800',
-      partial: 'bg-orange-100 text-orange-800'
+      PARTIAL: 'bg-orange-100 text-orange-800',
+      CANCELLED: 'bg-slate-100 text-slate-800',   // <- Nuevo
+      REFUNDED: 'bg-blue-100 text-blue-800',
     };
     return colors[status as keyof typeof colors] || colors.PENDING;
   };
@@ -187,10 +201,38 @@ export function Payments() {
     setIsFormOpen(true);
   };
 
-  const handleDeletePayment = (id: string) => {
-    if (confirm('¿Está seguro de que desea eliminar este pago?')) {
-      // In a real app, you'd dispatch a DELETE_PAYMENT action
-      console.log('Delete payment:', id);
+
+  const handleCancelPayment = async (id: string) => {
+    const confirmed = await confirm({
+      title: 'Anular Pago',
+      message: '¿Está seguro? Esta acción es para corregir un pago registrado por error. El pago se marcará como ANULADO.',
+      confirmText: 'Sí, Anular',
+      type: 'warning' // Un color de advertencia es más adecuado que 'danger'
+    });
+
+    if (confirmed) {
+      try {
+        await updatePaymentStatus(id, 'CANCELLED');
+      } catch (error) {
+        console.error("Error al anular el pago:", error);
+      }
+    }
+  }
+
+  const handleRefundPayment = async (id: string) => {
+    const confirmed = await confirm({
+      title: 'Registrar Reembolso',
+      message: '¿Está seguro? Esta acción indica que el dinero fue devuelto al inquilino. El pago se marcará como REEMBOLSADO.',
+      confirmText: 'Sí, Reembolsar',
+      type: 'danger'
+    });
+
+    if (confirmed) {
+      try {
+        await updatePaymentStatus(id, 'REFUNDED');
+      } catch (error) {
+        console.error("Error al registrar el reembolso:", error);
+      }
     }
   };
 
@@ -202,7 +244,7 @@ export function Payments() {
   const handleSavePayment = async (paymentData: Omit<Payment, 'id'>) => {
     if (editingPayment) {
       await updatePayment(editingPayment.id, paymentData);
- 
+
     } else {
       const newPayment = {
         ...paymentData,
@@ -217,24 +259,24 @@ export function Payments() {
   };
 
   const getCountForStatus = (statusValue: string) => {
-  if (statusValue === 'all') {
-    return state.payments.length;
-  }
+    if (statusValue === 'all') {
+      return state.payments.length;
+    }
 
-  if (statusValue === 'OVERDUE') {
-    return state.payments.filter(p => getPaymentStatus(p) === 'OVERDUE').length;
-  }
-  return state.payments.filter(p => p.status === statusValue).length;
-};
+    if (statusValue === 'OVERDUE') {
+      return state.payments.filter(p => getPaymentStatus(p) === 'OVERDUE').length;
+    }
+    return state.payments.filter(p => p.status === statusValue).length;
+  };
 
   return (
     <div className="flex-1 overflow-auto">
-      <Header 
-        title="Pagos" 
+      <Header
+        title="Pagos"
         onNewItem={handleNewPayment}
         newItemLabel="Registrar Pago"
       />
-      
+
       <div className="p-6">
         {/* NEW: Toggle KPIs */}
         <div className="flex items-center justify-between mb-6">
@@ -258,28 +300,28 @@ export function Payments() {
                   Filtros de Análisis
                 </h3>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Mes</label>
                   <select
                     value={kpiFilters.month}
-                    onChange={(e) => setKpiFilters({...kpiFilters, month: parseInt(e.target.value)})}
+                    onChange={(e) => setKpiFilters({ ...kpiFilters, month: parseInt(e.target.value) })}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   >
-                    {Array.from({length: 12}, (_, i) => (
-                      <option key={i+1} value={i+1}>
+                    {Array.from({ length: 12 }, (_, i) => (
+                      <option key={i + 1} value={i + 1}>
                         {new Date(0, i).toLocaleString('default', { month: 'long' })}
                       </option>
                     ))}
                   </select>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Año</label>
                   <select
                     value={kpiFilters.year}
-                    onChange={(e) => setKpiFilters({...kpiFilters, year: parseInt(e.target.value)})}
+                    onChange={(e) => setKpiFilters({ ...kpiFilters, year: parseInt(e.target.value) })}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   >
                     {[2024, 2023, 2022].map(year => (
@@ -287,12 +329,12 @@ export function Payments() {
                     ))}
                   </select>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Unidad</label>
                   <select
                     value={kpiFilters.unitId}
-                    onChange={(e) => setKpiFilters({...kpiFilters, unitId: e.target.value})}
+                    onChange={(e) => setKpiFilters({ ...kpiFilters, unitId: e.target.value })}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Todas las Unidades</option>
@@ -301,12 +343,12 @@ export function Payments() {
                     ))}
                   </select>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Tipo de Propiedad</label>
                   <select
                     value={kpiFilters.propertyType}
-                    onChange={(e) => setKpiFilters({...kpiFilters, propertyType: e.target.value})}
+                    onChange={(e) => setKpiFilters({ ...kpiFilters, propertyType: e.target.value })}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="all">Todos los Tipos</option>
@@ -330,7 +372,7 @@ export function Payments() {
                   <CheckCircle className="w-8 h-8 text-emerald-600" />
                 </div>
               </div>
-              
+
               <div className="bg-white rounded-xl border border-slate-200 p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -341,7 +383,7 @@ export function Payments() {
                   <Clock className="w-8 h-8 text-yellow-600" />
                 </div>
               </div>
-              
+
               <div className="bg-white rounded-xl border border-slate-200 p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -352,7 +394,7 @@ export function Payments() {
                   <AlertCircle className="w-8 h-8 text-red-600" />
                 </div>
               </div>
-              
+
               <div className="bg-white rounded-xl border border-slate-200 p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -398,7 +440,7 @@ export function Payments() {
                         dataKey="value"
                         label={({ name, value }) => `${name}: $${value.toLocaleString()}`}
                       >
-                        {paymentTypeData.map((entry, index) => (
+                        {paymentTypeData.map((_entry, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
@@ -424,7 +466,7 @@ export function Payments() {
               <CheckCircle className="w-8 h-8 text-emerald-600" />
             </div>
           </div>
-          
+
           <div className="bg-white rounded-xl border border-slate-200 p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -436,7 +478,7 @@ export function Payments() {
               <Clock className="w-8 h-8 text-yellow-600" />
             </div>
           </div>
-          
+
           <div className="bg-white rounded-xl border border-slate-200 p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -448,7 +490,7 @@ export function Payments() {
               <AlertCircle className="w-8 h-8 text-red-600" />
             </div>
           </div>
-          
+
           <div className="bg-white rounded-xl border border-slate-200 p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -469,22 +511,21 @@ export function Payments() {
               <button
                 key={status}
                 onClick={() => setFilter(status as 'all' | 'PENDING' | 'PAID' | 'OVERDUE')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  filter === status
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
-                }`}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === status
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+                  }`}
               >
                 {status === 'all' ? 'Todos' :
-                 status === 'PENDING' ? 'Pendientes' :
-                 status === 'PAID' ? 'Pagados' : 'Vencidos'}
+                  status === 'PENDING' ? 'Pendientes' :
+                    status === 'PAID' ? 'Pagados' : 'Vencidos'}
                 <span className="ml-2 text-xs">
                   ({getCountForStatus(status)})
                 </span>
               </button>
             ))}
           </div>
-          
+
           <button
             onClick={handleGenerateReport}
             className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
@@ -520,9 +561,9 @@ export function Payments() {
                           <div className="ml-3">
                             <p className="font-medium text-slate-900">
                               {payment.type === 'RENT' ? 'Alquiler' :
-                               payment.type === 'DEPOSIT' ? 'Depósito' :
-                               payment.type === 'LATE_FEE' ? 'Recargo por Mora' :
-                               payment.type === 'UTILITY' ? 'Servicios' : 'Mantenimiento'}
+                                payment.type === 'DEPOSIT' ? 'Depósito' :
+                                  payment.type === 'LATE_FEE' ? 'Recargo por Mora' :
+                                    payment.type === 'UTILITY' ? 'Servicios' : 'Mantenimiento'}
                             </p>
                             <p className="text-sm text-slate-500">#{payment.id.slice(-6).toUpperCase()}</p>
                           </div>
@@ -551,16 +592,14 @@ export function Payments() {
                       </td>
                       <td className="py-4 px-6">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(status)}`}>
-                          {status === 'PAID' ? 'Pagado' :
-                           status === 'PENDING' ? 'Pendiente' :
-                           status === 'OVERDUE' ? 'Vencido' : 'Parcial'}
+                          {statusDisplayNames[status as keyof typeof statusDisplayNames] || status}
                         </span>
                       </td>
                       <td className="py-4 px-6">
                         <div className="flex space-x-2">
                           {/* NEW: Generate Receipt Button */}
                           {payment.status === 'PAID' && (
-                            <button 
+                            <button
                               onClick={() => handleGenerateReceipt(payment)}
                               className="text-sm text-emerald-600 hover:text-emerald-800 font-medium"
                               title="Generar Comprobante"
@@ -568,18 +607,39 @@ export function Payments() {
                               <Receipt className="w-4 h-4" />
                             </button>
                           )}
-                          <button 
+                          <button
                             onClick={() => handleEditPayment(payment)}
-                            className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                            disabled={payment.status === 'CANCELLED' || payment.status === 'REFUNDED'}
+                            className="text-blue-600 hover:text-blue-800 disabled:text-slate-400 disabled:cursor-not-allowed"
+                            title={
+                              payment.status === 'CANCELLED' || payment.status === 'REFUNDED'
+                                ? 'No se puede editar un pago finalizado'
+                                : 'Editar Pago'
+                            }
                           >
                             <Edit className="w-4 h-4" />
                           </button>
-                          <button 
-                            onClick={() => handleDeletePayment(payment.id)}
-                            className="text-sm text-red-600 hover:text-red-800"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          {payment.status === 'PAID' && (
+                            <>
+                              {/* Botón para Anular */}
+                              <button
+                                onClick={() => handleCancelPayment(payment.id)}
+                                className="text-orange-600 hover:text-orange-800"
+                                title="Anular Pago (marcar como error)"
+                              >
+                                <XCircle className="w-5 h-5" /> {/* Ícono sugerido, asegúrate de importarlo */}
+                              </button>
+
+                              {/* Botón para Reembolsar */}
+                              <button
+                                onClick={() => handleRefundPayment(payment.id)}
+                                className="text-red-600 hover:text-red-800"
+                                title="Registrar Reembolso"
+                              >
+                                <Undo2 className="w-5 h-5" /> {/* Ícono sugerido, asegúrate de importarlo */}
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -597,10 +657,10 @@ export function Payments() {
             </div>
             <h3 className="text-lg font-medium text-slate-900 mb-2">No se encontraron pagos</h3>
             <p className="text-slate-600 mb-4">
-              {filter === 'all' 
+              {filter === 'all'
                 ? "No hay registros de pagos disponibles."
-                : `No se encontraron pagos ${filter === 'PENDING' ? 'pendientes' : 
-                    filter === 'PAID' ? 'pagados' : 'vencidos'}.`
+                : `No se encontraron pagos ${filter === 'PENDING' ? 'pendientes' :
+                  filter === 'PAID' ? 'pagados' : 'vencidos'}.`
               }
             </p>
             <button
@@ -620,6 +680,16 @@ export function Payments() {
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
         onSave={handleSavePayment}
+      />
+      <ConfirmDialog
+        isOpen={isConfirmOpen}
+        title={confirmOptions.title}
+        message={confirmOptions.message}
+        confirmText={confirmOptions.confirmText}
+        cancelText={confirmOptions.cancelText}
+        type={confirmOptions.type}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
       />
     </div>
   );

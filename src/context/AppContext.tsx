@@ -123,7 +123,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
     case 'UPDATE_MAINTENANCE_REQUEST':
       return {
         ...state,
-        maintenanceRequests: state.maintenanceRequests.map(m => 
+        maintenanceRequests: state.maintenanceRequests.map(m =>
           m.id === action.payload.id ? action.payload : m
         )
       };
@@ -160,6 +160,7 @@ const AppContext = createContext<{
   createPayment: (data: any) => Promise<void>;
   loadPayments: () => Promise<void>;
   updatePayment: (id: string, data: any) => Promise<void>;
+  updatePaymentStatus: (id: string, status: 'CANCELLED' | 'REFUNDED') => Promise<void>;
   createMaintenanceRequest?: (data: any) => Promise<void>;
   updateMaintenanceRequest?: (id: string, data: any) => Promise<void>;
 } | null>(null);
@@ -172,11 +173,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Load properties from backend
   const loadProperties = async () => {
     if (!authState.isAuthenticated) return;
-    
+
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       const response = await apiClient.getProperties();
-      
+
       // Transform backend properties to frontend format
       const properties = response.properties.map((prop: any) => ({
         id: prop.id,
@@ -196,7 +197,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         createdAt: new Date(prop.createdAt),
         updatedAt: new Date(prop.updatedAt),
       }));
-      
+
       dispatch({ type: 'SET_PROPERTIES', payload: properties });
     } catch (error: any) {
       toast.error('Error', error.message || 'Failed to load properties');
@@ -207,11 +208,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // Load units from backend
   const loadUnits = async () => {
-    if (!authState.isAuthenticated || !authState.organization ) return;
-    
+    if (!authState.isAuthenticated || !authState.organization) return;
+
     try {
       const response = await apiClient.getUnits();
-      
+
       // Transform backend units to frontend format
       const units = response.units.map((unit: any) => ({
         id: unit.id,
@@ -228,7 +229,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         createdAt: new Date(unit.createdAt),
         updatedAt: new Date(unit.updatedAt),
       }));
-      
+
       dispatch({ type: 'SET_UNITS', payload: units });
     } catch (error: any) {
       toast.error('Error', error.message || 'Failed to load units');
@@ -246,9 +247,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         type: data.type.toUpperCase(),
         status: data.status?.toUpperCase() || 'AVAILABLE',
       };
-      
+
       const response = await apiClient.createProperty(backendData);
-      
+
       // Transform response back to frontend format
       const property = {
         ...response.property,
@@ -257,7 +258,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         createdAt: new Date(response.property.createdAt),
         updatedAt: new Date(response.property.updatedAt),
       };
-      
+
       dispatch({ type: 'ADD_PROPERTY', payload: property });
       toast.success('Propiedad Creada', 'La propiedad ha sido agregada exitosamente a tu portafolio.');
     } catch (error: any) {
@@ -275,9 +276,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         type: data.type?.toUpperCase(),
         status: data.status?.toUpperCase(),
       };
-      
+
       const response = await apiClient.updateProperty(id, backendData);
-      
+
       // Transform response back to frontend format
       const property = {
         ...response.property,
@@ -286,7 +287,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         createdAt: new Date(response.property.createdAt),
         updatedAt: new Date(response.property.updatedAt),
       };
-      
+
       dispatch({ type: 'UPDATE_PROPERTY', payload: property });
       toast.success('Propiedad Actualizada', 'La información de la propiedad ha sido actualizada exitosamente.');
     } catch (error: any) {
@@ -315,9 +316,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ...data,
         type: data.type.toUpperCase(),
       };
-      
+
       const response = await apiClient.createUnit(backendData);
-      
+
       // Transform response back to frontend format
       const unit = {
         ...response.unit,
@@ -325,7 +326,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         createdAt: new Date(response.unit.createdAt),
         updatedAt: new Date(response.unit.updatedAt),
       };
-      
+
       dispatch({ type: 'ADD_UNIT', payload: unit });
       toast.success('Unidad Creada', 'La nueva unidad ha sido agregada exitosamente al sistema.');
     } catch (error: any) {
@@ -342,9 +343,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ...data,
         type: data.type?.toUpperCase(),
       };
-      
+
       const response = await apiClient.updateUnit(id, backendData);
-      
+
       // Transform response back to frontend format
       const unit = {
         ...response.unit,
@@ -352,7 +353,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         createdAt: new Date(response.unit.createdAt),
         updatedAt: new Date(response.unit.updatedAt),
       };
-      
+
       dispatch({ type: 'UPDATE_UNIT', payload: unit });
       toast.success('Unidad Actualizada', 'La información de la unidad ha sido actualizada exitosamente.');
     } catch (error: any) {
@@ -379,10 +380,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     try {
       const response = await apiClient.getTenants();
-      
+
       // Transform backend tenants to frontend format
-      
-      
+
+
       dispatch({ type: 'SET_TENANTS', payload: response.tenants });
     } catch (error: any) {
       toast.error('Error', error.message || 'Failed to load tenants');
@@ -438,10 +439,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     try {
       const response = await apiClient.getContracts();
-      
+
       // Transform backend contracts to frontend format
       const { contracts } = response
-      
+
       dispatch({ type: 'LOAD_INITIAL_DATA', payload: { contracts } });
     } catch (error: any) {
       toast.error('Error', error.message || 'Failed to load contracts');
@@ -474,7 +475,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!authState.isAuthenticated || !authState.organization) return;
     try {
       const response = await apiClient.getPayments();
-      
+
       // Transform backend payments to frontend format
       const payments = response.payments.map((payment: any) => ({
         ...payment,
@@ -483,7 +484,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         dueDate: new Date(payment.dueDate),
         paidDate: payment.paidDate ? new Date(payment.paidDate) : null,
       }));
-      
+
       dispatch({ type: 'LOAD_INITIAL_DATA', payload: { payments } });
     } catch (error: any) {
       toast.error('Error', error.message || 'Failed to load payments');
@@ -512,6 +513,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updatePaymentStatus = async (id: string, status: 'CANCELLED' | 'REFUNDED') => {
+    try {
+      const response = await apiClient.updatePaymentStatus(id, status);
+      dispatch({ type: 'UPDATE_PAYMENT', payload: response.payment });
+      toast.success('Estado del Pago Actualizado', `El pago ha sido marcado como ${status.toLowerCase()}.`);
+    } catch (error: any) {
+      toast.error('Error', error.message || 'Failed to delete payment');
+      throw error;
+    }
+  }
+
+
   // Load initial data when authenticated
   useEffect(() => {
     if (authState.isAuthenticated && authState.organization) {
@@ -526,7 +539,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Enhanced dispatch with notifications for local operations
   const enhancedDispatch = (action: AppAction) => {
     dispatch(action);
-    
+
     // Add success notifications for local CRUD operations
     switch (action.type) {
       case 'ADD_TENANT':
@@ -557,9 +570,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AppContext.Provider value={{ 
-      state, 
-      dispatch: enhancedDispatch, 
+    <AppContext.Provider value={{
+      state,
+      dispatch: enhancedDispatch,
       toast,
       loadProperties,
       loadUnits,
@@ -579,8 +592,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       loadPayments,
       createPayment,
       updatePayment,
+      updatePaymentStatus,
       deleteContract,
-    
+
     }}>
       {children}
     </AppContext.Provider>

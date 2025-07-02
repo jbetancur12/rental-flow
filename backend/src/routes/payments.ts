@@ -1,4 +1,4 @@
-import express, {Request, Response} from 'express';
+import express, { Request, Response } from 'express';
 import { body, param, query } from 'express-validator';
 import { prisma } from '../config/database';
 import { authenticateToken, requireRole } from '../middleware/auth';
@@ -8,7 +8,7 @@ import { logger } from '../config/logger';
 const router = express.Router();
 
 // Get all payments for organization
-router.get('/', 
+router.get('/',
   authenticateToken,
   validateOrganizationAccess,
   [
@@ -20,7 +20,7 @@ router.get('/',
     query('limit').optional().isInt({ min: 1, max: 100 })
   ],
   handleValidationErrors,
-  async (req:Request, res:Response) => {
+  async (req: Request, res: Response) => {
     try {
       const { status, type, contractId, tenantId, page = 1, limit = 50 } = req.query;
       const organizationId = (req as any).organizationId;
@@ -72,7 +72,7 @@ router.get('/:id',
   validateOrganizationAccess,
   [param('id').isUUID()],
   handleValidationErrors,
-  async (req:Request, res:Response) => {
+  async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const organizationId = (req as any).organizationId;
@@ -122,10 +122,10 @@ router.post('/',
     body('notes').optional().trim()
   ],
   handleValidationErrors,
-  async (req:Request, res:Response) => {
+  async (req: Request, res: Response) => {
     try {
       const organizationId = (req as any).organizationId;
-      
+
       // Verify contract and tenant belong to organization
       const [contract, tenant] = await Promise.all([
         prisma.contract.findFirst({
@@ -151,41 +151,41 @@ router.post('/',
       }
 
       let periodStart;
-    let periodEnd;
-    const dueDateFromRequest = new Date(req.body.dueDate);
+      let periodEnd;
+      const dueDateFromRequest = new Date(req.body.dueDate);
 
-       const lastRentPayment = await prisma.payment.findFirst({
-      where: { contractId: req.body.contractId, type: 'RENT' },
-      orderBy: { dueDate: 'desc' },
-    });
+      const lastRentPayment = await prisma.payment.findFirst({
+        where: { contractId: req.body.contractId, type: 'RENT' },
+        orderBy: { dueDate: 'desc' },
+      });
 
       if (req.body.type === 'RENT') {
-      if (lastRentPayment) {
-        // Es un pago de alquiler subsecuente. El período empieza donde terminó el anterior.
-        periodStart = lastRentPayment.periodEnd;
-        periodEnd = dueDateFromRequest;
-      } else {
-        // ¡Es el PRIMER pago de alquiler!
-        // El período empieza y vence en la misma fecha del contrato.
-        periodStart = dueDateFromRequest;
+        if (lastRentPayment) {
+          // Es un pago de alquiler subsecuente. El período empieza donde terminó el anterior.
+          periodStart = lastRentPayment.periodEnd;
+          periodEnd = dueDateFromRequest;
+        } else {
+          // ¡Es el PRIMER pago de alquiler!
+          // El período empieza y vence en la misma fecha del contrato.
+          periodStart = dueDateFromRequest;
 
-        // Debemos CALCULAR el fin del período (un mes después).
-        const year = periodStart.getFullYear();
-        const month = periodStart.getMonth() + 1;
-        const day = periodStart.getDate();
+          // Debemos CALCULAR el fin del período (un mes después).
+          const year = periodStart.getFullYear();
+          const month = periodStart.getMonth() + 1;
+          const day = periodStart.getDate();
 
-        let calculatedEnd = new Date(year, month, day);
-        // Corregimos el desbordamiento de mes (ej. 31 de Ene -> 28 de Feb)
-        if (calculatedEnd.getMonth() !== (month % 12)) {
-          calculatedEnd = new Date(year, month + 1, 0);
+          let calculatedEnd = new Date(year, month, day);
+          // Corregimos el desbordamiento de mes (ej. 31 de Ene -> 28 de Feb)
+          if (calculatedEnd.getMonth() !== (month % 12)) {
+            calculatedEnd = new Date(year, month + 1, 0);
+          }
+          periodEnd = calculatedEnd;
         }
-        periodEnd = calculatedEnd;
+      } else {
+        // Para otros tipos de pago (Depósito, Multa), el período es solo el día del vencimiento.
+        periodStart = dueDateFromRequest;
+        periodEnd = dueDateFromRequest;
       }
-    } else {
-      // Para otros tipos de pago (Depósito, Multa), el período es solo el día del vencimiento.
-      periodStart = dueDateFromRequest;
-      periodEnd = dueDateFromRequest;
-    }
 
       const paymentData = {
         ...req.body,
@@ -238,7 +238,7 @@ router.put('/:id',
     body('notes').optional().trim()
   ],
   handleValidationErrors,
-  async (req:Request, res:Response) => {
+  async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const organizationId = (req as any).organizationId;
@@ -264,7 +264,7 @@ router.put('/:id',
         notes
       } = req.body;
 
-      const updateData: any = { };
+      const updateData: any = {};
 
       if (amount !== undefined) updateData.amount = amount;
       if (type !== undefined) updateData.type = type;
@@ -282,7 +282,7 @@ router.put('/:id',
         updateData.paidDate = null;
       }
 
-       const payment = await prisma.payment.update({
+      const payment = await prisma.payment.update({
         where: { id },
         data: updateData, // 👍 ¡CORRECTO!
         include: {
@@ -293,7 +293,7 @@ router.put('/:id',
         }
       });
 
-     
+
 
       logger.info('Payment updated:', { paymentId: payment.id, organizationId });
 
@@ -318,7 +318,7 @@ router.delete('/:id',
   validateOrganizationAccess,
   [param('id').isUUID()],
   handleValidationErrors,
-  async (req:Request, res:Response) => {
+  async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const organizationId = (req as any).organizationId;
@@ -348,6 +348,53 @@ router.delete('/:id',
       });
     }
   }
+);
+
+router.patch('/:id',
+    authenticateToken,
+    requireRole(['ADMIN']),
+    validateOrganizationAccess,
+    [
+        param('id').isString(),
+        // Validar que el estado enviado en el body sea uno de los permitidos
+        body('status').isIn(['CANCELLED', 'REFUNDED'])
+    ],
+    handleValidationErrors,
+    async (req: Request, res: Response) => {
+        try {
+            const { id } = req.params;
+            const { status } = req.body; // Leer el nuevo estado desde el body
+            const organizationId = (req as any).organizationId;
+
+            const payment = await prisma.payment.findFirst({
+                where: { id, organizationId }
+            });
+
+            if (!payment) {
+                return res.status(404).json({ error: 'Payment not found' });
+            }
+
+            // Lógica para prevenir cambios no deseados
+            if (payment.status === 'PAID' && status === 'CANCELLED') {
+                 return res.status(400).json({ error: 'Cannot cancel a paid payment.' });
+            }
+
+            const updatedPayment = await prisma.payment.update({
+                where: { id },
+                data: { status } // Usar el estado recibido
+            });
+
+            logger.info(`Payment status updated to ${status}:`, { paymentId: id });
+            return res.json({
+                message: `Payment status successfully updated to ${status}`,
+                payment: updatedPayment
+            });
+
+        } catch (error) {
+            logger.error('Update payment status error:', error);
+            return res.status(500).json({ error: 'Failed to update payment status' });
+        }
+    }
 );
 
 // Export the router
