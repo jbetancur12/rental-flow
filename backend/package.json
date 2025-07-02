@@ -10,7 +10,10 @@
     "migrate": "npx prisma migrate dev",
     "generate": "npx prisma generate",
     "studio": "npx prisma studio",
-    "seed": "ts-node src/scripts/seed.ts"
+    "seed": "ts-node src/scripts/seed.ts",
+    "reset-data": "ts-node src/scripts/reset-data.ts",
+    "reset-and-seed": "npm run reset-data && npm run seed"
+
   },
   "dependencies": {
     "@prisma/client": "^5.7.1",

@@ -45,9 +45,6 @@ export function PropertyCard({
     p.status === 'PENDING' && 
     new Date(p.dueDate) < new Date()
   );
-  console.log("🚀 ~ state.payments:", state.payments)
-
- 
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-lg transition-shadow">

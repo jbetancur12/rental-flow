@@ -10,12 +10,12 @@ interface QuickRentModalProps {
 }
 
 export function QuickRentModal({ property, isOpen, onClose }: QuickRentModalProps) {
-  const { state, updateProperty, updateContract, updateTenant,createPayment } = useApp();
+  const { state, updateProperty, updateContract, updateTenant, createPayment } = useApp();
   const [selectedContract, setSelectedContract] = useState('');
 
   // Filtrar contratos disponibles (ACTIVE y sin asignar a propiedades)
-  const availableContracts = state.contracts.filter(c => 
-    c.status === 'DRAFT' && 
+  const availableContracts = state.contracts.filter(c =>
+    c.status === 'DRAFT' &&
     c.propertyId === property.id // Contratos que no tienen propiedad asignada
   );
 
@@ -29,66 +29,59 @@ export function QuickRentModal({ property, isOpen, onClose }: QuickRentModalProp
     if (!contract) return;
 
     try {
-      // Actualizar la propiedad con el contractId
-      const updatedProperty = {
-        ...property,
-        status: 'rented' as const,
-        updatedAt: new Date()
-      };
 
-      // Actualizar contrato con propertyId
-      const updatedContract = {
-        ...contract,
-        status: 'ACTIVE' as const,
-        propertyId: property.id
-      };
+      const paymentsToCreate = [];
+      const today = new Date();
+      let periodStart = new Date(contract.startDate);
+      periodStart.setHours(0, 0, 0, 0);
 
-      // Actualizar tenant status si no está activo
-      const tenant = state.tenants.find(t => t.id === contract.tenantId);
-      if (tenant && tenant.status !== 'ACTIVE') {
-        const updatedTenant = {
-          ...tenant,
-          status: 'ACTIVE' as const
-        };
-        // Si tienes updateTenant disponible
-        await updateTenant(updatedTenant.id, updatedTenant);
-      }
-
-      // Crear primer pago si no existe
-      const existingPayment = state.payments?.find(p => 
-        p.contractId === contract.id && 
-        p.type === 'RENT' && 
-        p.dueDate.getMonth() === new Date(new Date(contract.startDate)).getMonth()
-      );
-
-      if (!existingPayment) {
-        const firstPayment = {
-          id: `payment-${Date.now()}`,
-          contractId: contract.id,
-          tenantId: contract.tenantId,
-          amount: contract.monthlyRent,
-          type: 'RENT' as const,
-          dueDate: new Date(new Date(contract.startDate)),
-          status: 'PENDING' as const
-        };
-        const depositPayment = {
-          id: `payment-${Date.now()}-deposit`,
+      if (contract.securityDeposit > 0) {
+        paymentsToCreate.push({
           contractId: contract.id,
           tenantId: contract.tenantId,
           amount: contract.securityDeposit,
           type: 'DEPOSIT' as const,
-          dueDate: new Date(new Date(contract.startDate)),
-          status: 'PENDING' as const
-        };
-        await createPayment(depositPayment);
-        await createPayment(firstPayment);
+          dueDate: new Date(contract.startDate),
+          status: 'PENDING' as const,
+        });
       }
 
-      
-    
-      await updateProperty(updatedProperty.id, updatedProperty);
-      await updateContract(updatedContract.id, updatedContract);
+      // 2. Bucle para generar los pagos de RENTA pendientes
+      while (periodStart <= today && periodStart <= new Date(contract.endDate)) {
+        const dueDate = new Date(periodStart);
+        dueDate.setMonth(dueDate.getMonth() + 1);
+        dueDate.setDate(0); // Último día del mes de inicio del período
 
+        paymentsToCreate.push({
+          contractId: contract.id,
+          tenantId: contract.tenantId,
+          amount: contract.monthlyRent,
+          type: 'RENT' as const,
+          dueDate: dueDate,
+          status: 'PENDING' as const,
+          periodStart: new Date(periodStart),
+          periodEnd: dueDate,
+        });
+
+        // Avanzamos al siguiente mes
+        periodStart.setMonth(periodStart.getMonth() + 1);
+      }
+
+      // 3. Creamos todos los pagos necesarios en la base de datos
+      if (paymentsToCreate.length > 0) {
+        for (const paymentData of paymentsToCreate) {
+          // Aquí es mejor tener una función createPayment que no genere el ID localmente
+          await createPayment(paymentData);
+        }
+      }
+
+
+      await updateProperty(property.id, { ...property, status: 'RENTED' });
+      await updateContract(contract.id, { ...contract, status: 'ACTIVE', propertyId: property.id });
+      const tenant = state.tenants.find(t => t.id === contract.tenantId);
+      if (tenant && tenant.status !== 'ACTIVE') {
+        await updateTenant(tenant.id, { ...tenant, status: 'ACTIVE' });
+      } 1
       onClose();
     } catch (error) {
       console.error('Error assigning contract to property:', error);
@@ -156,7 +149,7 @@ export function QuickRentModal({ property, isOpen, onClose }: QuickRentModalProp
           {selectedContract && (() => {
             const contract = availableContracts.find(c => c.id === selectedContract);
             const tenant = state.tenants.find(t => t.id === contract?.tenantId);
-            
+
             if (!contract || !tenant) return null;
 
             return (

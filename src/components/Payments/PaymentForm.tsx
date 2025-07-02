@@ -36,8 +36,8 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
         tenantId: payment.tenantId,
         amount: payment.amount,
         type: payment.type,
-        dueDate: payment.dueDate.toISOString().split('T')[0],
-        paidDate: payment.paidDate ? payment.paidDate.toISOString().split('T')[0] : '',
+        dueDate: new Date(payment.dueDate).toISOString().split('T')[0],
+        paidDate: payment.paidDate ? new Date(payment.paidDate).toISOString().split('T')[0] : '',
         status: payment.status,
         method: payment.method || 'BANK_TRANSFER',
         notes: payment.notes || ''

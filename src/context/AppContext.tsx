@@ -513,16 +513,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const updatePaymentStatus = async (id: string, status: 'CANCELLED' | 'REFUNDED') => {
+const updatePaymentStatus = async (id: string, status: 'CANCELLED' | 'REFUNDED') => {
     try {
-      const response = await apiClient.updatePaymentStatus(id, status);
-      dispatch({ type: 'UPDATE_PAYMENT', payload: response.payment });
-      toast.success('Estado del Pago Actualizado', `El pago ha sido marcado como ${status.toLowerCase()}.`);
+        const response = await apiClient.updatePaymentStatus(id, status);
+
+        dispatch({ type: 'UPDATE_PAYMENT', payload: response.updatedPayment });
+
+        if (response.newPayment) {
+            dispatch({ type: 'ADD_PAYMENT', payload: response.newPayment });
+        }
+        toast.success('Operación Completada', response.message);
+        
     } catch (error: any) {
-      toast.error('Error', error.message || 'Failed to delete payment');
-      throw error;
+        toast.error('Error', error.message || 'Failed to update payment status');
+        throw error;
     }
-  }
+};
 
 
   // Load initial data when authenticated

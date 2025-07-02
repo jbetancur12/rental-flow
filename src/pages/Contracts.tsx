@@ -23,7 +23,7 @@ export function Contracts() {
     if (state.contracts.length === 0) {
       fetchContracts();
     }
-  }, [state.contracts.length, fetchContracts]);
+  }, []);
 
   const getStatusColor = (status: string) => {
     const colors = {
@@ -60,26 +60,25 @@ export function Contracts() {
     setIsDetailsOpen(true);
   };
 
-  const handleDeleteContract = async (id: string) => {
-    if (confirm('Are you sure you want to delete this contract?')) {
-      // In a real app, you'd dispatch a DELETE_CONTRACT action
-      await deleteContract(id);
-    }
-  };
-
   const handleSaveContract = async (contractData: Omit<Contract, 'id'>) => {
     if (editingContract) {
-      await updateContract(
-        editingContract.id,
-          contractData,
-        );
+      await updateContract(editingContract.id, contractData);
       setEditingContract(undefined);
       setIsFormOpen(false);
     } else {
       await createContract({
-          ...contractData,
-          id: `contract-${Date.now()}`
-        });
+        ...contractData,
+        id: `contract-${Date.now()}`
+      });
+      setIsFormOpen(false); 
+    }
+    await fetchContracts(); // <-- Recarga contratos después de guardar
+  };
+
+  const handleDeleteContract = async (id: string) => {
+    if (confirm('Are you sure you want to delete this contract?')) {
+      await deleteContract(id);
+      await fetchContracts(); // <-- Recarga contratos después de eliminar
     }
   };
 
@@ -92,7 +91,6 @@ export function Contracts() {
     }
   };
 
-console.log(state.contracts);
   return (
     <div className="flex-1 overflow-auto">
       <Header 

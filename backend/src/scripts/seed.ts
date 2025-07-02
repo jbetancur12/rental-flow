@@ -244,7 +244,7 @@ if (!demoTenant1) {
       email: 'juan.inquilino@demo.com',
       phone: '555-1234',
       applicationDate: new Date(),
-      status: 'ACTIVE',
+      status: 'APPROVED',
       creditScore: 700,
       emergencyContact: { name: 'Maria Inquilino', phone: '555-5678', relationship: 'hermana' },
       employment: { employer: 'Empresa Demo', position: 'Desarrollador', income: 60000 }

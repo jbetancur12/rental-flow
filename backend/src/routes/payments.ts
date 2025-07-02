@@ -4,6 +4,7 @@ import { prisma } from '../config/database';
 import { authenticateToken, requireRole } from '../middleware/auth';
 import { handleValidationErrors, validateOrganizationAccess } from '../middleware/validation';
 import { logger } from '../config/logger';
+import { PaymentType } from '@prisma/client';
 
 const router = express.Router();
 
@@ -355,43 +356,74 @@ router.patch('/:id',
     requireRole(['ADMIN']),
     validateOrganizationAccess,
     [
-        param('id').isString(),
-        // Validar que el estado enviado en el body sea uno de los permitidos
-        body('status').isIn(['CANCELLED', 'REFUNDED'])
+        param('id').isUUID(),
+        body('status').isIn(['CANCELLED', 'REFUNDED']),
     ],
     handleValidationErrors,
     async (req: Request, res: Response) => {
         try {
             const { id } = req.params;
-            const { status } = req.body; // Leer el nuevo estado desde el body
+            const { status } = req.body;
             const organizationId = (req as any).organizationId;
 
-            const payment = await prisma.payment.findFirst({
+            const paymentToUpdate = await prisma.payment.findFirst({
                 where: { id, organizationId }
             });
 
-            if (!payment) {
+            if (!paymentToUpdate) {
                 return res.status(404).json({ error: 'Payment not found' });
             }
 
-            // Lógica para prevenir cambios no deseados
-            if (payment.status === 'PAID' && status === 'CANCELLED') {
-                 return res.status(400).json({ error: 'Cannot cancel a paid payment.' });
+            if (paymentToUpdate.status === 'CANCELLED' || paymentToUpdate.status === 'REFUNDED') {
+                return res.status(400).json({ 
+                    error: `Payment is already in a final state (${paymentToUpdate.status}).` 
+                });
             }
 
-            const updatedPayment = await prisma.payment.update({
-                where: { id },
-                data: { status } // Usar el estado recibido
+            const result = await prisma.$transaction(async (tx) => {
+                const updatedPayment = await tx.payment.update({
+                    where: { id: paymentToUpdate.id },
+                    data: { status }
+                });
+
+                // Lista de tipos de pago que deben regenerarse tras un reembolso.
+                const regenerableTypes: PaymentType[] = ['RENT', 'DEPOSIT'];
+
+                if (status === 'REFUNDED' && regenerableTypes.includes(updatedPayment.type)) {
+                    const contract = await tx.contract.findUnique({
+                        where: { id: updatedPayment.contractId }
+                    });
+
+                    if (contract && contract.status === 'ACTIVE') {
+                        const newPendingPayment = await tx.payment.create({
+                            data: {
+                                contractId: updatedPayment.contractId,
+                                tenantId: updatedPayment.tenantId,
+                                organizationId: updatedPayment.organizationId,
+                                amount: updatedPayment.amount,
+                                dueDate: updatedPayment.dueDate,
+                                type: updatedPayment.type, // Usamos el tipo del pago original
+                                status: 'PENDING',
+                                notes: `Regenerado automáticamente tras reembolso del pago #${updatedPayment.id.slice(-6)}.`,
+                                periodStart: updatedPayment.periodStart,
+                                periodEnd: updatedPayment.periodEnd,
+                            }
+                        });
+                        return { updatedPayment, newPayment: newPendingPayment };
+                    }
+                }
+                return { updatedPayment, newPayment: null };
             });
 
-            logger.info(`Payment status updated to ${status}:`, { paymentId: id });
+            logger.info(`Payment status updated to ${status}:`, { paymentId: id, organizationId });
+            
             return res.json({
-                message: `Payment status successfully updated to ${status}`,
-                payment: updatedPayment
+                message: `Payment status successfully updated to ${status}.`,
+                ...result
             });
 
         } catch (error) {
-            logger.error('Update payment status error:', error);
+            logger.error('Update payment status error:', { error });
             return res.status(500).json({ error: 'Failed to update payment status' });
         }
     }
