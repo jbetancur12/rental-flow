@@ -14,6 +14,7 @@ export interface Property {
   // NEW: Connection to Units system
   unitId?: string; // Property belongs to a unit
   unitNumber?: string; // For apartments/commercial in buildings (2A, 101, Suite 200)
+  unitName?: string; // Name of the unit (e.g., "Building A", "Unit 101")
   floor?: number; // For apartments/commercial in buildings
   
   // Legacy fields (keep for backward compatibility)

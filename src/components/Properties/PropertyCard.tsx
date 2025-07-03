@@ -1,7 +1,7 @@
 
 import { Property } from '../../types';
 import { useApp } from '../../context/AppContext';
-import { MapPin, Home, Users, DollarSign, Edit, Trash2, Key, FileText, CreditCard, XCircle } from 'lucide-react';
+import { MapPin, Home, Users, DollarSign, Edit, Trash2, Key, FileText, CreditCard, XCircle, Building } from 'lucide-react';
 
 interface PropertyCardProps {
   property: Property;
@@ -88,6 +88,11 @@ export function PropertyCard({
               <Trash2 className="w-4 h-4" />
             </button>
           </div>
+        </div>
+
+        <div className="flex items-center text-slate-600 mb-3">
+          <Building className="w-4 h-4 mr-1" />
+          <span className="text-sm">{property.unitName}</span>
         </div>
         
         <div className="flex items-center text-slate-600 mb-3">
