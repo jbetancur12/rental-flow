@@ -89,7 +89,7 @@ router.put('/organization',
         }
       }
 
-      //comment
+      //comments
 
       const organization = await prisma.organization.update({
         where: { id: organizationId },
