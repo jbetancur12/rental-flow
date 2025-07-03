@@ -83,7 +83,7 @@ router.put('/organization',
 
         if (currentOrg) {
           updateData.settings = {
-            ...currentOrg.settings,
+            ...((typeof currentOrg.settings === 'object' && currentOrg.settings !== null) ? currentOrg.settings : {}),
             ...updateData.settings
           };
         }
