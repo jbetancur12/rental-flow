@@ -15,7 +15,7 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    type: 'building' as Unit['type'],
+    type: 'BUILDING' as Unit['type'],
     address: '',
     description: '',
     totalFloors: 1,
@@ -47,7 +47,7 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
     } else {
       setFormData({
         name: '',
-        type: 'building',
+        type: 'BUILDING',
         address: '',
         description: '',
         totalFloors: 1,
@@ -144,9 +144,9 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   disabled={isSubmitting}
                 >
-                  <option value="building">Building (Contains apartments/commercial spaces)</option>
-                  <option value="house">House (Single or multiple floors)</option>
-                  <option value="commercial">Commercial (Standalone local/office)</option>
+                  <option value="BUILDING">Building (Contains apartments/COMMERCIAL spaces)</option>
+                  <option value="HOUSE">House (Single or multiple floors)</option>
+                  <option value="COMMERCIAL">Commercial (Standalone local/office)</option>
                 </select>
               </div>
             </div>
@@ -184,12 +184,12 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
           {/* Type-Specific Fields */}
           <div>
             <h3 className="text-lg font-medium text-slate-900 mb-4">
-              {formData.type === 'building' && 'Building Details'}
-              {formData.type === 'house' && 'House Details'}
-              {formData.type === 'commercial' && 'Commercial Details'}
+              {formData.type === 'BUILDING' && 'Building Details'}
+              {formData.type === 'HOUSE' && 'House Details'}
+              {formData.type === 'COMMERCIAL' && 'Commercial Details'}
             </h3>
 
-            {formData.type === 'building' && (
+            {formData.type === 'BUILDING' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -221,7 +221,7 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
               </div>
             )}
 
-            {formData.type === 'house' && (
+            {formData.type === 'HOUSE' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -256,7 +256,7 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
               </div>
             )}
 
-            {formData.type === 'commercial' && (
+            {formData.type === 'COMMERCIAL' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">

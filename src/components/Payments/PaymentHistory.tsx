@@ -9,25 +9,43 @@ interface PaymentHistoryProps {
 
 // Función para obtener el color y el ícono según el estado del pago
 const getPaymentStatusStyle = (status: Payment['status']) => {
-  const styles = {
-    PAID: {
-      icon: <CheckCircle className="w-4 h-4 text-emerald-600" />,
-      badge: 'bg-emerald-100 text-emerald-800',
-    },
-    PENDING: {
-      icon: <Clock className="w-4 h-4 text-yellow-600" />,
-      badge: 'bg-yellow-100 text-yellow-800',
-    },
-    OVERDUE: {
-      icon: <AlertTriangle className="w-4 h-4 text-red-600" />,
-      badge: 'bg-red-100 text-red-800',
-    },
-    PARTIAL: {
-      icon: <CheckCircle className="w-4 h-4 text-blue-600" />,
-      badge: 'bg-blue-100 text-blue-800',
-    },
-  };
-  return styles[status] || styles.PENDING;
+  switch (status) {
+    case 'PAID':
+      return {
+        icon: <CheckCircle className="w-4 h-4 text-emerald-600" />,
+        badge: 'bg-emerald-100 text-emerald-800',
+      };
+    case 'PENDING':
+      return {
+        icon: <Clock className="w-4 h-4 text-yellow-600" />,
+        badge: 'bg-yellow-100 text-yellow-800',
+      };
+    case 'OVERDUE':
+      return {
+        icon: <AlertTriangle className="w-4 h-4 text-red-600" />,
+        badge: 'bg-red-100 text-red-800',
+      };
+    case 'PARTIAL':
+      return {
+        icon: <CheckCircle className="w-4 h-4 text-blue-600" />,
+        badge: 'bg-blue-100 text-blue-800',
+      };
+    case 'CANCELLED':
+      return {
+        icon: <AlertTriangle className="w-4 h-4 text-gray-600" />,
+        badge: 'bg-gray-100 text-gray-800',
+      };
+    case 'REFUNDED':
+      return {
+        icon: <CheckCircle className="w-4 h-4 text-purple-600" />,
+        badge: 'bg-purple-100 text-purple-800',
+      };
+    default:
+      return {
+        icon: <Clock className="w-4 h-4 text-yellow-600" />,
+        badge: 'bg-yellow-100 text-yellow-800',
+      };
+  }
 };
 
 export function PaymentHistory({ payments }: PaymentHistoryProps) {

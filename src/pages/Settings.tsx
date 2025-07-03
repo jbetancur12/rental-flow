@@ -7,9 +7,7 @@ import {
   Bell, 
   Shield, 
   Database, 
-  Mail, 
-  Phone, 
-  MapPin, 
+
   Building2,
   Save,
   Download,
@@ -23,7 +21,7 @@ import {
 } from 'lucide-react';
 
 export function Settings() {
-  const { state: authState, dispatch: authDispatch, updateUserProfile, changePassword } = useAuth();
+  const { state: authState,  updateUserProfile, changePassword } = useAuth();
   const {updateOrganization} = useApp();
   const { state, dispatch } = useApp();
   const [ACTIVETab, setACTIVETab] = useState('profile');
@@ -174,7 +172,7 @@ export function Settings() {
               alert('Datos importados exitosamente!');
             }
           } catch (error) {
-            alert('Formato de archivo inválido');
+            alert(error instanceof Error ? error.message : 'Error al importar los datos. Asegúrese de que el archivo sea un JSON válido.');
           }
         };
         reader.readAsText(file);

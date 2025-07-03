@@ -1,8 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import { Prisma } from '@prisma/client';
 import { logger } from '../config/logger';
 
-export function errorHandler(err: any, req: Request, res: Response, next: NextFunction) {
+export function errorHandler(err: any, req: Request, res: Response) {
   logger.error('Error occurred:', {
     error: err.message,
     stack: err.stack,
@@ -13,7 +13,7 @@ export function errorHandler(err: any, req: Request, res: Response, next: NextFu
   });
 
   // Default error
-  let error = {
+  const error = {
     message: err.message || 'Internal Server Error',
     status: err.status || 500,
     code: err.code || 'INTERNAL_ERROR'

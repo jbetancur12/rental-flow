@@ -202,8 +202,12 @@ router.put('/:id',
   handleValidationErrors,
   async (req:Request, res:Response) => {
 
-    const {unitName, ...updateDate} = req.body;
+    const updateDate = req.body;
     try {
+      // Remove unitName from updateDate before updating the property
+      if ('unitName' in updateDate) {
+      delete updateDate.unitName;
+      }
       const { id } = req.params;
       const organizationId = (req as any).organizationId;
 

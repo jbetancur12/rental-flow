@@ -32,7 +32,7 @@ export function QuickRentModal({ property, isOpen, onClose }: QuickRentModalProp
 
       const paymentsToCreate = [];
       const today = new Date();
-      let periodStart = new Date(contract.startDate);
+      const periodStart = new Date(contract.startDate);
       periodStart.setHours(0, 0, 0, 0);
 
       if (contract.securityDeposit > 0) {
@@ -81,7 +81,7 @@ export function QuickRentModal({ property, isOpen, onClose }: QuickRentModalProp
       const tenant = state.tenants.find(t => t.id === contract.tenantId);
       if (tenant && tenant.status !== 'ACTIVE') {
         await updateTenant(tenant.id, { ...tenant, status: 'ACTIVE' });
-      } 1
+      } 
       onClose();
     } catch (error) {
       console.error('Error assigning contract to property:', error);

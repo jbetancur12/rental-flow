@@ -279,7 +279,7 @@ router.put('/:id',
       }
       if (paidDate) {
         updateData.paidDate = new Date(paidDate);
-      } else if (req.body.hasOwnProperty('paidDate') && req.body.paidDate === null) {
+      } else if (Object.prototype.hasOwnProperty.call(req.body, 'paidDate') && req.body.paidDate === null) {
         updateData.paidDate = null;
       }
 

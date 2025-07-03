@@ -278,7 +278,7 @@ router.put('/:id',
       if (signedDate) updateData.signedDate = new Date(signedDate);
       if (terminationDate) { // Puede ser null, pero si existe, es una fecha
         updateData.terminationDate = new Date(terminationDate);
-      } else if (req.body.hasOwnProperty('terminationDate') && req.body.terminationDate === null) {
+      } else if (Object.prototype.hasOwnProperty.call(req.body, 'terminationDate') && req.body.terminationDate === null) {
           updateData.terminationDate = null; // Permite establecer la fecha en null
       }
       

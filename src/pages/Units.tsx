@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Header } from '../components/Layout/Header';
 import { UnitCard } from '../components/Units/UnitCard';
 import { UnitForm } from '../components/Units/UnitForm';
@@ -12,26 +12,27 @@ import { Unit } from '../types';
 export function Units() {
   const { state, dispatch, loadUnits, deleteUnit } = useApp();
   const { isOpen: isConfirmOpen, options: confirmOptions, confirm, handleConfirm, handleCancel } = useConfirm();
-  const [filter, setFilter] = useState<'all' | 'building' | 'house' | 'commercial'>('all');
+  const [filter, setFilter] = useState<'all' | 'BUILDING' | 'HOUSE' | 'COMMERCIAL'>('all');
   const [isUnitFormOpen, setIsUnitFormOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [editingUnit, setEditingUnit] = useState<Unit | undefined>();
   const [selectedUnit, setSelectedUnit] = useState<Unit | undefined>();
 
-  const fetchUnits = async () => {
+
+
+  const fetchUnits = useCallback(async () => {
     try {
       await loadUnits();
     } catch (error) {
       console.error('Failed to load units:', error);
-     
     }
-  }
+  }, [loadUnits]);
 
   useEffect(() => {
     if (state.units.length === 0) {
       fetchUnits();
     }
-  }, [state.units.length, fetchUnits ]);
+  }, [state.units.length, fetchUnits]);
 
   const filteredUnits = filter === 'all' 
     ? state.units 
@@ -125,7 +126,7 @@ export function Units() {
               <div>
                 <p className="text-sm text-slate-600">Buildings</p>
                 <p className="text-2xl font-bold text-blue-600">
-                  {state.units.filter(u => u.type === 'building').length}
+                  {state.units.filter(u => u.type === 'BUILDING').length}
                 </p>
               </div>
               <Building2 className="w-8 h-8 text-blue-600" />
@@ -137,7 +138,7 @@ export function Units() {
               <div>
                 <p className="text-sm text-slate-600">Houses</p>
                 <p className="text-2xl font-bold text-emerald-600">
-                  {state.units.filter(u => u.type === 'house').length}
+                  {state.units.filter(u => u.type === 'HOUSE').length}
                 </p>
               </div>
               <Home className="w-8 h-8 text-emerald-600" />
@@ -149,7 +150,7 @@ export function Units() {
               <div>
                 <p className="text-sm text-slate-600">Commercial</p>
                 <p className="text-2xl font-bold text-orange-600">
-                  {state.units.filter(u => u.type === 'commercial').length}
+                  {state.units.filter(u => u.type === 'COMMERCIAL').length}
                 </p>
               </div>
               <Store className="w-8 h-8 text-orange-600" />
@@ -160,10 +161,10 @@ export function Units() {
         {/* Filters */}
         <div className="mb-6">
           <div className="flex space-x-2">
-            {['all', 'building', 'house', 'commercial'].map((type) => (
+            {['all', 'BUILDING', 'HOUSE', 'COMMERCIAL'].map((type) => (
               <button
                 key={type}
-                onClick={() => setFilter(type as 'all' | 'building' | 'house' | 'commercial')}
+                onClick={() => setFilter(type as 'all' | 'BUILDING' | 'HOUSE' | 'COMMERCIAL')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   filter === type
                     ? 'bg-blue-600 text-white'

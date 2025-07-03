@@ -129,7 +129,7 @@ router.get('/preferences',
   authenticateToken,
   async (req:Request, res:Response) => {
     try {
-      const userId = (req as any).user.id;
+      // const userId = (req as any).user.id;
 
       // For now, we'll return default preferences
       // In the future, you could add a user_preferences table

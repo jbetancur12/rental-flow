@@ -15,11 +15,11 @@ export function UnitDetails({ unit, properties, isOpen, onClose, onEdit }: UnitD
 
   const getUnitIcon = () => {
     switch (unit.type) {
-      case 'building':
+      case 'BUILDING':
         return <Building2 className="w-8 h-8 text-blue-600" />;
-      case 'house':
+      case 'HOUSE':
         return <Home className="w-8 h-8 text-emerald-600" />;
-      case 'commercial':
+      case 'COMMERCIAL':
         return <Store className="w-8 h-8 text-orange-600" />;
       default:
         return <Building2 className="w-8 h-8 text-slate-600" />;
@@ -28,11 +28,11 @@ export function UnitDetails({ unit, properties, isOpen, onClose, onEdit }: UnitD
 
   const getUnitTypeColor = () => {
     switch (unit.type) {
-      case 'building':
+      case 'BUILDING':
         return 'bg-blue-100 text-blue-800';
-      case 'house':
+      case 'HOUSE':
         return 'bg-emerald-100 text-emerald-800';
-      case 'commercial':
+      case 'COMMERCIAL':
         return 'bg-orange-100 text-orange-800';
       default:
         return 'bg-slate-100 text-slate-800';
@@ -104,12 +104,12 @@ export function UnitDetails({ unit, properties, isOpen, onClose, onEdit }: UnitD
           {/* Type-Specific Details */}
           <div>
             <h3 className="text-lg font-semibold text-slate-900 mb-4">
-              {unit.type === 'building' && 'Building Details'}
-              {unit.type === 'house' && 'House Details'}
-              {unit.type === 'commercial' && 'Commercial Details'}
+              {unit.type === 'BUILDING' && 'Building Details'}
+              {unit.type === 'HOUSE' && 'House Details'}
+              {unit.type === 'COMMERCIAL' && 'Commercial Details'}
             </h3>
             
-            {unit.type === 'building' && (
+            {unit.type === 'BUILDING' && (
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div>
                   <p className="text-sm text-slate-500">Total Floors</p>
@@ -130,7 +130,7 @@ export function UnitDetails({ unit, properties, isOpen, onClose, onEdit }: UnitD
               </div>
             )}
 
-            {unit.type === 'house' && (
+            {unit.type === 'HOUSE' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <p className="text-sm text-slate-500">Number of Floors</p>
@@ -145,7 +145,7 @@ export function UnitDetails({ unit, properties, isOpen, onClose, onEdit }: UnitD
               </div>
             )}
 
-            {unit.type === 'commercial' && (
+            {unit.type === 'COMMERCIAL' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <p className="text-sm text-slate-500">Size</p>
@@ -165,7 +165,7 @@ export function UnitDetails({ unit, properties, isOpen, onClose, onEdit }: UnitD
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-slate-900">
-                {unit.type === 'building' ? 'Properties in Building' : 'Property Details'}
+                {unit.type === 'BUILDING' ? 'Properties in Building' : 'Property Details'}
               </h3>
             </div>
 

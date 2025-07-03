@@ -83,7 +83,7 @@ router.get('/dashboard',
       ]);
 
       // Calculate occupancy rate
-      const availableProperties = propertiesStats.find(p => p.status === 'AVAILABLE')?._count.status || 0;
+      //const availableProperties = propertiesStats.find(p => p.status === 'AVAILABLE')?._count.status || 0;
       const rentedProperties = propertiesStats.find(p => p.status === 'RENTED')?._count.status || 0;
       const occupancyRate = totalProperties > 0 ? ((rentedProperties / totalProperties) * 100) : 0;
 
@@ -146,7 +146,7 @@ router.get('/financial',
   handleValidationErrors,
   async (req:Request, res:Response) => {
     try {
-      const { startDate, endDate, groupBy = 'month' } = req.query;
+      const { startDate, endDate } = req.query;
       const organizationId = (req as any).organizationId;
 
       const dateFilter: any = { organizationId };
@@ -734,7 +734,6 @@ router.get('/units',
       const [
         units,
         unitStats,
-        propertiesByUnit,
         revenueByUnit
       ] = await Promise.all([
         // Units with basic info
@@ -763,13 +762,6 @@ router.get('/units',
           _count: { type: true }
         }),
 
-        // Properties count by unit
-        prisma.property.groupBy({
-          by: ['unitId'],
-          where: { organizationId, unitId: { not: null } },
-          _count: { unitId: true }
-        }),
-
         // Revenue by unit
         prisma.payment.findMany({
           where: {
@@ -795,7 +787,7 @@ router.get('/units',
 
       // Calculate unit performance
       const unitPerformance = units.map(unit => {
-        const propertiesCount = propertiesByUnit.find(p => p.unitId === unit.id)?._count.unitId || 0;
+       // const propertiesCount = propertiesByUnit.find(p => p.unitId === unit.id)?._count.unitId || 0;
         
         // Calculate revenue for this unit
         const unitRevenue = revenueByUnit
@@ -876,7 +868,7 @@ router.get('/export',
       const { type, format = 'json' } = req.query;
       const organizationId = (req as any).organizationId;
 
-      let data: any = {};
+      const data: any = {};
 
       if (type === 'all' || type === 'properties') {
         data.properties = await prisma.property.findMany({

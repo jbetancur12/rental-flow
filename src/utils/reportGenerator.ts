@@ -4,6 +4,68 @@ import { Contract, MaintenanceRequest, Payment, Property, Tenant, Unit } from '.
 import { formatDate } from '../lib/utils';
 import { format } from 'date-fns';
 
+const propertyTypeSpanish = {
+  APARTMENT: 'Apartamento',
+  HOUSE: 'Casa',
+  COMMERCIAL: 'Comercial',
+  BUILDING: 'Edificio'
+};
+
+const propertyStatusSpanish = {
+  AVAILABLE: 'Disponible',
+  RENTED: 'Alquilada',
+  MAINTENANCE: 'En Mantenimiento',
+  RESERVED: 'Reservada',
+  SOLD: 'Vendida',
+  PENDING: 'Pendiente',
+  CANCELLED: 'Cancelada'
+};
+
+const unitTypeSpanish = {
+  BUILDING: 'Edificio',
+  HOUSE: 'Casa',
+  COMMERCIAL: 'Comercial'
+};
+
+const tenantStatusSpanish = {
+  ACTIVE: 'Activo',
+  PENDING: 'Pendiente',
+  APPROVED: 'Aprobado',
+  FORMER: 'Ex-Inquilino',
+  REJECTED: 'Rechazado',
+};
+
+const paymentStatusSpanish = {
+  PAID: 'Pagado',
+  PENDING: 'Pendiente',
+  OVERDUE: 'Vencido',
+  PARTIAL: 'Parcial',
+  CANCELLED: 'Cancelado',
+  REFUNDED: 'Reembolsado'
+};
+
+const paymentTypeSpanish = {
+  RENT: 'Alquiler',
+  DEPOSIT: 'Depósito',
+  LATE_FEE: 'Recargo por Mora',
+  UTILITY: 'Servicios',
+  MAINTENANCE: 'Mantenimiento'
+};
+
+const maintenanceStatusSpanish = {
+  OPEN: 'Abierto',
+  IN_PROGRESS: 'En Progreso',
+  COMPLETED: 'Completado',
+  CANCELLED: 'Cancelado'
+};
+
+const maintenancePrioritySpanish = {
+  LOW: 'Baja',
+  MEDIUM: 'Media',
+  HIGH: 'Alta',
+  EMERGENCY: 'Emergencia'
+};
+
 
 export const generatePropertyReport = async (properties: Property[]) => {
   const pdf = new jsPDF();
@@ -28,10 +90,10 @@ export const generatePropertyReport = async (properties: Property[]) => {
   const tableBody = properties.map((property, index) => [
     index + 1,
     property.name,
-    property.address,
-    property.type,
+    property.unitName as string,
+    propertyTypeSpanish[property.type] || property.type,
     `$${property.rent.toLocaleString()}`,
-    property.status
+    propertyStatusSpanish[property.status] || property.status
   ]);
 
   // 2. Usamos autoTable para generar la tabla
@@ -83,7 +145,7 @@ export const generateUnitReport = async (units: Unit[], properties: Property[]) 
     return [
       index + 1,
       unit.name,
-      unit.type,
+      unitTypeSpanish[unit.type] || unit.type,
       unit.address,
       unitProperties.length,
       available,
@@ -139,7 +201,7 @@ export const generateTenantReport = async (tenants: Tenant[]) => {
     `${tenant.firstName} ${tenant.lastName}`,
     tenant.email,
     tenant.phone,
-    tenant.status,
+    tenantStatusSpanish[tenant.status] || tenant.status,
     `$${tenant.employment.income.toLocaleString()}`
   ]);
 
@@ -205,9 +267,9 @@ export const generateFinancialReport = async (
       paymentDate,
       tenantName,
       propertyName,
-      payment.type,
+      paymentTypeSpanish[payment.type] || payment.type,
       `$${payment.amount.toLocaleString()}`,
-      payment.status,
+      paymentStatusSpanish[payment.status] || payment.status
     ];
   });
 
@@ -267,8 +329,8 @@ export const generateMaintenanceReport = async (
       index + 1,
       request.title,
       propertyName,
-      request.priority,
-      request.status,
+      maintenancePrioritySpanish[request.priority] || request.priority,
+      maintenanceStatusSpanish[request.status] || request.status,
       `$${cost.toLocaleString()}`
     ];
   });

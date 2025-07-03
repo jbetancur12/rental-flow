@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Header } from '../components/Layout/Header';
 import { PropertyCard } from '../components/Properties/PropertyCard';
 import { PropertyForm } from '../components/Properties/PropertyForm';
@@ -12,36 +12,40 @@ import { useConfirm } from '../hooks/useConfirm';
 export function Properties() {
   const { state, dispatch, updateProperty, updateTenant, updateContract, deleteProperty } = useApp();
   const { isOpen: isConfirmOpen, options: confirmOptions, confirm, handleConfirm, handleCancel } = useConfirm();
-  
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isQuickRentOpen, setIsQuickRentOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [editingProperty, setEditingProperty] = useState<Property | undefined>();
   const [rentingProperty, setRentingProperty] = useState<Property | undefined>();
   const [paymentProperty, setPaymentProperty] = useState<Property | undefined>();
-  
+  const [searchQuery, setSearchQuery] = useState('');
+
   // FIX: Filtros funcionando correctamente
   const [filter, setFilter] = useState<'all' | Property['status']>('all');
 
-  useEffect(() => {
-    // FIX: Cargar unidades primero, luego propiedades
-    // if (state.units.length === 0) {
-    //   mockUnits.forEach(unit => {
-    //     dispatch({ type: 'ADD_UNIT', payload: unit });
-    //   });
-    // }
-    
-    // if (state.properties.length === 0) {
-    //   mockProperties.forEach(property => {
-    //     dispatch({ type: 'ADD_PROPERTY', payload: property });
-    //   });
-    // }
-  }, [state.units.length, state.properties.length]);
+
 
   // FIX: Filtros funcionando correctamente
-  const filteredProperties = filter === 'all' 
-    ? state.properties 
-    : state.properties.filter(p => p.status === filter);
+  const filteredProperties = useMemo(() => {
+    // 1. Empieza con todas las propiedades
+    let properties = state.properties;
+
+    // 2. Aplica el filtro de estado (ej: 'RENTED', 'AVAILABLE')
+    if (filter !== 'all') {
+      properties = properties.filter(p => p.status === filter);
+    }
+
+    // 3. Aplica el filtro de búsqueda por texto sobre el resultado anterior
+    if (searchQuery) {
+      properties = properties.filter(property =>
+        property.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        property.unitName?.toLowerCase().includes(searchQuery.toLowerCase()) 
+      );
+    }
+
+    return properties;
+  }, [state.properties, filter, searchQuery]);
 
   const handleNewProperty = () => {
     setEditingProperty(undefined);
@@ -58,7 +62,7 @@ export function Properties() {
     setIsQuickRentOpen(true);
   };
 
-  const handleViewContract = (_property: Property) => {
+  const handleViewContract = () => {
     // Navigate to contracts page with filter
     window.location.href = '/contracts';
   };
@@ -70,7 +74,7 @@ export function Properties() {
 
   const handleTerminateContract = async (property: Property) => {
 
-     const confirmed = await confirm({
+    const confirmed = await confirm({
       title: 'Delete Unit',
       message: `¿Está seguro de que desea terminar el contrato de esta propiedad?`,
       confirmText: 'Delete',
@@ -78,10 +82,10 @@ export function Properties() {
     });
     if (confirmed) {
       // Find active contract
-      const activeContract = state.contracts.find(c => 
+      const activeContract = state.contracts.find(c =>
         c.propertyId === property.id && c.status === 'ACTIVE'
       );
-      
+
       if (activeContract) {
         // Update contract status
         const updatedContract = {
@@ -89,14 +93,14 @@ export function Properties() {
           status: 'TERMINATED' as const,
           terminationDate: new Date()
         };
-        
+
         // Update property status
         const updatedProperty = {
           ...property,
           status: 'AVAILABLE' as const,
           updatedAt: new Date()
         };
-        
+
         // Update tenant status
         const tenant = state.tenants.find(t => t.id === activeContract.tenantId);
 
@@ -106,11 +110,11 @@ export function Properties() {
             status: 'FORMER' as const
           };
           await updateTenant(updatedTenant.id, updatedTenant);
-          
+
         }
         await updateContract(updatedContract.id, updatedContract);
         await updateProperty(updatedProperty.id, updatedProperty);
-        
+
       }
     }
   };
@@ -123,7 +127,7 @@ export function Properties() {
       confirmText: 'Delete',
       type: 'danger'
     });
-    
+
     if (confirmed) {
       await deleteProperty(id);
     }
@@ -156,48 +160,51 @@ export function Properties() {
   // Calculate overdue properties
   const overdueProperties = state.properties.filter(property => {
     if (property.status !== 'RENTED') return false;
-    const activeContract = state.contracts.find(c => 
+    const activeContract = state.contracts.find(c =>
       c.propertyId === property.id && c.status === 'ACTIVE'
     );
     if (!activeContract) return false;
-    
-    const overduePayments = state.payments.filter(p => 
-      p.contractId === activeContract.id && 
-      p.status === 'PENDING' && 
+
+    const overduePayments = state.payments.filter(p =>
+      p.contractId === activeContract.id &&
+      p.status === 'PENDING' &&
       new Date(p.dueDate) < new Date()
     );
-    
+
     return overduePayments.length > 0;
   });
 
   // Get payment modal data
   const getPaymentModalData = () => {
     if (!paymentProperty) return {};
-    
-    const activeContract = state.contracts.find(c => 
+
+    const activeContract = state.contracts.find(c =>
       c.propertyId === paymentProperty.id && c.status === 'ACTIVE'
     );
-    
+
     if (!activeContract) return {};
-    
+
     const tenant = state.tenants.find(t => t.id === activeContract.tenantId);
-    const overduePayments = state.payments.filter(p => 
-      p.contractId === activeContract.id && 
-      p.status === 'PENDING' && 
+    const overduePayments = state.payments.filter(p =>
+      p.contractId === activeContract.id &&
+      p.status === 'PENDING' &&
       new Date(p.dueDate) < new Date()
     );
-    
+
     return { tenant, contract: activeContract, overduePayments };
   };
 
   return (
     <div className="flex-1 overflow-auto">
-      <Header 
-        title="Propiedades" 
+      <Header
+        title="Propiedades"
         onNewItem={handleNewProperty}
         newItemLabel="Agregar Propiedad"
+        showSearch={true}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder="Buscar por nombre o dirección..."
       />
-      
+
       <div className="p-6">
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -212,7 +219,7 @@ export function Properties() {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-xl border border-slate-200 p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -226,7 +233,7 @@ export function Properties() {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-xl border border-slate-200 p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -240,7 +247,7 @@ export function Properties() {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-xl border border-slate-200 p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -263,17 +270,16 @@ export function Properties() {
               <button
                 key={status}
                 onClick={() => setFilter(status as 'all' | 'AVAILABLE' | 'RENTED' | 'RESERVED' | 'MAINTENANCE')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  filter === status
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === status
                     ? 'bg-blue-600 text-white'
                     : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
-                }`}
+                  }`}
               >
                 {status === 'all' ? 'Todas' :
-                 status === 'AVAILABLE' ? 'Disponibles' :
-                 status === 'RENTED' ? 'Alquiladas' :
-                 status === 'RESERVED' ? 'Reservadas' :
-                 'Mantenimiento'}
+                  status === 'AVAILABLE' ? 'Disponibles' :
+                    status === 'RENTED' ? 'Alquiladas' :
+                      status === 'RESERVED' ? 'Reservadas' :
+                        'Mantenimiento'}
                 {status !== 'all' && (
                   <span className="ml-2 text-xs">
                     ({state.properties.filter(p => p.status === status).length})
@@ -286,7 +292,7 @@ export function Properties() {
             ))}
           </div>
         </div>
-     {/* Properties Grid */}
+        {/* Properties Grid */}
         {filteredProperties.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProperties.map((property) => (
@@ -311,10 +317,10 @@ export function Properties() {
             </div>
             <h3 className="text-lg font-medium text-slate-900 mb-2">No se encontraron propiedades</h3>
             <p className="text-slate-600 mb-4">
-              {filter === 'all' 
+              {filter === 'all'
                 ? "Aún no has agregado ninguna propiedad."
-                : `No se encontraron propiedades con estado "${filter === 'AVAILABLE' ? 'disponibles' : 
-                    filter === 'RENTED' ? 'alquiladas' : 
+                : `No se encontraron propiedades con estado "${filter === 'AVAILABLE' ? 'disponibles' :
+                  filter === 'RENTED' ? 'alquiladas' :
                     filter === 'RESERVED' ? 'reservadas' : 'en mantenimiento'}".`
               }
             </p>
@@ -354,16 +360,16 @@ export function Properties() {
         />
       )}
 
-          <ConfirmDialog
-              isOpen={isConfirmOpen}
-              title={confirmOptions.title}
-              message={confirmOptions.message}
-              confirmText={confirmOptions.confirmText}
-              cancelText={confirmOptions.cancelText}
-              type={confirmOptions.type}
-              onConfirm={handleConfirm}
-              onCancel={handleCancel}
-            />
+      <ConfirmDialog
+        isOpen={isConfirmOpen}
+        title={confirmOptions.title}
+        message={confirmOptions.message}
+        confirmText={confirmOptions.confirmText}
+        cancelText={confirmOptions.cancelText}
+        type={confirmOptions.type}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
     </div>
   );
 }

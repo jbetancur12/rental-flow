@@ -15,7 +15,7 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    type: 'apartment' as Property['type'],
+    type: 'APARTMENT' as Property['type'],
     address: '',
     size: 0,
     rooms: 0,
@@ -51,7 +51,7 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
     } else {
       setFormData({
         name: '',
-        type: 'apartment',
+        type: 'APARTMENT',
         address: '',
         size: 0,
         rooms: 0,
@@ -77,9 +77,9 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
       let finalAddress = formData.address;
       
       if (selectedUnit) {
-        if (selectedUnit.type === 'building' && formData.unitNumber) {
+        if (selectedUnit.type === 'BUILDING' && formData.unitNumber) {
           finalAddress = `${selectedUnit.address}, Unidad ${formData.unitNumber}`;
-        } else if (selectedUnit.type === 'house' || selectedUnit.type === 'commercial') {
+        } else if (selectedUnit.type === 'HOUSE' || selectedUnit.type === 'COMMERCIAL') {
           finalAddress = selectedUnit.address;
         }
       }
@@ -124,11 +124,11 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
     const selectedUnit = state.units.find(u => u.id === unitId);
     if (selectedUnit) {
       // Auto-set property type based on unit type
-      let propertyType: Property['type'] = 'apartment';
-      if (selectedUnit.type === 'house') {
-        propertyType = 'house';
-      } else if (selectedUnit.type === 'commercial') {
-        propertyType = 'commercial';
+      let propertyType: Property['type'] = 'APARTMENT';
+      if (selectedUnit.type === 'HOUSE') {
+        propertyType = 'HOUSE';
+      } else if (selectedUnit.type === 'COMMERCIAL') {
+        propertyType = 'COMMERCIAL';
       }
       
       setFormData({
@@ -136,7 +136,7 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
         unitId,
         type: propertyType,
         address: selectedUnit.address,
-        name: selectedUnit.type === 'building' ? '' : selectedUnit.name
+        name: selectedUnit.type === 'BUILDING' ? '' : selectedUnit.name
       });
     } else {
       setFormData({
@@ -191,8 +191,8 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
                 <option value="">Elegir una unidad...</option>
                 {state.units.map((unit) => (
                   <option key={unit.id} value={unit.id}>
-                    {unit.name} - {unit.type === 'building' ? 'Edificio' : 
-                                   unit.type === 'house' ? 'Casa' : 'Comercial'} ({unit.address})
+                    {unit.name} - {unit.type === 'BUILDING' ? 'Edificio' : 
+                                   unit.type === 'HOUSE' ? 'Casa' : 'Comercial'} ({unit.address})
                   </option>
                 ))}
               </select>
@@ -214,7 +214,7 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder={
-                      selectedUnit.type === 'building' 
+                      selectedUnit.type === 'BUILDING' 
                         ? 'ej., Apartamento 2A, Suite 200' 
                         : selectedUnit.name
                     }
@@ -230,24 +230,24 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
                     value={formData.type}
                     onChange={(e) => setFormData({ ...formData, type: e.target.value as Property['type'] })}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    disabled={selectedUnit.type !== 'building' || isSubmitting}
+                    disabled={selectedUnit.type !== 'BUILDING' || isSubmitting}
                   >
-                    {selectedUnit.type === 'building' ? (
+                    {selectedUnit.type === 'BUILDING' ? (
                       <>
-                        <option value="apartment">Apartamento</option>
-                        <option value="commercial">Comercial</option>
+                        <option value="APARTMENT">Apartamento</option>
+                        <option value="COMMERCIAL">Comercial</option>
                       </>
-                    ) : selectedUnit.type === 'house' ? (
-                      <option value="house">Casa</option>
+                    ) : selectedUnit.type === 'HOUSE' ? (
+                      <option value="HOUSE">Casa</option>
                     ) : (
-                      <option value="commercial">Comercial</option>
+                      <option value="COMMERCIAL">Comercial</option>
                     )}
                   </select>
                 </div>
               </div>
 
-              {/* Unit Number and Floor (for buildings) */}
-              {selectedUnit.type === 'building' && (
+              {/* Unit Number and Floor (for BUILDINGs) */}
+              {selectedUnit.type === 'BUILDING' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -298,7 +298,7 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
-                    {formData.type === 'commercial' ? 'Habitaciones/Espacios' : 'Dormitorios'}
+                    {formData.type === 'COMMERCIAL' ? 'Habitaciones/Espacios' : 'Dormitorios'}
                   </label>
                   <input
                     type="number"

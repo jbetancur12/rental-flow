@@ -148,7 +148,7 @@ export async function optionalAuth(req: AuthRequest, res: Response, next: NextFu
 
     next();
   } catch (error) {
-    // For optional auth, we don't return errors, just continue without user
+    console.error('Optional auth error:', error);
     next();
   }
 }

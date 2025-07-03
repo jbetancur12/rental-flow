@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Header } from '../components/Layout/Header';
 import { PaymentForm } from '../components/Payments/PaymentForm';
 import { useApp } from '../context/AppContext';
 import { generateFinancialReport, generateReceiptForPayment } from '../utils/reportGenerator';
-import { CreditCard, Calendar, User, Home, AlertCircle, CheckCircle, Clock, Download, Edit, Trash2, Filter, BarChart3, Receipt, XCircle, Undo2 } from 'lucide-react';
+import { CreditCard, Calendar, User, Home, AlertCircle, CheckCircle, Clock, Download, Edit, Filter, BarChart3, Receipt, XCircle, Undo2 } from 'lucide-react';
 import { format, isAfter } from 'date-fns';
 import { Payment } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -36,11 +36,10 @@ export function Payments() {
 
   const [showKPIs, setShowKPIs] = useState(true);
 
-  const fetchPayments = async () => {
 
+  const fetchPayments = useCallback(async () => {
     await loadPayments();
-
-  }
+  }, [loadPayments]);
 
   useEffect(() => {
     if (state.payments.length === 0) {
@@ -255,7 +254,7 @@ export function Payments() {
   };
 
   const handleGenerateReport = () => {
-    generateFinancialReport(filteredPayments, state.contracts);
+    generateFinancialReport(filteredPayments, state.contracts, state.tenants, state.properties);
   };
 
   const getCountForStatus = (statusValue: string) => {
@@ -352,9 +351,9 @@ export function Payments() {
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="all">Todos los Tipos</option>
-                    <option value="apartment">Apartamentos</option>
-                    <option value="house">Casas</option>
-                    <option value="commercial">Comerciales</option>
+                    <option value="APARTMENT">Apartamentos</option>
+                    <option value="HOUSE">Casas</option>
+                    <option value="COMMERCIAL">Comerciales</option>
                   </select>
                 </div>
               </div>

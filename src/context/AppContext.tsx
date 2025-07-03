@@ -192,7 +192,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const properties = response.properties.map((prop: any) => ({
         id: prop.id,
         name: prop.name,
-        type: prop.type.toLowerCase(),
+        type: prop.type,
         address: prop.address,
         size: prop.size,
         rooms: prop.rooms,
@@ -228,7 +228,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const units = response.units.map((unit: any) => ({
         id: unit.id,
         name: unit.name,
-        type: unit.type.toLowerCase(),
+        type: unit.type,
         address: unit.address,
         description: unit.description,
         totalFloors: unit.totalFloors,
@@ -264,7 +264,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       // Transform response back to frontend format
       const property = {
         ...response.property,
-        type: response.property.type.toLowerCase(),
+        type: response.property.type,
         status: response.property.status,
         createdAt: new Date(response.property.createdAt),
         updatedAt: new Date(response.property.updatedAt),
@@ -293,7 +293,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       // Transform response back to frontend format
       const property = {
         ...response.property,
-        type: response.property.type.toLowerCase(),
+        type: response.property.type,
         status: response.property.status,
         createdAt: new Date(response.property.createdAt),
         updatedAt: new Date(response.property.updatedAt),
@@ -333,7 +333,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       // Transform response back to frontend format
       const unit = {
         ...response.unit,
-        type: response.unit.type.toLowerCase(),
+        type: response.unit.type,
         createdAt: new Date(response.unit.createdAt),
         updatedAt: new Date(response.unit.updatedAt),
       };
@@ -360,7 +360,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       // Transform response back to frontend format
       const unit = {
         ...response.unit,
-        type: response.unit.type.toLowerCase(),
+        type: response.unit.type,
         createdAt: new Date(response.unit.createdAt),
         updatedAt: new Date(response.unit.updatedAt),
       };

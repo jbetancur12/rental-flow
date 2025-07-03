@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Header } from '../components/Layout/Header';
 import { TenantForm } from '../components/Tenants/TenantForm';
 import { TenantDetails } from '../components/Tenants/TenantDetails';
@@ -22,7 +22,9 @@ export function Tenants() {
   const [selectedTenant, setSelectedTenant] = useState<Tenant | undefined>();
   const [paymentTenant, setPaymentTenant] = useState<Tenant | undefined>();
 
-  const fetchTenants = async () => {
+
+
+  const fetchTenants = useCallback(async () => {
     try {
       // Simulate fetching tenants from an API
       await getTenants();
@@ -30,7 +32,7 @@ export function Tenants() {
     } catch (error) {
       console.error('Failed to fetch tenants:', error);
     }
-  }
+  }, [getTenants]);
 
   useEffect(() => {
     if (state.tenants.length === 0) {

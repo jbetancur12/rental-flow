@@ -29,7 +29,7 @@ export const mockProperties: Property[] = [
   {
     id: 'prop-1',
     name: 'Apartment 2A',
-    type: 'apartment',
+    type: 'APARTMENT',
     address: '123 Main Street, Unit 2A',
     size: 750,
     rooms: 2,
@@ -47,7 +47,7 @@ export const mockProperties: Property[] = [
   {
     id: 'prop-2',
     name: 'Apartment 3B',
-    type: 'apartment',
+    type: 'APARTMENT',
     address: '123 Main Street, Unit 3B',
     size: 900,
     rooms: 2,

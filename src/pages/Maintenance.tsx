@@ -2,9 +2,6 @@ import { useState, useEffect } from 'react';
 import { Header } from '../components/Layout/Header';
 import { MaintenanceForm } from '../components/Maintenance/MaintenanceForm';
 import { useApp } from '../context/AppContext';
-import { mockMaintenanceRequests } from '../data/mockData';
-import { mockProperties } from '../data/mockData';
-import { mockUnits } from '../data/mockUnits';
 import { generateMaintenanceReport } from '../utils/reportGenerator';
 import { Wrench, AlertTriangle, User, Home, Calendar, DollarSign, Clock, Download, Edit, Trash2, Filter, UserPlus, Eye, X } from 'lucide-react';
 import { format } from 'date-fns';
@@ -62,12 +59,8 @@ useEffect(() => {
   loadInitialData();
 
 }, [
-  state.units.length, 
-  state.properties.length, 
-  state.maintenanceRequests.length,
-  loadUnits, 
-  loadProperties, 
-  loadMaintenanceRequests
+
+  
 ]);
 
   // FIX: Filtros funcionando correctamente
@@ -218,7 +211,7 @@ useEffect(() => {
   };
 
   const handleGenerateReport = () => {
-    generateMaintenanceReport(filteredRequests);
+    generateMaintenanceReport(filteredRequests, state.properties);
   };
 
   // Contadores para tabs

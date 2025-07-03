@@ -221,9 +221,9 @@ const occupancyData = useMemo(() => {
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Types</option>
-                <option value="apartment">Apartments</option>
-                <option value="house">Houses</option>
-                <option value="commercial">Commercial</option>
+                <option value="APARTMENT">Apartments</option>
+                <option value="HOUSE">Houses</option>
+                <option value="COMMERCIAL">Commercial</option>
               </select>
             </div>
           </div>

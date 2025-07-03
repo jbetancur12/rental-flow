@@ -19,11 +19,11 @@ export function UnitCard({
 }: UnitCardProps) {
   const getUnitIcon = () => {
     switch (unit.type) {
-      case 'building':
+      case 'BUILDING':
         return <Building2 className="w-6 h-6 text-blue-600" />;
-      case 'house':
+      case 'HOUSE':
         return <Home className="w-6 h-6 text-emerald-600" />;
-      case 'commercial':
+      case 'COMMERCIAL':
         return <Store className="w-6 h-6 text-orange-600" />;
       default:
         return <Building2 className="w-6 h-6 text-slate-600" />;
@@ -32,11 +32,11 @@ export function UnitCard({
 
   const getUnitTypeColor = () => {
     switch (unit.type) {
-      case 'building':
+      case 'BUILDING':
         return 'bg-blue-100 text-blue-800';
-      case 'house':
+      case 'HOUSE':
         return 'bg-emerald-100 text-emerald-800';
-      case 'commercial':
+      case 'COMMERCIAL':
         return 'bg-orange-100 text-orange-800';
       default:
         return 'bg-slate-100 text-slate-800';
@@ -96,7 +96,7 @@ export function UnitCard({
 
       {/* Unit Type Specific Info */}
       <div className="p-6">
-        {unit.type === 'building' && (
+        {unit.type === 'BUILDING' && (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
@@ -163,7 +163,7 @@ export function UnitCard({
           </div>
         )}
 
-        {unit.type === 'house' && (
+        {unit.type === 'HOUSE' && (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
@@ -197,7 +197,7 @@ export function UnitCard({
           </div>
         )}
 
-        {unit.type === 'commercial' && (
+        {unit.type === 'COMMERCIAL' && (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
