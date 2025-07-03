@@ -2,6 +2,7 @@
 
 import { Payment } from '../../types';
 import { DollarSign, Calendar, Tag, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+import { formatDateInUTC } from '../../utils/formatDate';
 
 interface PaymentHistoryProps {
   payments: Payment[];
@@ -86,7 +87,7 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
                   <div>
                     <p className="text-sm text-slate-500">Paid Date</p>
                     <p className="font-medium text-slate-900">
-                      {payment.paidDate ? new Date(payment.paidDate).toLocaleDateString() : 'N/A'}
+                      {payment.paidDate ? formatDateInUTC(payment.paidDate) : 'N/A'}
                     </p>
                   </div>
                 </div>

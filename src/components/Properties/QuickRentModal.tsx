@@ -29,11 +29,14 @@ export function QuickRentModal({ property, isOpen, onClose }: QuickRentModalProp
     if (!contract) return;
 
     try {
-
       const paymentsToCreate = [];
       const today = new Date();
-      const periodStart = new Date(contract.startDate);
-      periodStart.setHours(0, 0, 0, 0);
+      const todayUTC = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+
+      const currentPeriodStart = new Date(contract.startDate);
+        const contractEndDate = new Date(contract.endDate);
+      
+
 
       if (contract.securityDeposit > 0) {
         paymentsToCreate.push({
@@ -41,16 +44,21 @@ export function QuickRentModal({ property, isOpen, onClose }: QuickRentModalProp
           tenantId: contract.tenantId,
           amount: contract.securityDeposit,
           type: 'DEPOSIT' as const,
-          dueDate: new Date(contract.startDate),
+          dueDate: new Date(currentPeriodStart),
           status: 'PENDING' as const,
         });
       }
 
-      // 2. Bucle para generar los pagos de RENTA pendientes
-      while (periodStart <= today && periodStart <= new Date(contract.endDate)) {
-        const dueDate = new Date(periodStart);
-        dueDate.setMonth(dueDate.getMonth() + 1);
-        dueDate.setDate(0); // Último día del mes de inicio del período
+
+      while (currentPeriodStart <= todayUTC && currentPeriodStart <= contractEndDate) {
+
+        // La fecha de vencimiento es el inicio del período.
+        const dueDate = new Date(currentPeriodStart);
+
+        // El fin del período es un mes después del inicio, menos un día.
+        const periodEnd = new Date(currentPeriodStart);
+        periodEnd.setMonth(periodEnd.getMonth() + 1);
+        periodEnd.setDate(periodEnd.getDate());
 
         paymentsToCreate.push({
           contractId: contract.id,
@@ -59,30 +67,34 @@ export function QuickRentModal({ property, isOpen, onClose }: QuickRentModalProp
           type: 'RENT' as const,
           dueDate: dueDate,
           status: 'PENDING' as const,
-          periodStart: new Date(periodStart),
-          periodEnd: dueDate,
+          periodStart: new Date(currentPeriodStart),
+          periodEnd: periodEnd,
         });
 
-        // Avanzamos al siguiente mes
-        periodStart.setMonth(periodStart.getMonth() + 1);
+        // Avanzamos al inicio del siguiente período.
+        currentPeriodStart.setMonth(currentPeriodStart.getMonth() + 1);
       }
 
       // 3. Creamos todos los pagos necesarios en la base de datos
       if (paymentsToCreate.length > 0) {
+        console.log(`Creando ${paymentsToCreate.length} pago(s)...`);
         for (const paymentData of paymentsToCreate) {
-          // Aquí es mejor tener una función createPayment que no genere el ID localmente
           await createPayment(paymentData);
         }
       }
 
+      // --- FIN DE LA LÓGICA CORREGIDA ---
 
+      // Actualizaciones de estado (sin cambios)
       await updateProperty(property.id, { ...property, status: 'RENTED' });
       await updateContract(contract.id, { ...contract, status: 'ACTIVE', propertyId: property.id });
       const tenant = state.tenants.find(t => t.id === contract.tenantId);
       if (tenant && tenant.status !== 'ACTIVE') {
         await updateTenant(tenant.id, { ...tenant, status: 'ACTIVE' });
-      } 
+      }
+
       onClose();
+
     } catch (error) {
       console.error('Error assigning contract to property:', error);
       alert('Error occurred while renting property');

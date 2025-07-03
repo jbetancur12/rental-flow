@@ -5,8 +5,9 @@ import { ContractDetails } from '../components/Contracts/ContractDetails';
 import { useApp } from '../context/AppContext';
 import { generateContractPDF } from '../utils/reportGenerator';
 import { FileText, Calendar, DollarSign, User, Home, Download, Edit, Eye, Trash2 } from 'lucide-react';
-import { format } from 'date-fns';
 import { Contract } from '../types';
+import { formatInTimeZone } from 'date-fns-tz';
+import { subDays } from 'date-fns';
 
 export function Contracts() {
   const { state, updateContract, createContract, loadContracts, deleteContract } = useApp();
@@ -161,7 +162,8 @@ export function Contracts() {
                   <div className="flex items-center text-slate-600">
                     <Calendar className="w-4 h-4 mr-3" />
                     <span className="text-sm">
-                      {format(contract.startDate, 'MMM d, yyyy')} - {format(contract.endDate, 'MMM d, yyyy')}
+                      {formatInTimeZone(contract.startDate, 'UTC', 'MMM d, yyyy')} - {formatInTimeZone(subDays(new Date(contract.endDate), 1), 'UTC', 'MMM d, yyyy')}
+
                     </span>
                   </div>
                 </div>

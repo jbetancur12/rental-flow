@@ -103,10 +103,10 @@ const limiter = rateLimit({
   legacyHeaders: false,
 });
 
-app.use('/api/', limiter);
+app.use('/', limiter);
 
 // Body parsing middleware
-app.use('/api/webhooks', express.raw({ type: 'application/json' })); // For Stripe webhooks
+app.use('/webhooks', express.raw({ type: 'application/json' })); // For Stripe webhooks
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -122,7 +122,7 @@ app.get('/health', (req, res) => {
 });
 
 // API routes
-const API_PREFIX = `/api/${process.env.API_VERSION || 'v1'}`;
+const API_PREFIX = `/${process.env.API_VERSION || 'v1'}`;
 
 app.use(`${API_PREFIX}/auth`, authRoutes);
 app.use(`${API_PREFIX}/organizations`, organizationRoutes);
@@ -136,7 +136,7 @@ app.use(`${API_PREFIX}/maintenance`, maintenanceRoutes);
 app.use(`${API_PREFIX}/reports`, reportRoutes);
 app.use(`${API_PREFIX}/subscriptions`, subscriptionRoutes);
 app.use(`${API_PREFIX}/super-admin`, superAdminRoutes);
-app.use('/api/webhooks', webhookRoutes);
+app.use('/webhooks', webhookRoutes);
 
 // Socket.IO for real-time features
 io.on('connection', (socket) => {

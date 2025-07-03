@@ -5,6 +5,7 @@ import { useAuth } from './AuthContext';
 import { apiClient } from '../config/api';
 import { useToast } from '../hooks/useToast';
 import { Organization } from '../types/auth';
+import { formatDateInUTC } from '../utils/formatDate';
 
 interface AppState {
   properties: Property[];
@@ -205,8 +206,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         unitName: prop.unit.name,
         unitNumber: prop.unitNumber,
         floor: prop.floor,
-        createdAt: new Date(prop.createdAt),
-        updatedAt: new Date(prop.updatedAt),
+        createdAt:new Date(prop.createdAt),
+        updatedAt:new Date(prop.updatedAt),
       }));
 
       dispatch({ type: 'SET_PROPERTIES', payload: properties });
@@ -237,8 +238,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         amenities: unit.amenities || [],
         photos: unit.photos || [],
         manager: unit.manager,
-        createdAt: new Date(unit.createdAt),
-        updatedAt: new Date(unit.updatedAt),
+        createdAt:new Date(unit.createdAt),
+        updatedAt:new Date(unit.updatedAt),
       }));
 
       dispatch({ type: 'SET_UNITS', payload: units });
@@ -266,8 +267,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ...response.property,
         type: response.property.type,
         status: response.property.status,
-        createdAt: new Date(response.property.createdAt),
-        updatedAt: new Date(response.property.updatedAt),
+        createdAt:new Date(response.property.createdAt),
+        updatedAt:new Date(response.property.updatedAt),
       };
 
       dispatch({ type: 'ADD_PROPERTY', payload: property });
@@ -295,8 +296,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ...response.property,
         type: response.property.type,
         status: response.property.status,
-        createdAt: new Date(response.property.createdAt),
-        updatedAt: new Date(response.property.updatedAt),
+        createdAt:new Date(response.property.createdAt),
+        updatedAt:new Date(response.property.updatedAt),
       };
 
       dispatch({ type: 'UPDATE_PROPERTY', payload: property });
@@ -334,8 +335,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const unit = {
         ...response.unit,
         type: response.unit.type,
-        createdAt: new Date(response.unit.createdAt),
-        updatedAt: new Date(response.unit.updatedAt),
+        createdAt:new Date(response.unit.createdAt),
+        updatedAt:new Date(response.unit.updatedAt),
       };
 
       dispatch({ type: 'ADD_UNIT', payload: unit });
@@ -361,8 +362,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const unit = {
         ...response.unit,
         type: response.unit.type,
-        createdAt: new Date(response.unit.createdAt),
-        updatedAt: new Date(response.unit.updatedAt),
+        createdAt:new Date(response.unit.createdAt),
+        updatedAt:new Date(response.unit.updatedAt),
       };
 
       dispatch({ type: 'UPDATE_UNIT', payload: unit });
@@ -488,12 +489,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const response = await apiClient.getPayments();
 
       // Transform backend payments to frontend format
-      const payments = response.payments.map((payment: any) => ({
+      const payments = response.payments.map((payment: Payment) => ({
         ...payment,
         type: payment.type.toUpperCase(),
         status: payment.status,
-        dueDate: new Date(payment.dueDate),
-        paidDate: payment.paidDate ? new Date(payment.paidDate) : null,
+        dueDate: payment.dueDate,
+        paidDate: payment.paidDate ? formatDateInUTC(payment.paidDate) : null,
       }));
 
       dispatch({ type: 'LOAD_INITIAL_DATA', payload: { payments } });
@@ -553,8 +554,8 @@ const loadMaintenanceRequests = async () => {
             priority: request.priority.toUpperCase(),
             category: request.category.toUpperCase(),
             status: request.status.toUpperCase(),
-            reportedDate: new Date(request.reportedDate),
-            completedDate: request.completedDate ? new Date(request.completedDate) : null,
+            reportedDate: formatDateInUTC(request.reportedDate),
+            completedDate: request.completedDate ? formatDateInUTC(request.completedDate) : null,
         }));
 
         dispatch({ type: 'LOAD_INITIAL_DATA', payload: { maintenanceRequests: requests } });

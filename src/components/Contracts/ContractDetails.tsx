@@ -1,8 +1,9 @@
 
 import { Contract, Property, Tenant } from '../../types';
 import { X, FileText, Download, Edit, Calendar, DollarSign, User, Home } from 'lucide-react';
-import { format } from 'date-fns';
 import { generateContractPDF } from '../../utils/reportGenerator';
+import { formatInTimeZone } from 'date-fns-tz';
+import { subDays } from 'date-fns';
 
 interface ContractDetailsProps {
   contract: Contract;
@@ -86,7 +87,7 @@ export function ContractDetails({ contract, property, tenant, isOpen, onClose, o
                 <div>
                   <p className="text-sm text-slate-500">Contract Period</p>
                   <p className="font-medium text-slate-900">
-                    {format(contract.startDate, 'MMM d, yyyy')} - {format(contract.endDate, 'MMM d, yyyy')}
+                    {formatInTimeZone(contract.startDate, 'UTC', 'MMM d, yyyy')} - {formatInTimeZone(subDays(new Date(contract.endDate),1), 'UTC', 'MMM d, yyyy')}
                   </p>
                 </div>
               </div>
@@ -109,7 +110,7 @@ export function ContractDetails({ contract, property, tenant, isOpen, onClose, o
                   <Calendar className="w-5 h-5 text-slate-400 mr-3" />
                   <div>
                     <p className="text-sm text-slate-500">Signed Date</p>
-                    <p className="font-medium text-slate-900">{format(contract.signedDate, 'MMM d, yyyy')}</p>
+                    <p className="font-medium text-slate-900">{formatInTimeZone(contract.signedDate, 'UTC', 'MMM d, yyyy')}</p>
                   </div>
                 </div>
               )}
@@ -182,16 +183,16 @@ export function ContractDetails({ contract, property, tenant, isOpen, onClose, o
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-blue-50 rounded-lg p-4">
                 <p className="text-sm text-blue-600 font-medium">Start Date</p>
-                <p className="text-lg font-semibold text-blue-900">{format(contract.startDate, 'MMM d, yyyy')}</p>
+                <p className="text-lg font-semibold text-blue-900">{formatInTimeZone(contract.startDate, 'UTC', 'MMM d, yyyy')}</p>
               </div>
               <div className="bg-orange-50 rounded-lg p-4">
                 <p className="text-sm text-orange-600 font-medium">End Date</p>
-                <p className="text-lg font-semibold text-orange-900">{format(contract.endDate, 'MMM d, yyyy')}</p>
+                <p className="text-lg font-semibold text-orange-900">{formatInTimeZone(subDays(new Date(contract.endDate),1), 'UTC', 'MMM d, yyyy')}</p>
               </div>
               {contract.signedDate && (
                 <div className="bg-emerald-50 rounded-lg p-4">
                   <p className="text-sm text-emerald-600 font-medium">Signed Date</p>
-                  <p className="text-lg font-semibold text-emerald-900">{format(contract.signedDate, 'MMM d, yyyy')}</p>
+                  <p className="text-lg font-semibold text-emerald-900">{formatInTimeZone(contract.signedDate, 'UTC', 'MMM d, yyyy')}</p>
                 </div>
               )}
             </div>

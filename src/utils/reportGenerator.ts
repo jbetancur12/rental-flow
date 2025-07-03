@@ -2,7 +2,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Contract, MaintenanceRequest, Payment, Property, Tenant, Unit } from '../types';
 import { formatDate } from '../lib/utils';
-import { format } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 
 const propertyTypeSpanish = {
   APARTMENT: 'Apartamento',
@@ -261,13 +261,13 @@ export const generateFinancialReport = async (
     const contract = contracts.find(c => c.id === payment.contractId);
     const tenantName = tenants.find(t => t.id === payment.tenantId)?.firstName || 'N/A';
     const propertyName = properties.find(p => p.id === contract?.propertyId)?.name || 'N/A';
-    const paymentDate = payment.paidDate ? format(new Date(payment.paidDate), 'dd/MM/yyyy') : format(new Date(payment.dueDate), 'dd/MM/yyyy');
-    
+    const paymentDate = payment.paidDate ? formatInTimeZone(payment.paidDate, 'UTC', 'dd/MM/yyyy') : formatInTimeZone(payment.dueDate, 'UTC', 'dd/MM/yyyy');
+    const paymentType = paymentTypeSpanish[payment.type] || payment.type
     return [
       paymentDate,
       tenantName,
       propertyName,
-      paymentTypeSpanish[payment.type] || payment.type,
+      paymentType,
       `$${payment.amount.toLocaleString()}`,
       paymentStatusSpanish[payment.status] || payment.status
     ];
@@ -475,9 +475,10 @@ export const generatePaymentReceipt = (payment: Payment, tenant: Tenant, propert
   const periodText = (payment.periodStart && payment.periodEnd)
     ? `${formatDate(payment.periodStart)} - ${formatDate(payment.periodEnd)}`
     : formatDate(payment.dueDate);
+  const paymentType = paymentTypeSpanish[payment.type] || payment.type
 
   const tableBody = [[
-    paymentTypeSpanish[payment.type] || payment.type,
+    paymentType,
     periodText,
     property.name,
     paymentMethodSpanish[payment.method] || payment.method,

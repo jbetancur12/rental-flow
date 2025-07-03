@@ -4,11 +4,12 @@ import { PaymentForm } from '../components/Payments/PaymentForm';
 import { useApp } from '../context/AppContext';
 import { generateFinancialReport, generateReceiptForPayment } from '../utils/reportGenerator';
 import { CreditCard, Calendar, User, Home, AlertCircle, CheckCircle, Clock, Download, Edit, Filter, BarChart3, Receipt, XCircle, Undo2 } from 'lucide-react';
-import { format, isAfter } from 'date-fns';
+import {  isAfter } from 'date-fns';
 import { Payment } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useConfirm } from '../hooks/useConfirm';
 import { ConfirmDialog } from '../components/UI/ConfirmDialog';
+import { formatDateInUTC } from '../utils/formatDate';
 
 const statusDisplayNames = {
   PAID: 'Pagado',
@@ -586,7 +587,7 @@ export function Payments() {
                       <td className="py-4 px-6">
                         <div className="flex items-center">
                           <Calendar className="w-4 h-4 text-slate-400 mr-2" />
-                          <span className="text-sm text-slate-900">{format(payment.dueDate, 'MMM d, yyyy')}</span>
+                          <span className="text-sm text-slate-900">{formatDateInUTC(payment.dueDate)}</span>
                         </div>
                       </td>
                       <td className="py-4 px-6">

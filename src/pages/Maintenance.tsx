@@ -4,8 +4,8 @@ import { MaintenanceForm } from '../components/Maintenance/MaintenanceForm';
 import { useApp } from '../context/AppContext';
 import { generateMaintenanceReport } from '../utils/reportGenerator';
 import { Wrench, AlertTriangle, User, Home, Calendar, DollarSign, Clock, Download, Edit, Trash2, Filter, UserPlus, Eye, X } from 'lucide-react';
-import { format } from 'date-fns';
 import { MaintenanceRequest } from '../types';
+import { formatInTimeZone } from 'date-fns-tz';
 
 export function Maintenance() {
   const { state, dispatch, updateMaintenanceRequest, createMaintenanceRequest, loadMaintenanceRequests, loadProperties, loadUnits } = useApp();
@@ -416,7 +416,7 @@ useEffect(() => {
                 </div>
                 <div className="flex items-center text-slate-600">
                   <Calendar className="w-4 h-4 mr-3" />
-                  <span className="text-sm">Reportado: {format(request.reportedDate, 'MMM d, yyyy')}</span>
+                  <span className="text-sm">Reportado: {formatInTimeZone(request.reportedDate, 'UTC', 'MMM d, yyyy')}</span>
                 </div>
               </div>
 
@@ -616,12 +616,12 @@ useEffect(() => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <h4 className="font-medium text-slate-900 mb-2">Fecha de Reporte</h4>
-                  <p className="text-slate-700">{format(selectedRequest.reportedDate, 'dd/MM/yyyy')}</p>
+                  <p className="text-slate-700">{formatInTimeZone(selectedRequest.reportedDate, 'UTC', 'dd/MM/yyyy')}</p>
                 </div>
                 {selectedRequest.completedDate && (
                   <div>
                     <h4 className="font-medium text-slate-900 mb-2">Fecha de Completado</h4>
-                    <p className="text-slate-700">{format(selectedRequest.completedDate, 'dd/MM/yyyy')}</p>
+                    <p className="text-slate-700">{formatInTimeZone(selectedRequest.completedDate, 'UTC', 'dd/MM/yyyy')}</p>
                   </div>
                 )}
               </div>

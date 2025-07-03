@@ -1,15 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import  { useState, useMemo } from 'react';
 import { Payment, Contract, Tenant } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { CheckCircle, X } from 'lucide-react';
+import { formatInTimeZone } from 'date-fns-tz';
 
-const formatDate = (dateString: string | Date) => {
-  return new Date(dateString).toLocaleDateString('es-CO', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
-};
 
 interface QuickPaymentModalProps {
   tenant?: Tenant;
@@ -119,7 +113,7 @@ export function QuickPaymentModal({ tenant, overduePayments = [], isOpen, onClos
                       <label htmlFor={`payment-${payment.id}`} className="flex-1 cursor-pointer">
                         <div className="flex justify-between items-center">
                           <span className="font-medium text-slate-800">
-                            {payment.periodStart ? formatDate(payment.periodStart) : 'N/A'} - {payment.periodEnd ? formatDate(payment.periodEnd) : 'N/A'}
+                            {payment.periodStart ? formatInTimeZone(payment.periodStart,'UTC', 'MMM d, yyyy') : 'N/A'} - {payment.periodEnd ? formatInTimeZone(payment.periodEnd,'UTC', 'MMM d, yyyy') : 'N/A'}
                           </span>
                           <span className="font-semibold text-slate-900">
                             ${payment.amount.toLocaleString('es-CO')}

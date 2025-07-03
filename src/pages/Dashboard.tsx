@@ -14,8 +14,8 @@ import {
     Plus
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { formatInTimeZone } from 'date-fns-tz';
 
 export function Dashboard() {
     const { state } = useApp();
@@ -57,7 +57,7 @@ export function Dashboard() {
                 .reduce((sum, req) => sum + (req.actualCost || 0), 0);
             
             dataPoints.push({
-                month: format(targetDate, 'MMM', { locale: es }),
+                month: formatInTimeZone(targetDate, 'UTC', 'MMM', { locale: es }),
                 revenue: monthlyRevenue,
                 expenses: monthlyExpenses,
             });
