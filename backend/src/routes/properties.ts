@@ -201,6 +201,8 @@ router.put('/:id',
   ],
   handleValidationErrors,
   async (req:Request, res:Response) => {
+
+    const {unitName, ...updateDate} = req.body;
     try {
       const { id } = req.params;
       const organizationId = (req as any).organizationId;
@@ -218,9 +220,9 @@ router.put('/:id',
       }
 
       // Verify unit belongs to organization if provided
-      if (req.body.unitId) {
+      if (updateDate.unitId) {
         const unit = await prisma.unit.findFirst({
-          where: { id: req.body.unitId, organizationId }
+          where: { id: updateDate.unitId, organizationId }
         });
 
         if (!unit) {
@@ -233,7 +235,7 @@ router.put('/:id',
 
       const property = await prisma.property.update({
         where: { id },
-        data: req.body,
+        data: updateDate,
         include: {
           unit: true
         }

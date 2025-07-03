@@ -814,7 +814,7 @@ router.get('/units',
         return {
           id: unit.id,
           name: unit.name,
-          type: unit.type.toLowerCase(),
+          type: unit.type,
           address: unit.address,
           totalFloors: unit.totalFloors,
           floors: unit.floors,
