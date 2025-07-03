@@ -19,9 +19,7 @@ export const generatePendingPayments = async () => {
     today.setHours(0, 0, 0, 0);
 
     for (const contract of activeContracts) {
-        console.log('------', contract.monthlyRent)
         const lastPayment = contract.payments.length > 0     ? contract.payments[0] : null;
-        console.log("🚀 ~ generatePendingPayments ~ lastPayment:", lastPayment)
 
         let nextPeriodStart = (lastPayment && lastPayment.periodEnd)
             ? new Date(lastPayment.periodEnd)

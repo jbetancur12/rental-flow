@@ -340,6 +340,40 @@ class ApiClient {
       body: JSON.stringify({status}),
     });
   }
+
+  async getMaintenanceRequests(params?: {
+    status?: string;
+    priority?: string;
+    category?: string;
+    page?: number;
+    limit?: number;
+  }) {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString());
+        }
+      });
+    }
+    
+    const query = searchParams.toString();
+    return this.request<any>(`/maintenance${query ? `?${query}` : ''}`);
+  }
+
+  async createMaintenaceRequest(data: any) {
+    return this.request<any>('/maintenance', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateMaintenanceRequest(id: string, data: any) {
+    return this.request<any>(`/maintenance/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
 }
 
 

@@ -161,8 +161,9 @@ const AppContext = createContext<{
   loadPayments: () => Promise<void>;
   updatePayment: (id: string, data: any) => Promise<void>;
   updatePaymentStatus: (id: string, status: 'CANCELLED' | 'REFUNDED') => Promise<void>;
-  createMaintenanceRequest?: (data: any) => Promise<void>;
-  updateMaintenanceRequest?: (id: string, data: any) => Promise<void>;
+  loadMaintenanceRequests: () => Promise<void>;
+  createMaintenanceRequest: (data: any) => Promise<void>;
+  updateMaintenanceRequest: (id: string, data: any) => Promise<void>;
 } | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -530,6 +531,50 @@ const updatePaymentStatus = async (id: string, status: 'CANCELLED' | 'REFUNDED')
     }
 };
 
+const loadMaintenanceRequests = async () => {
+    if (!authState.isAuthenticated || !authState.organization) return;
+
+    try {
+        const response = await apiClient.getMaintenanceRequests();
+
+        // Transform backend requests to frontend format
+        const requests = response.maintenanceRequests.map((request: any) => ({
+            ...request,
+            priority: request.priority.toUpperCase(),
+            category: request.category.toUpperCase(),
+            status: request.status.toUpperCase(),
+            reportedDate: new Date(request.reportedDate),
+            completedDate: request.completedDate ? new Date(request.completedDate) : null,
+        }));
+
+        dispatch({ type: 'LOAD_INITIAL_DATA', payload: { maintenanceRequests: requests } });
+    } catch (error: any) {
+        toast.error('Error', error.message || 'Failed to load maintenance requests');
+    }
+}
+
+const createMaintenanceRequest = async (data: any) => {
+    try {
+        const response = await apiClient.createMaintenaceRequest(data);
+        dispatch({ type: 'ADD_MAINTENANCE_REQUEST', payload: response.maintenanceRequest });
+        toast.success('Solicitud de Mantenimiento Creada', 'La nueva solicitud de mantenimiento ha sido enviada.');
+    } catch (error: any) {
+        toast.error('Error', error.message || 'Failed to create maintenance request');
+        throw error;
+    }
+};
+
+const updateMaintenanceRequest = async (id: string, data: any) => {
+    try {
+        const response = await apiClient.updateMaintenanceRequest(id, data);
+        dispatch({ type: 'UPDATE_MAINTENANCE_REQUEST', payload: response.maintenanceRequest });
+        toast.success('Solicitud de Mantenimiento Actualizada', 'La solicitud de mantenimiento ha sido actualizada exitosamente.');
+    } catch (error: any) {
+        toast.error('Error', error.message || 'Failed to update maintenance request');
+        throw error;
+    }
+};
+
 
   // Load initial data when authenticated
   useEffect(() => {
@@ -539,6 +584,7 @@ const updatePaymentStatus = async (id: string, status: 'CANCELLED' | 'REFUNDED')
       getTenants();
       loadContracts();
       loadPayments();
+      loadMaintenanceRequests();
     }
   }, [authState.isAuthenticated, authState.organization]);
 
@@ -600,6 +646,9 @@ const updatePaymentStatus = async (id: string, status: 'CANCELLED' | 'REFUNDED')
       updatePayment,
       updatePaymentStatus,
       deleteContract,
+      loadMaintenanceRequests,
+      createMaintenanceRequest,
+      updateMaintenanceRequest
 
     }}>
       {children}

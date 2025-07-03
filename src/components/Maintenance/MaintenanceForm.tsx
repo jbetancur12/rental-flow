@@ -17,9 +17,9 @@ export function MaintenanceForm({ request, properties, tenants, isOpen, onClose,
     tenantId: '',
     title: '',
     description: '',
-    priority: 'medium' as MaintenanceRequest['priority'],
-    category: 'other' as MaintenanceRequest['category'],
-    status: 'open' as MaintenanceRequest['status'],
+    priority: 'MEDIUM' as MaintenanceRequest['priority'],
+    category: 'OTHER' as MaintenanceRequest['category'],
+    status: 'OPEN' as MaintenanceRequest['status'],
     reportedDate: new Date().toISOString().split('T')[0],
     completedDate: '',
     assignedTo: '',
@@ -51,9 +51,9 @@ export function MaintenanceForm({ request, properties, tenants, isOpen, onClose,
         tenantId: '',
         title: '',
         description: '',
-        priority: 'medium',
-        category: 'other',
-        status: 'open',
+        priority: 'MEDIUM',
+        category: 'OTHER',
+        status: 'OPEN',
         reportedDate: new Date().toISOString().split('T')[0],
         completedDate: '',
         assignedTo: '',
@@ -183,10 +183,10 @@ export function MaintenanceForm({ request, properties, tenants, isOpen, onClose,
                 onChange={(e) => setFormData({ ...formData, priority: e.target.value as MaintenanceRequest['priority'] })}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="low">Baja</option>
-                <option value="medium">Media</option>
-                <option value="high">Alta</option>
-                <option value="emergency">Emergencia</option>
+                <option value="LOW">Baja</option>
+                <option value="MEDIUM">Media</option>
+                <option value="HIGH">Alta</option>
+                <option value="EMERGENCY">Emergencia</option>
               </select>
             </div>
 
@@ -199,12 +199,12 @@ export function MaintenanceForm({ request, properties, tenants, isOpen, onClose,
                 onChange={(e) => setFormData({ ...formData, category: e.target.value as MaintenanceRequest['category'] })}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="plumbing">Plomería</option>
-                <option value="electrical">Eléctrico</option>
-                <option value="hvac">Climatización</option>
-                <option value="appliance">Electrodomésticos</option>
-                <option value="structural">Estructural</option>
-                <option value="other">Otro</option>
+                <option value="PLUMBING">Plomería</option>
+                <option value="ELECTRICAL">Eléctrico</option>
+                <option value="HVAC">Climatización</option>
+                <option value="APPLIANCE">Electrodomésticos</option>
+                <option value="STRUCTURAL">Estructural</option>
+                <option value="OTHER">Otro</option>
               </select>
             </div>
 
@@ -217,10 +217,10 @@ export function MaintenanceForm({ request, properties, tenants, isOpen, onClose,
                 onChange={(e) => setFormData({ ...formData, status: e.target.value as MaintenanceRequest['status'] })}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="open">Abierta</option>
-                <option value="in_progress">En Progreso</option>
-                <option value="completed">Completada</option>
-                <option value="cancelled">Cancelada</option>
+                <option value="OPEN">Abierta</option>
+                <option value="IN_PROGRESS">En Progreso</option>
+                <option value="COMPLETED">Completada</option>
+                <option value="CANCELLED">Cancelada</option>
               </select>
             </div>
           </div>

@@ -11,10 +11,10 @@ import { format } from 'date-fns';
 import { MaintenanceRequest } from '../types';
 
 export function Maintenance() {
-  const { state, dispatch } = useApp();
+  const { state, dispatch, updateMaintenanceRequest, createMaintenanceRequest, loadMaintenanceRequests, loadProperties, loadUnits } = useApp();
   
   // FIX: Estados para filtros funcionando
-  const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'in_progress' | 'completed' | 'cancelled'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'OPEN' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'>('all');
   const [monthFilter, setMonthFilter] = useState<'all' | number>('all');
   const [yearFilter, setYearFilter] = useState<number>(new Date().getFullYear());
   
@@ -28,26 +28,47 @@ export function Maintenance() {
   const [assigningRequest, setAssigningRequest] = useState<MaintenanceRequest | undefined>();
   const [technicianName, setTechnicianName] = useState('');
 
-  useEffect(() => {
-    // FIX: Cargar unidades y propiedades primero, luego mantenimiento
-    if (state.units.length === 0) {
-      mockUnits.forEach(unit => {
-        dispatch({ type: 'ADD_UNIT', payload: unit });
-      });
+useEffect(() => {
+  // 1. Definimos una única función para cargar todos los datos iniciales.
+  const loadInitialData = async () => {
+    try {
+      // 2. Preparamos un array con todas las promesas de carga de datos.
+      //    Solo añadimos la promesa si los datos correspondientes no han sido cargados.
+      const promisesToFetch = [];
+
+      if (state.units.length === 0) {
+        promisesToFetch.push(loadUnits());
+      }
+      if (state.properties.length === 0) {
+        promisesToFetch.push(loadProperties());
+      }
+      if (state.maintenanceRequests.length === 0) {
+        promisesToFetch.push(loadMaintenanceRequests());
+      }
+      
+      // 3. Usamos Promise.all para ejecutar todas las cargas de datos en paralelo.
+      //    Esto es mucho más rápido que llamarlas una por una.
+      if (promisesToFetch.length > 0) {
+        console.log('Cargando datos iniciales...');
+        await Promise.all(promisesToFetch);
+      }
+      
+    } catch (error) {
+      console.error("Error al cargar los datos iniciales:", error);
+      // Aquí podrías usar tu hook de toast para notificar al usuario.
     }
-    
-    if (state.properties.length === 0) {
-      mockProperties.forEach(property => {
-        dispatch({ type: 'ADD_PROPERTY', payload: property });
-      });
-    }
-    
-    if (state.maintenanceRequests.length === 0) {
-      mockMaintenanceRequests.forEach(request => {
-        dispatch({ type: 'ADD_MAINTENANCE_REQUEST', payload: request });
-      });
-    }
-  }, [state.units.length, state.properties.length, state.maintenanceRequests.length, dispatch]);
+  };
+
+  loadInitialData();
+
+}, [
+  state.units.length, 
+  state.properties.length, 
+  state.maintenanceRequests.length,
+  loadUnits, 
+  loadProperties, 
+  loadMaintenanceRequests
+]);
 
   // FIX: Filtros funcionando correctamente
   const filteredRequests = state.maintenanceRequests.filter(request => {
@@ -58,14 +79,14 @@ export function Maintenance() {
     
     // Filtro por mes y año
     if (monthFilter !== 'all') {
-      const requestMonth = request.reportedDate.getMonth() + 1;
-      const requestYear = request.reportedDate.getFullYear();
+      const requestMonth = new Date(request.reportedDate).getMonth() + 1;
+      const requestYear = new Date(request.reportedDate).getFullYear();
       
       if (requestMonth !== monthFilter || requestYear !== yearFilter) {
         return false;
       }
     } else if (yearFilter) {
-      const requestYear = request.reportedDate.getFullYear();
+      const requestYear = new Date(request.reportedDate).getFullYear();
       if (requestYear !== yearFilter) {
         return false;
       }
@@ -76,34 +97,34 @@ export function Maintenance() {
 
   const getPriorityColor = (priority: string) => {
     const colors = {
-      low: 'bg-blue-100 text-blue-800',
+      LOW: 'bg-blue-100 text-blue-800',
       medium: 'bg-yellow-100 text-yellow-800',
-      high: 'bg-orange-100 text-orange-800',
+      HIGH: 'bg-orange-100 text-orange-800',
       emergency: 'bg-red-100 text-red-800'
     };
-    return colors[priority as keyof typeof colors] || colors.low;
+    return colors[priority as keyof typeof colors] || colors.LOW;
   };
 
   const getStatusColor = (status: string) => {
     const colors = {
-      open: 'bg-red-100 text-red-800',
-      in_progress: 'bg-yellow-100 text-yellow-800',
-      completed: 'bg-emerald-100 text-emerald-800',
-      cancelled: 'bg-slate-100 text-slate-800'
+      OPEN: 'bg-red-100 text-red-800',
+      IN_PROGRESS: 'bg-yellow-100 text-yellow-800',
+      COMPLETED: 'bg-emerald-100 text-emerald-800',
+      CANCELLED: 'bg-slate-100 text-slate-800'
     };
-    return colors[status as keyof typeof colors] || colors.open;
+    return colors[status as keyof typeof colors] || colors.OPEN;
   };
 
   const getCategoryIcon = (category: string) => {
     const icons = {
-      plumbing: '🔧',
-      electrical: '⚡',
-      hvac: '🌡️',
-      appliance: '📱',
-      structural: '🏗️',
-      other: '🔨'
+      PLUMBING: '🔧',
+      ELECTRICAL: '⚡',
+      HVAC: '🌡️',
+      APPLIANCE: '📱',
+      STRUCTURAL: '🏗️',
+      OTHER: '🔨'
     };
-    return icons[category as keyof typeof icons] || icons.other;
+    return icons[category as keyof typeof icons] || icons.OTHER;
   };
 
   const getPropertyName = (propertyId: string) => {
@@ -152,7 +173,7 @@ export function Maintenance() {
     if (confirm('¿Está seguro de que desea marcar esta solicitud como completada?')) {
       const updatedRequest = {
         ...request,
-        status: 'completed' as const,
+        status: 'COMPLETED' as const,
         completedDate: new Date()
       };
       dispatch({ type: 'UPDATE_MAINTENANCE_REQUEST', payload: updatedRequest });
@@ -169,7 +190,7 @@ export function Maintenance() {
     const updatedRequest = {
       ...assigningRequest,
       assignedTo: technicianName.trim(),
-      status: 'in_progress' as const
+      status: 'IN_PROGRESS' as const
     };
 
     dispatch({ type: 'UPDATE_MAINTENANCE_REQUEST', payload: updatedRequest });
@@ -178,22 +199,20 @@ export function Maintenance() {
     setTechnicianName('');
   };
 
-  const handleSaveRequest = (requestData: Omit<MaintenanceRequest, 'id'>) => {
+  const handleSaveRequest = async (requestData: Omit<MaintenanceRequest, 'id'>) => {
     if (editingRequest) {
-      dispatch({
-        type: 'UPDATE_MAINTENANCE_REQUEST',
-        payload: {
-          ...requestData,
-          id: editingRequest.id
-        }
-      });
+     
+       await updateMaintenanceRequest(
+        editingRequest.id,
+        requestData
+      );
+      setEditingRequest(undefined);
     } else {
-      dispatch({
-        type: 'ADD_MAINTENANCE_REQUEST',
-        payload: {
-          ...requestData,
-          id: `maint-${Date.now()}`
-        }
+      await createMaintenanceRequest({
+        ...requestData,
+        id: crypto.randomUUID(),
+        reportedDate: new Date(),
+        status: 'OPEN' as const
       });
     }
   };
@@ -224,7 +243,7 @@ export function Maintenance() {
               <div>
                 <p className="text-sm text-slate-600">Solicitudes Abiertas</p>
                 <p className="text-2xl font-bold text-red-600">
-                  {state.maintenanceRequests.filter(r => r.status === 'open').length}
+                  {state.maintenanceRequests.filter(r => r.status === 'OPEN').length}
                 </p>
               </div>
               <AlertTriangle className="w-8 h-8 text-red-600" />
@@ -236,7 +255,7 @@ export function Maintenance() {
               <div>
                 <p className="text-sm text-slate-600">En Progreso</p>
                 <p className="text-2xl font-bold text-yellow-600">
-                  {state.maintenanceRequests.filter(r => r.status === 'in_progress').length}
+                  {state.maintenanceRequests.filter(r => r.status === 'IN_PROGRESS').length}
                 </p>
               </div>
               <Clock className="w-8 h-8 text-yellow-600" />
@@ -248,7 +267,7 @@ export function Maintenance() {
               <div>
                 <p className="text-sm text-slate-600">Completadas</p>
                 <p className="text-2xl font-bold text-emerald-600">
-                  {state.maintenanceRequests.filter(r => r.status === 'completed').length}
+                  {state.maintenanceRequests.filter(r => r.status === 'COMPLETED').length}
                 </p>
               </div>
               <Wrench className="w-8 h-8 text-emerald-600" />
@@ -329,10 +348,10 @@ export function Maintenance() {
         {/* FIX: Status Tabs funcionando */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex space-x-2">
-            {['all', 'open', 'in_progress', 'completed', 'cancelled'].map((status) => (
+            {['all', 'OPEN', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'].map((status) => (
               <button
                 key={status}
-                onClick={() => setStatusFilter(status as 'open' | 'in_progress' | 'completed' | 'cancelled' | 'all')}
+                onClick={() => setStatusFilter(status as 'OPEN' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'all')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   statusFilter === status
                     ? 'bg-blue-600 text-white'
@@ -340,9 +359,9 @@ export function Maintenance() {
                 }`}
               >
                 {status === 'all' ? 'Todas' :
-                 status === 'open' ? 'Abiertas' :
-                 status === 'in_progress' ? 'En Progreso' :
-                 status === 'completed' ? 'Completadas' :
+                 status === 'OPEN' ? 'Abiertas' :
+                 status === 'IN_PROGRESS' ? 'En Progreso' :
+                 status === 'COMPLETED' ? 'Completadas' :
                  'Canceladas'}
                 <span className="ml-2 text-xs">
                   ({getStatusCount(status)})
@@ -363,14 +382,14 @@ export function Maintenance() {
                     <h3 className="font-semibold text-slate-900 mb-1">{request.title}</h3>
                     <div className="flex items-center space-x-2">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(request.priority)}`}>
-                        {request.priority === 'low' ? 'Baja' :
-                         request.priority === 'medium' ? 'Media' :
-                         request.priority === 'high' ? 'Alta' : 'Emergencia'}
+                        {request.priority === 'LOW' ? 'Baja' :
+                         request.priority === 'MEDIUM' ? 'Media' :
+                         request.priority === 'HIGH' ? 'Alta' : 'Emergencia'}
                       </span>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
-                        {request.status === 'open' ? 'Abierta' :
-                         request.status === 'in_progress' ? 'En Progreso' :
-                         request.status === 'completed' ? 'Completada' : 'Cancelada'}
+                        {request.status === 'OPEN' ? 'Abierta' :
+                         request.status === 'IN_PROGRESS' ? 'En Progreso' :
+                         request.status === 'COMPLETED' ? 'Completada' : 'Cancelada'}
                       </span>
                     </div>
                   </div>
@@ -434,7 +453,7 @@ export function Maintenance() {
 
               {/* FIX: Botones funcionando */}
               <div className="mt-6 flex space-x-2">
-                {request.status === 'open' && (
+                {request.status === 'OPEN' && (
                   <button 
                     onClick={() => handleAssignTechnician(request)}
                     className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm flex items-center justify-center"
@@ -443,7 +462,7 @@ export function Maintenance() {
                     Asignar Técnico
                   </button>
                 )}
-                {request.status === 'in_progress' && (
+                {request.status === 'IN_PROGRESS' && (
                   <button 
                     onClick={() => handleMarkComplete(request)}
                     className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm"
@@ -569,14 +588,14 @@ export function Maintenance() {
                   <h3 className="text-xl font-semibold text-slate-900 mb-2">{selectedRequest.title}</h3>
                   <div className="flex items-center space-x-3">
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${getPriorityColor(selectedRequest.priority)}`}>
-                      {selectedRequest.priority === 'low' ? 'Baja' :
-                       selectedRequest.priority === 'medium' ? 'Media' :
-                       selectedRequest.priority === 'high' ? 'Alta' : 'Emergencia'}
+                      {selectedRequest.priority === 'LOW' ? 'Baja' :
+                       selectedRequest.priority === 'MEDIUM' ? 'Media' :
+                       selectedRequest.priority === 'HIGH' ? 'Alta' : 'Emergencia'}
                     </span>
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedRequest.status)}`}>
-                      {selectedRequest.status === 'open' ? 'Abierta' :
-                       selectedRequest.status === 'in_progress' ? 'En Progreso' :
-                       selectedRequest.status === 'completed' ? 'Completada' : 'Cancelada'}
+                      {selectedRequest.status === 'OPEN' ? 'Abierta' :
+                       selectedRequest.status === 'IN_PROGRESS' ? 'En Progreso' :
+                       selectedRequest.status === 'COMPLETED' ? 'Completada' : 'Cancelada'}
                     </span>
                   </div>
                 </div>

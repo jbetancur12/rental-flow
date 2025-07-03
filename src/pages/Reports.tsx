@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Header } from '../components/Layout/Header';
 import { useApp } from '../context/AppContext';
 import { generatePropertyReport, generateTenantReport, generateFinancialReport, generateMaintenanceReport, generateUnitReport } from '../utils/reportGenerator';
@@ -67,29 +67,71 @@ export function Reports() {
     .reduce((sum, m) => sum + (m.actualCost || m.estimatedCost || 0), 0);
 
   // Sample data for charts (you can make this dynamic based on actual data)
-  const monthlyRevenueData = [
-    { month: 'Jan', revenue: 12500, expenses: 4200, profit: 8300 },
-    { month: 'Feb', revenue: 13200, expenses: 3800, profit: 9400 },
-    { month: 'Mar', revenue: 11800, expenses: 5100, profit: 6700 },
-    { month: 'Apr', revenue: 14100, expenses: 4600, profit: 9500 },
-    { month: 'May', revenue: 13500, expenses: 3900, profit: 9600 },
-    { month: 'Jun', revenue: 14800, expenses: 4300, profit: 10500 },
-  ];
+const monthlyRevenueData = useMemo(() => {
+    const dataPoints = [];
+    const today = new Date();
+    for (let i = 11; i >= 0; i--) {
+      const targetDate = new Date();
+      targetDate.setMonth(today.getMonth() - i);
+      const targetMonth = targetDate.getMonth();
+      const targetYear = targetDate.getFullYear();
+
+      const revenue = state.payments
+        .filter(p => {
+          const paidDate = p.paidDate ? new Date(p.paidDate) : null;
+          return p.status === 'PAID' && paidDate && paidDate.getMonth() === targetMonth && paidDate.getFullYear() === targetYear;
+        })
+        .reduce((sum, p) => sum + p.amount, 0);
+
+      const expenses = state.maintenanceRequests
+        .filter(req => {
+          const completedDate = req.completedDate ? new Date(req.completedDate) : null;
+          return req.status === 'COMPLETED' && completedDate && completedDate.getMonth() === targetMonth && completedDate.getFullYear() === targetYear;
+        })
+        .reduce((sum, req) => sum + (req.actualCost || 0), 0);
+
+      dataPoints.push({
+        month: new Date(targetYear, targetMonth).toLocaleString('default', { month: 'short' }),
+        revenue,
+        expenses,
+        profit: revenue - expenses,
+      });
+    }
+    return dataPoints;
+  }, [state.payments, state.maintenanceRequests]);
 
   const propertyTypeData = [
-    { name: 'Apartments', value: 60, count: filteredProperties.filter(p => p.type === 'apartment').length },
-    { name: 'Houses', value: 25, count: filteredProperties.filter(p => p.type === 'house').length },
-    { name: 'Commercial', value: 15, count: filteredProperties.filter(p => p.type === 'commercial').length },
+    { name: 'Apartments', value: 60, count: filteredProperties.filter(p => p.type === 'APARTMENT').length },
+    { name: 'Houses', value: 25, count: filteredProperties.filter(p => p.type === 'HOUSE').length },
+    { name: 'Commercial', value: 15, count: filteredProperties.filter(p => p.type === 'COMMERCIAL').length },
   ];
 
-  const occupancyData = [
-    { month: 'Jan', rate: 85 },
-    { month: 'Feb', rate: 88 },
-    { month: 'Mar', rate: 82 },
-    { month: 'Apr', rate: 90 },
-    { month: 'May', rate: 87 },
-    { month: 'Jun', rate: occupancyRate },
-  ];
+const occupancyData = useMemo(() => {
+    const dataPoints = [];
+    const today = new Date();
+    for (let i = 11; i >= 0; i--) {
+        const targetDate = new Date();
+        targetDate.setMonth(today.getMonth() - i);
+        const targetMonth = targetDate.getMonth();
+        const targetYear = targetDate.getFullYear();
+        
+        // Contamos contratos activos en ese mes
+        const activeContractsThisMonth = state.contracts.filter(c => {
+            const startDate = new Date(c.startDate);
+            const endDate = new Date(c.endDate);
+            return c.status === 'ACTIVE' && startDate <= targetDate && endDate >= targetDate;
+        }).length;
+        
+        const totalProperties = state.properties.length > 0 ? state.properties.length : 1;
+        const rate = (activeContractsThisMonth / totalProperties) * 100;
+
+        dataPoints.push({
+            month: new Date(targetYear, targetMonth).toLocaleString('default', { month: 'short' }),
+            rate: parseFloat(rate.toFixed(1)),
+        });
+    }
+    return dataPoints;
+  }, [state.contracts, state.properties]);
 
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
 
@@ -102,11 +144,11 @@ export function Reports() {
   };
 
   const handleGenerateFinancialReport = () => {
-    generateFinancialReport(filteredPayments, filteredContracts);
+    generateFinancialReport(filteredPayments, filteredContracts, state.tenants, state.properties);
   };
 
   const handleGenerateMaintenanceReport = () => {
-    generateMaintenanceReport(state.maintenanceRequests);
+    generateMaintenanceReport(state.maintenanceRequests, state.properties);
   };
 
   // NEW: Unit Report

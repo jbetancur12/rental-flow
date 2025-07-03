@@ -1,7 +1,7 @@
 export interface Property {
   id: string;
   name: string;
-  type: 'apartment' | 'house' | 'commercial' | 'building';
+  type: 'APARTMENT' | 'HOUSE' | 'COMMERCIAL' | 'BUILDING';
   address: string;
   size: number;
   rooms: number;
@@ -19,7 +19,8 @@ export interface Property {
   // Legacy fields (keep for backward compatibility)
   buildingId?: string;
   floors?: number; // For houses
-  unitType?: 'apartment' | 'commercial' | 'office';
+  unitType?: 'APARTMENT' | 'COMMERCIAL' | 'OFFICE';
+  contracts?: Contract[]; // Array of contract IDs
   
   createdAt: Date;
   updatedAt: Date;
@@ -29,7 +30,7 @@ export interface Property {
 export interface Unit {
   id: string;
   name: string;
-  type: 'building' | 'house' | 'commercial'; // Main unit types
+  type: 'BUILDING' | 'HOUSE' | 'COMMERCIAL'; // Main unit types
   address: string;
   description?: string;
   
@@ -108,6 +109,7 @@ export interface Contract {
   renewalNotificationSent?: boolean;
   terminationDate?: Date;
   terminationReason?: string;
+  tenant?: Tenant; // Array of tenant IDs associated with the contract
 }
 
 export interface Payment {
@@ -131,9 +133,9 @@ export interface MaintenanceRequest {
   tenantId?: string;
   title: string;
   description: string;
-  priority: 'low' | 'medium' | 'high' | 'emergency';
-  category: 'plumbing' | 'electrical' | 'hvac' | 'appliance' | 'structural' | 'other';
-  status: 'open' | 'in_progress' | 'completed' | 'cancelled';
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'EMERGENCY';
+  category: 'PLUMBING' | 'ELECTRICAL' | 'HVAC' | 'APPLIANCE' | 'STRUCTURAL' | 'OTHER';
+  status: 'OPEN' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
   reportedDate: Date;
   completedDate?: Date;
   assignedTo?: string;

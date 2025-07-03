@@ -2,94 +2,116 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Contract, MaintenanceRequest, Payment, Property, Tenant, Unit } from '../types';
 import { formatDate } from '../lib/utils';
+import { format } from 'date-fns';
 
 
 export const generatePropertyReport = async (properties: Property[]) => {
   const pdf = new jsPDF();
-  
-  // Title
+
   pdf.setFontSize(20);
-  pdf.text('Reporte de Propiedades', 20, 30);
+  pdf.text('Reporte de Propiedades', 14, 22);
   
-  // Date
-  pdf.setFontSize(12);
-  pdf.text(`Generado el: ${new Date().toLocaleDateString()}`, 20, 45);
-  
-  // Summary
-  pdf.setFontSize(14);
-  pdf.text('Resumen', 20, 65);
   pdf.setFontSize(10);
-  pdf.text(`Total de Propiedades: ${properties.length}`, 20, 80);
-  pdf.text(`Disponibles: ${properties.filter(p => p.status === 'AVAILABLE').length}`, 20, 90);
-  pdf.text(`Alquiladas: ${properties.filter(p => p.status === 'RENTED').length}`, 20, 100);
-  pdf.text(`En Mantenimiento: ${properties.filter(p => p.status === 'MAINTENANCE').length}`, 20, 110);
-  
-  // Property details
-  let yPosition = 130;
-  pdf.setFontSize(14);
-  pdf.text('Detalles de Propiedades', 20, yPosition);
-  yPosition += 15;
-  
-  properties.forEach((property, index) => {
-    if (yPosition > 250) {
-      pdf.addPage();
-      yPosition = 30;
+  pdf.text(`Generado el: ${new Date().toLocaleDateString()}`, 14, 30);
+
+  // Resumen
+  pdf.setFontSize(12);
+  pdf.text('Resumen de Propiedades', 14, 45);
+  pdf.setFontSize(10);
+  pdf.text(`Total de Propiedades: ${properties.length}`, 14, 52);
+  pdf.text(`Disponibles: ${properties.filter(p => p.status === 'AVAILABLE').length}`, 14, 59);
+  pdf.text(`Alquiladas: ${properties.filter(p => p.status === 'RENTED').length}`, 14, 66);
+  pdf.text(`En Mantenimiento: ${properties.filter(p => p.status === 'MAINTENANCE').length}`, 14, 73);
+
+  // 1. Preparamos los datos para la tabla
+  const tableHead = [['#', 'Nombre', 'Dirección', 'Tipo', 'Alquiler', 'Estado']];
+  const tableBody = properties.map((property, index) => [
+    index + 1,
+    property.name,
+    property.address,
+    property.type,
+    `$${property.rent.toLocaleString()}`,
+    property.status
+  ]);
+
+  // 2. Usamos autoTable para generar la tabla
+  autoTable(pdf, {
+    head: tableHead,
+    body: tableBody,
+    startY: 85,
+    headStyles: {
+      fillColor: [67, 56, 202], // Un morado elegante
+      textColor: 255,
+      fontStyle: 'bold',
+    },
+    columnStyles: {
+      1: { halign: 'left' },
+      2: { halign: 'left' },
+      4: { halign: 'right' }
     }
-    
-    pdf.setFontSize(10);
-    pdf.text(`${index + 1}. ${property.name}`, 20, yPosition);
-    pdf.text(`Dirección: ${property.address}`, 30, yPosition + 10);
-    pdf.text(`Tipo: ${property.type}`, 30, yPosition + 20);
-    pdf.text(`Alquiler: $${property.rent.toLocaleString()}`, 30, yPosition + 30);
-    pdf.text(`Estado: ${property.status}`, 30, yPosition + 40);
-    yPosition += 55;
   });
-  
+
   pdf.save('reporte-propiedades.pdf');
 };
 
 // NEW: Unit Report Generator
 export const generateUnitReport = async (units: Unit[], properties: Property[]) => {
   const pdf = new jsPDF();
-  
+
   pdf.setFontSize(20);
-  pdf.text('Reporte de Unidades', 20, 30);
-  
-  pdf.setFontSize(12);
-  pdf.text(`Generado el: ${new Date().toLocaleDateString()}`, 20, 45);
-  
-  pdf.setFontSize(14);
-  pdf.text('Resumen', 20, 65);
+  pdf.text('Reporte de Unidades', 14, 22);
+
   pdf.setFontSize(10);
-  pdf.text(`Total de Unidades: ${units.length}`, 20, 80);
-  pdf.text(`Edificios: ${units.filter(u => u.type === 'building').length}`, 20, 90);
-  pdf.text(`Casas: ${units.filter(u => u.type === 'house').length}`, 20, 100);
-  pdf.text(`Comerciales: ${units.filter(u => u.type === 'commercial').length}`, 20, 110);
-  
-  let yPosition = 130;
-  pdf.setFontSize(14);
-  pdf.text('Detalles de Unidades', 20, yPosition);
-  yPosition += 15;
-  
-  units.forEach((unit, index) => {
-    if (yPosition > 240) {
-      pdf.addPage();
-      yPosition = 30;
-    }
-    
+  pdf.text(`Generado el: ${new Date().toLocaleDateString()}`, 14, 30);
+
+  // Resumen
+  pdf.setFontSize(12);
+  pdf.text('Resumen de Unidades', 14, 45);
+  pdf.setFontSize(10);
+  pdf.text(`Total de Unidades: ${units.length}`, 14, 52);
+  pdf.text(`Edificios: ${units.filter(u => u.type === 'BUILDING').length}`, 14, 59);
+  pdf.text(`Casas: ${units.filter(u => u.type === 'HOUSE').length}`, 14, 66);
+  pdf.text(`Comerciales: ${units.filter(u => u.type === 'COMMERCIAL').length}`, 14, 73);
+
+  // 1. Preparamos los datos para la tabla
+  const tableHead = [['#', 'Nombre de la Unidad', 'Tipo', 'Dirección', '# Prop.', 'Disp.', 'Ocup.']];
+  const tableBody = units.map((unit, index) => {
     const unitProperties = properties.filter(p => p.unitId === unit.id);
-    
-    pdf.setFontSize(12);
-    pdf.text(`${index + 1}. ${unit.name}`, 20, yPosition);
-    pdf.setFontSize(10);
-    pdf.text(`Tipo: ${unit.type}`, 30, yPosition + 10);
-    pdf.text(`Dirección: ${unit.address}`, 30, yPosition + 20);
-    pdf.text(`Propiedades: ${unitProperties.length}`, 30, yPosition + 30);
-    pdf.text(`Disponibles: ${unitProperties.filter(p => p.status === 'AVAILABLE').length}`, 30, yPosition + 40);
-    pdf.text(`Alquiladas: ${unitProperties.filter(p => p.status === 'RENTED').length}`, 30, yPosition + 50);
-    yPosition += 65;
+    const available = unitProperties.filter(p => p.status === 'AVAILABLE').length;
+    const rented = unitProperties.filter(p => p.status === 'RENTED').length;
+
+    return [
+      index + 1,
+      unit.name,
+      unit.type,
+      unit.address,
+      unitProperties.length,
+      available,
+      rented,
+    ];
   });
-  
+
+  // 2. Usamos autoTable para generar la tabla
+  autoTable(pdf, {
+    head: tableHead,
+    body: tableBody,
+    startY: 85,
+    headStyles: {
+      fillColor: [100, 116, 139], // Un gris pizarra
+      textColor: 255,
+      fontStyle: 'bold',
+    },
+    columnStyles: {
+      0: { halign: 'center' },
+      1: { halign: 'left' },
+      2: { halign: 'center' },
+      3: { halign: 'left' },
+      4: { halign: 'center' },
+      5: { halign: 'center' },
+      6: { halign: 'center' },
+    }
+  });
+
   pdf.save('reporte-unidades.pdf');
 };
 
@@ -97,102 +119,178 @@ export const generateTenantReport = async (tenants: Tenant[]) => {
   const pdf = new jsPDF();
   
   pdf.setFontSize(20);
-  pdf.text('Reporte de Inquilinos', 20, 30);
+  pdf.text('Reporte de Inquilinos', 14, 22);
   
-  pdf.setFontSize(12);
-  pdf.text(`Generado el: ${new Date().toLocaleDateString()}`, 20, 45);
-  
-  pdf.setFontSize(14);
-  pdf.text('Resumen', 20, 65);
   pdf.setFontSize(10);
-  pdf.text(`Total de Inquilinos: ${tenants.length}`, 20, 80);
-  pdf.text(`Activos: ${tenants.filter(t => t.status === 'ACTIVE').length}`, 20, 90);
-  pdf.text(`Pendientes: ${tenants.filter(t => t.status === 'PENDING').length}`, 20, 100);
+  pdf.text(`Generado el: ${new Date().toLocaleDateString()}`, 14, 30);
   
-  let yPosition = 120;
-  pdf.setFontSize(14);
-  pdf.text('Detalles de Inquilinos', 20, yPosition);
-  yPosition += 15;
-  
-  tenants.forEach((tenant, index) => {
-    if (yPosition > 250) {
-      pdf.addPage();
-      yPosition = 30;
+  // Resumen
+  pdf.setFontSize(12);
+  pdf.text('Resumen de Inquilinos', 14, 45);
+  pdf.setFontSize(10);
+  pdf.text(`Total de Inquilinos: ${tenants.length}`, 14, 52);
+  pdf.text(`Activos: ${tenants.filter(t => t.status === 'ACTIVE').length}`, 14, 59);
+  pdf.text(`Pendientes: ${tenants.filter(t => t.status === 'PENDING').length}`, 14, 66);
+
+  // 1. Preparamos los datos para la tabla
+  const tableHead = [['#', 'Nombre', 'Email', 'Teléfono', 'Estado', 'Ingreso Anual']];
+  const tableBody = tenants.map((tenant, index) => [
+    index + 1,
+    `${tenant.firstName} ${tenant.lastName}`,
+    tenant.email,
+    tenant.phone,
+    tenant.status,
+    `$${tenant.employment.income.toLocaleString()}`
+  ]);
+
+  // 2. Usamos autoTable para generar la tabla
+  autoTable(pdf, {
+    head: tableHead,
+    body: tableBody,
+    startY: 75,
+    headStyles: {
+      fillColor: [74, 98, 226], // Un azul corporativo
+      textColor: 255,
+      fontStyle: 'bold',
+    },
+    styles: {
+      halign: 'center'
+    },
+    columnStyles: {
+      1: { halign: 'left' }, // Alinear nombre
+      2: { halign: 'left' }, // Alinear email
+      5: { halign: 'right' } // Alinear ingreso
     }
-    
-    pdf.setFontSize(10);
-    pdf.text(`${index + 1}. ${tenant.firstName} ${tenant.lastName}`, 20, yPosition);
-    pdf.text(`Email: ${tenant.email}`, 30, yPosition + 10);
-    pdf.text(`Teléfono: ${tenant.phone}`, 30, yPosition + 20);
-    pdf.text(`Estado: ${tenant.status}`, 30, yPosition + 30);
-    pdf.text(`Ingresos: $${tenant.employment.income.toLocaleString()}`, 30, yPosition + 40);
-    yPosition += 55;
   });
   
   pdf.save('reporte-inquilinos.pdf');
 };
 
-export const generateFinancialReport = async (payments: Payment[], contracts: Contract[]) => {
+export const generateFinancialReport = async (
+  payments: Payment[], 
+  contracts: Contract[],
+  tenants: Tenant[],
+  properties: Property[]
+) => {
   const pdf = new jsPDF();
   
   pdf.setFontSize(20);
-  pdf.text('Reporte Financiero', 20, 30);
+  pdf.text('Reporte Financiero', 14, 22);
   
-  pdf.setFontSize(12);
-  pdf.text(`Generado el: ${new Date().toLocaleDateString()}`, 20, 45);
+  pdf.setFontSize(10);
+  pdf.text(`Generado el: ${new Date().toLocaleDateString()}`, 14, 30);
   
+  // La sección de resumen se mantiene igual
   const totalRevenue = payments.filter(p => p.status === 'PAID').reduce((sum, p) => sum + p.amount, 0);
   const pendingPayments = payments.filter(p => p.status === 'PENDING').reduce((sum, p) => sum + p.amount, 0);
   const overduePayments = payments.filter(p => p.status === 'OVERDUE').reduce((sum, p) => sum + p.amount, 0);
   
-  pdf.setFontSize(14);
-  pdf.text('Resumen Financiero', 20, 65);
+  pdf.setFontSize(12);
+  pdf.text('Resumen Financiero', 14, 45);
   pdf.setFontSize(10);
-  pdf.text(`Ingresos Totales: $${totalRevenue.toLocaleString()}`, 20, 80);
-  pdf.text(`Pagos Pendientes: $${pendingPayments.toLocaleString()}`, 20, 90);
-  pdf.text(`Pagos Vencidos: $${overduePayments.toLocaleString()}`, 20, 100);
-  pdf.text(`Contratos Activos: ${contracts.filter(c => c.status === 'ACTIVE').length}`, 20, 110);
-  
+  pdf.text(`Ingresos Totales (Pagados): $${totalRevenue.toLocaleString()}`, 14, 52);
+  pdf.text(`Monto Pendiente: $${pendingPayments.toLocaleString()}`, 14, 59);
+  pdf.text(`Monto Vencido: $${overduePayments.toLocaleString()}`, 14, 66);
+  pdf.text(`Contratos Activos: ${contracts.filter(c => c.status === 'ACTIVE').length}`, 14, 73);
+
+  // 2. Preparamos los datos para la tabla de transacciones
+  const tableHead = [['Fecha', 'Inquilino', 'Propiedad', 'Tipo', 'Monto', 'Estado']];
+  const tableBody = payments.map(payment => {
+    const contract = contracts.find(c => c.id === payment.contractId);
+    const tenantName = tenants.find(t => t.id === payment.tenantId)?.firstName || 'N/A';
+    const propertyName = properties.find(p => p.id === contract?.propertyId)?.name || 'N/A';
+    const paymentDate = payment.paidDate ? format(new Date(payment.paidDate), 'dd/MM/yyyy') : format(new Date(payment.dueDate), 'dd/MM/yyyy');
+    
+    return [
+      paymentDate,
+      tenantName,
+      propertyName,
+      payment.type,
+      `$${payment.amount.toLocaleString()}`,
+      payment.status,
+    ];
+  });
+
+  // 3. Generamos la tabla con autoTable
+  autoTable(pdf, {
+    head: tableHead,
+    body: tableBody,
+    startY: 85,
+    headStyles: {
+      fillColor: [34, 139, 34], // Un verde financiero
+      textColor: 255,
+      fontStyle: 'bold',
+    },
+    styles: {
+      halign: 'center',
+    },
+    columnStyles: {
+      1: { halign: 'left' },
+      2: { halign: 'left' },
+      4: { halign: 'right' },
+    }
+  });
+
   pdf.save('reporte-financiero.pdf');
 };
 
-export const generateMaintenanceReport = async (requests: MaintenanceRequest[]) => {
+export const generateMaintenanceReport = async (
+  requests: MaintenanceRequest[], 
+  properties: Property[]
+) => {
   const pdf = new jsPDF();
   
   pdf.setFontSize(20);
-  pdf.text('Reporte de Mantenimiento', 20, 30);
+  pdf.text('Reporte de Mantenimiento', 14, 22);
   
-  pdf.setFontSize(12);
-  pdf.text(`Generado el: ${new Date().toLocaleDateString()}`, 20, 45);
-  
-  const totalCost = requests.reduce((sum, r) => sum + (r.actualCost || r.estimatedCost || 0), 0);
-  
-  pdf.setFontSize(14);
-  pdf.text('Resumen de Mantenimiento', 20, 65);
   pdf.setFontSize(10);
-  pdf.text(`Total de Solicitudes: ${requests.length}`, 20, 80);
-  pdf.text(`Abiertas: ${requests.filter(r => r.status === 'open').length}`, 20, 90);
-  pdf.text(`En Progreso: ${requests.filter(r => r.status === 'in_progress').length}`, 20, 100);
-  pdf.text(`Completadas: ${requests.filter(r => r.status === 'completed').length}`, 20, 110);
-  pdf.text(`Costo Total: $${totalCost.toLocaleString()}`, 20, 120);
+  pdf.text(`Generado el: ${new Date().toLocaleDateString()}`, 14, 30);
   
-  let yPosition = 140;
-  pdf.setFontSize(14);
-  pdf.text('Detalles de Solicitudes', 20, yPosition);
-  yPosition += 15;
-  
-  requests.forEach((request, index) => {
-    if (yPosition > 250) {
-      pdf.addPage();
-      yPosition = 30;
-    }
+  // La sección de resumen se mantiene igual
+  const totalCost = requests.reduce((sum, r) => sum + (r.actualCost || 0), 0);
+  pdf.setFontSize(12);
+  pdf.text('Resumen de Mantenimiento', 14, 45);
+  pdf.setFontSize(10);
+  pdf.text(`Total de Solicitudes: ${requests.length}`, 14, 52);
+  pdf.text(`Abiertas: ${requests.filter(r => r.status === 'OPEN').length}`, 14, 59);
+  pdf.text(`En Progreso: ${requests.filter(r => r.status === 'IN_PROGRESS').length}`, 14, 66);
+  pdf.text(`Completadas: ${requests.filter(r => r.status === 'COMPLETED').length}`, 14, 73);
+  pdf.text(`Costo Total (Completadas): $${totalCost.toLocaleString()}`, 14, 80);
+
+  // 2. Preparamos los datos para la tabla
+  const tableHead = [['#', 'Título', 'Propiedad', 'Prioridad', 'Estado', 'Costo']];
+  const tableBody = requests.map((request, index) => {
+    const propertyName = properties.find(p => p.id === request.propertyId)?.name || 'N/A';
+    const cost = request.actualCost || request.estimatedCost || 0;
     
-    pdf.setFontSize(10);
-    pdf.text(`${index + 1}. ${request.title}`, 20, yPosition);
-    pdf.text(`Prioridad: ${request.priority}`, 30, yPosition + 10);
-    pdf.text(`Estado: ${request.status}`, 30, yPosition + 20);
-    pdf.text(`Costo: $${(request.actualCost || request.estimatedCost || 0).toLocaleString()}`, 30, yPosition + 30);
-    yPosition += 45;
+    return [
+      index + 1,
+      request.title,
+      propertyName,
+      request.priority,
+      request.status,
+      `$${cost.toLocaleString()}`
+    ];
+  });
+
+  // 3. Usamos autoTable para generar la tabla automáticamente
+  autoTable(pdf, {
+    head: tableHead,
+    body: tableBody,
+    startY: 90, // Posición donde empieza la tabla
+    headStyles: {
+      fillColor: [41, 128, 185], // Un color de cabecera profesional (azul)
+      textColor: 255,
+      fontStyle: 'bold',
+    },
+    styles: {
+      halign: 'center',
+    },
+    columnStyles: {
+      1: { halign: 'left' }, // Alinear el título a la izquierda
+      2: { halign: 'left' }, // Alinear la propiedad a la izquierda
+      5: { halign: 'right' }, // Alinear el costo a la derecha
+    }
   });
   
   pdf.save('reporte-mantenimiento.pdf');

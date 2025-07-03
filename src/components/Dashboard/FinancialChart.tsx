@@ -1,16 +1,15 @@
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const data = [
-  { month: 'Ene', revenue: 12500, expenses: 4200 },
-  { month: 'Feb', revenue: 13200, expenses: 3800 },
-  { month: 'Mar', revenue: 11800, expenses: 5100 },
-  { month: 'Abr', revenue: 14100, expenses: 4600 },
-  { month: 'May', revenue: 13500, expenses: 3900 },
-  { month: 'Jun', revenue: 14800, expenses: 4300 },
-];
 
-export function FinancialChart() {
+
+interface ChartData {
+  month: string;
+  revenue: number;
+  expenses: number;
+}
+
+export function FinancialChart({ data }: { data: ChartData[] }) {
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-6">
       <h3 className="text-lg font-semibold text-slate-900 mb-6">Resumen Financiero</h3>
