@@ -1,6 +1,26 @@
-import { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
-import { User, Organization, Subscription, AuthState } from '../types/auth';
+import { createContext, useContext, useReducer, useEffect, ReactNode, useCallback, useMemo } from 'react';
+import { User, Organization, Subscription, AuthState, UserRole, SubscriptionStatus } from '../types/auth';
 import { apiClient } from '../config/api';
+import { useToast } from '../hooks/useToast';
+
+interface UpdateUserProfileData {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  // Add other fields as needed
+}
+
+interface ChangePasswordData {
+  userId: string;
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+interface UpdateUserProfileResponse {
+  user: User;
+}
+
 
 type AuthAction =
   | { type: 'LOGIN_START' }
@@ -64,8 +84,10 @@ const AuthContext = createContext<{
   state: AuthState;
   dispatch: React.Dispatch<AuthAction>;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
+  updateUserProfile: (userId: string, data: UpdateUserProfileData) => Promise<void>;
+  changePassword: (data: ChangePasswordData) => Promise<void>; // <-- AÑADIR ESTA LÍNEA
   switchOrganization: (organizationId: string) => Promise<void>;
 } | null>(null);
 
@@ -80,247 +102,147 @@ interface RegisterData {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(authReducer, initialState);
+  const toast = useToast();
 
-  const login = async (email: string, password: string) => {
+  const processAuthResponse = useCallback((response: any) => {
+    localStorage.setItem('auth_token', response.token);
+    apiClient.setToken(response.token);
+    apiClient.setOrganizationId(response.organization.id);
+
+    const user: User = {
+      ...response.user,
+      role: response.user.role.toUpperCase() as UserRole,
+      createdAt: new Date(response.user.createdAt),
+      updatedAt: new Date(response.user.updatedAt),
+      lastLogin: response.user.lastLogin ? new Date(response.user.lastLogin) : undefined,
+    };
+
+    const organization: Organization = {
+      ...response.organization,
+      createdAt: new Date(response.organization.createdAt),
+      updatedAt: new Date(response.organization.updatedAt),
+    };
+
+    const subscription: Subscription = {
+      ...response.subscription,
+      status: response.subscription.status.toUpperCase() as SubscriptionStatus,
+      currentPeriodStart: new Date(response.subscription.currentPeriodStart),
+      currentPeriodEnd: new Date(response.subscription.currentPeriodEnd),
+      trialEnd: response.subscription.trialEnd ? new Date(response.subscription.trialEnd) : undefined,
+      createdAt: new Date(response.subscription.createdAt),
+    };
+
+    dispatch({
+      type: 'LOGIN_SUCCESS',
+      payload: { user, organization, subscription, token: response.token },
+    });
+
+  }, []);
+
+  const login = useCallback(async (email: string, password: string) => {
     dispatch({ type: 'LOGIN_START' });
-    
     try {
       const response = await apiClient.login(email, password);
-      
-      // Set token in API client
-      apiClient.setToken(response.token);
-      
-      // Transform backend response to frontend format
-      const user: User = {
-        id: response.user.id,
-        email: response.user.email,
-        firstName: response.user.firstName,
-        lastName: response.user.lastName,
-        role: response.user.role.toLowerCase().replace('_', '_') as any,
-        organizationId: response.user.organizationId,
-        isActive: true,
-        createdAt: new Date(response.user.createdAt || Date.now()),
-        updatedAt: new Date(),
-        lastLogin: response.user.lastLogin ? new Date(response.user.lastLogin) : undefined,
-      };
-
-      const organization: Organization = response.organization ? {
-        id: response.organization.id,
-        name: response.organization.name,
-        slug: response.organization.slug,
-        planId: response.organization.planId,
-        isActive: response.organization.isActive,
-        settings: response.organization.settings,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      } : {
-        id: '',
-        name: '',
-        slug: '',
-        planId: '',
-        isActive: false,
-        settings: {},
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      let subscription: Subscription;
-      if (response.subscription) {
-        subscription = {
-          id: response.subscription.id,
-          organizationId: response.subscription.organizationId || organization?.id || '',
-          planId: response.subscription.planId,
-          status: response.subscription.status.toLowerCase() as any,
-          currentPeriodStart: new Date(response.subscription.currentPeriodStart),
-          currentPeriodEnd: new Date(response.subscription.currentPeriodEnd),
-          trialEnd: response.subscription.trialEnd ? new Date(response.subscription.trialEnd) : undefined,
-          createdAt: new Date(),
-        };
-      } else {
-        // Provide a default/fallback Subscription object if needed
-        subscription = {
-          id: '',
-          organizationId: organization?.id || '',
-          planId: '',
-          status: '' as any,
-          currentPeriodStart: new Date(),
-          currentPeriodEnd: new Date(),
-          trialEnd: undefined,
-          createdAt: new Date(),
-        };
-      }
-
-      if (organization) {
-        apiClient.setOrganizationId(organization.id);
-      }
-
-      dispatch({
-        type: 'LOGIN_SUCCESS',
-        payload: { user, organization: organization!, subscription: subscription!, token: response.token },
-      });
-
-      // Redirect based on user role
-      if (user.role === 'super_admin') {
-        window.location.href = '/super-admin';
-      }
-
+      processAuthResponse(response);
+      toast.success('', '¡Bienvenido de nuevo!');
     } catch (error: any) {
       dispatch({ type: 'LOGIN_FAILURE', payload: error.message || 'Error de autenticación' });
+      toast.error('Error de autenticación', error.message);
     }
-  };
+  }, [processAuthResponse, toast]);
 
-  const register = async (data: RegisterData) => {
+  const register = useCallback(async (data: RegisterData) => {
     dispatch({ type: 'LOGIN_START' });
-    
     try {
       const response = await apiClient.register(data);
-      
-      // Set token in API client
-      apiClient.setToken(response.token);
-      
-      // Transform backend response to frontend format
-      const user: User = {
-        id: response.user.id,
-        email: response.user.email,
-        firstName: response.user.firstName,
-        lastName: response.user.lastName,
-        role: response.user.role.toLowerCase().replace('_', '_') as any,
-        organizationId: response.user.organizationId,
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      const organization: Organization = {
-        id: response.organization.id,
-        name: response.organization.name,
-        slug: response.organization.slug,
-        planId: response.organization.planId,
-        isActive: response.organization.isActive,
-        settings: response.organization.settings,
-        createdAt: new Date(response.organization.createdAt),
-        updatedAt: new Date(response.organization.updatedAt),
-      };
-
-      const subscription: Subscription = {
-        id: response.subscription.id,
-        organizationId: response.subscription.organizationId,
-        planId: response.subscription.planId,
-        status: response.subscription.status.toLowerCase() as any,
-        currentPeriodStart: new Date(response.subscription.currentPeriodStart),
-        currentPeriodEnd: new Date(response.subscription.currentPeriodEnd),
-        trialEnd: response.subscription.trialEnd ? new Date(response.subscription.trialEnd) : undefined,
-        createdAt: new Date(response.subscription.createdAt),
-      };
-
-      dispatch({
-        type: 'LOGIN_SUCCESS',
-        payload: { user, organization, subscription, token: response.token },
-      });
+      processAuthResponse(response);
+      toast.success('', '¡Cuenta creada exitosamente!');
     } catch (error: any) {
       dispatch({ type: 'LOGIN_FAILURE', payload: error.message || 'Error al crear la cuenta' });
+      toast.error('Error en el registro', error.message);
     }
-  };
+  }, [processAuthResponse, toast]);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await apiClient.logout();
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
+      localStorage.removeItem('auth_token');
       apiClient.setToken(null);
       apiClient.setOrganizationId(null);
       dispatch({ type: 'LOGOUT' });
     }
-  };
-
-  const switchOrganization = async (organizationId: string) => {
-    // Implementation for switching between organizations (for users with multiple org access)
-    console.log('Switching to organization:', organizationId);
-  };
-
-  // Check for existing session on mount
-  useEffect(() => {
-    const checkAuth = async () => {
-      const token = localStorage.getItem('auth_token');
-      
-      if (token) {
-        try {
-          apiClient.setToken(token);
-          const response = await apiClient.getCurrentUser();
-          
-          // Transform backend response to frontend format
-          const user: User = {
-            id: response.user.id,
-            email: response.user.email,
-            firstName: response.user.firstName,
-            lastName: response.user.lastName,
-            role: response.user.role.toLowerCase().replace('_', '_') as any,
-            organizationId: response.user.organizationId,
-            isActive: true,
-            createdAt: new Date(response.user.createdAt),
-            updatedAt: new Date(),
-            lastLogin: response.user.lastLogin ? new Date(response.user.lastLogin) : undefined,
-          };
-
-          const organization: Organization = response.organization ? {
-            id: response.organization.id,
-            name: response.organization.name,
-            slug: response.organization.slug,
-            planId: response.organization.planId,
-            isActive: response.organization.isActive,
-            settings: response.organization.settings,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          } : {
-            id: '',
-            name: '',
-            slug: '',
-            planId: '',
-            isActive: false,
-            settings: {},
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          };
-
-          const subscription: Subscription = response.subscription ? {
-            id: response.subscription.id,
-            organizationId: response.subscription.organizationId || organization?.id || '',
-            planId: response.subscription.planId,
-            status: response.subscription.status.toLowerCase() as any,
-            currentPeriodStart: new Date(response.subscription.currentPeriodStart),
-            currentPeriodEnd: new Date(response.subscription.currentPeriodEnd),
-            trialEnd: response.subscription.trialEnd ? new Date(response.subscription.trialEnd) : undefined,
-            createdAt: new Date(),
-          } : {
-            id: '',
-            organizationId: organization?.id || '',
-            planId: '',
-            status: '' as any,
-            currentPeriodStart: new Date(),
-            currentPeriodEnd: new Date(),
-            trialEnd: undefined,
-            createdAt: new Date(),
-          };
-
-          dispatch({
-            type: 'LOGIN_SUCCESS',
-payload: { user, organization, subscription, token: response.token },          });
-        } catch (error) {
-          console.error('Auth check failed:', error);
-          apiClient.setToken(null);
-          dispatch({ type: 'SET_LOADING', payload: false });
-        }
-      } else {
-        dispatch({ type: 'SET_LOADING', payload: false });
-      }
-    };
-
-    checkAuth();
   }, []);
 
+  const changePassword = useCallback(
+  async ({ userId, currentPassword, newPassword, confirmPassword }: ChangePasswordData): Promise<void> => {
+    try {
+      // Tu API client espera los argumentos por separado
+      await apiClient.updateUserPassword(userId, currentPassword, newPassword, confirmPassword);
+      toast.success('Contraseña Actualizada', 'Tu contraseña ha sido cambiada exitosamente.');
+    } catch (error: any) {
+      toast.error('Error al Cambiar Contraseña', error.message || 'La contraseña actual es incorrecta o no se pudo actualizar.');
+      // Re-lanzamos el error para que el componente que llama (Settings) sepa que la operación falló.
+      throw error;
+    }
+  },
+  [toast]
+);
+
+
+  const updateUserProfile = useCallback(
+    async (userId: string, data: UpdateUserProfileData): Promise<void> => {
+      try {
+        const response: UpdateUserProfileResponse = await apiClient.updateUserProfile(userId, data);
+        dispatch({ type: 'UPDATE_USER', payload: response.user });
+        toast.success('Perfil Actualizado', 'Perfil actualizado exitosamente.');
+      } catch (error) {
+        toast.error('Error', 'Error al actualizar el perfil.');
+        throw error;
+      }
+    },
+    [toast]
+  );
+
+  const switchOrganization = useCallback(async (organizationId: string) => {
+    console.log('Switching to organization:', organizationId);
+  }, []);
+
+  const checkAuth = useCallback(async () => {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      try {
+        apiClient.setToken(token);
+        const response = await apiClient.getCurrentUser();
+        processAuthResponse({ ...response, token });
+      } catch (error) {
+        console.error('Sesión inválida, cerrando sesión:', error);
+        logout();
+      }
+    } else {
+      dispatch({ type: 'SET_LOADING', payload: false });
+    }
+  }, [processAuthResponse, logout]);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  const contextValue = useMemo(() => ({
+    state,
+    dispatch,
+    login,
+    logout,
+    register,
+    changePassword,
+    updateUserProfile,
+    switchOrganization,
+  }), [state, login, logout, register, switchOrganization]);
+
   return (
-    <AuthContext.Provider value={{ state, dispatch, login, logout, register, switchOrganization }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

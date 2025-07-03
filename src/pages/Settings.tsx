@@ -23,9 +23,10 @@ import {
 } from 'lucide-react';
 
 export function Settings() {
-  const { state: authState, dispatch: authDispatch } = useAuth();
+  const { state: authState, dispatch: authDispatch, updateUserProfile, changePassword } = useAuth();
+  const {updateOrganization} = useApp();
   const { state, dispatch } = useApp();
-  const [activeTab, setActiveTab] = useState('profile');
+  const [ACTIVETab, setACTIVETab] = useState('profile');
   const [showPassword, setShowPassword] = useState(false);
   const [settings, setSettings] = useState({
     profile: {
@@ -63,7 +64,7 @@ export function Settings() {
     }
   });
 
-  const handleSaveProfile = () => {
+  const handleSaveProfile = async () => {
     if (authState.user) {
       const updatedUser = {
         ...authState.user,
@@ -71,12 +72,12 @@ export function Settings() {
         lastName: settings.profile.lastName,
         email: settings.profile.email
       };
-      authDispatch({ type: 'UPDATE_USER', payload: updatedUser });
+      await updateUserProfile(authState.user.id, updatedUser);
     }
-    alert('Perfil actualizado exitosamente!');
+    
   };
 
-  const handleSaveOrganization = () => {
+  const handleSaveOrganization = async () => {
     if (authState.organization) {
       const updatedOrganization = {
         ...authState.organization,
@@ -92,16 +93,15 @@ export function Settings() {
           language: settings.organization.language
         }
       };
-      authDispatch({ type: 'UPDATE_ORGANIZATION', payload: updatedOrganization });
+      await updateOrganization(updatedOrganization.id, updatedOrganization);
     }
-    alert('Configuración de organización actualizada!');
   };
 
   const handleSaveNotifications = () => {
     alert('Preferencias de notificación guardadas!');
   };
 
-  const handleChangePassword = () => {
+  const handleChangePassword = async () => {
     if (!settings.security.currentPassword || !settings.security.newPassword) {
       alert('Por favor complete todos los campos de contraseña');
       return;
@@ -114,7 +114,15 @@ export function Settings() {
       alert('La contraseña debe tener al menos 8 caracteres');
       return;
     }
-    alert('Contraseña cambiada exitosamente!');
+
+
+    await changePassword({
+      userId: authState.user?.id || '',
+      currentPassword: settings.security.currentPassword,
+      newPassword: settings.security.newPassword,
+      confirmPassword: settings.security.confirmPassword
+    });
+    
     setSettings({
       ...settings,
       security: {
@@ -206,9 +214,9 @@ export function Settings() {
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => setACTIVETab(tab.id)}
                   className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
-                    activeTab === tab.id
+                    ACTIVETab === tab.id
                       ? 'border-blue-500 text-blue-600'
                       : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
                   }`}
@@ -221,7 +229,7 @@ export function Settings() {
           </div>
 
           {/* Profile Tab */}
-          {activeTab === 'profile' && (
+          {ACTIVETab === 'profile' && (
             <div className="space-y-6">
               <div className="bg-white rounded-xl border border-slate-200 p-6">
                 <h3 className="text-lg font-semibold text-slate-900 mb-6">Información Personal</h3>
@@ -318,7 +326,7 @@ export function Settings() {
           )}
 
           {/* Organization Tab */}
-          {activeTab === 'organization' && (
+          {ACTIVETab === 'organization' && (
             <div className="space-y-6">
               <div className="bg-white rounded-xl border border-slate-200 p-6">
                 <h3 className="text-lg font-semibold text-slate-900 mb-6">Información de la Organización</h3>
@@ -438,7 +446,7 @@ export function Settings() {
           )}
 
           {/* Subscription Tab */}
-          {activeTab === 'subscription' && authState.subscription && (
+          {ACTIVETab === 'subscription' && authState.subscription && (
             <div className="space-y-6">
               <div className="bg-white rounded-xl border border-slate-200 p-6">
                 <div className="flex items-center justify-between mb-6">
@@ -446,7 +454,7 @@ export function Settings() {
                   <div className="flex items-center">
                     <Crown className="w-5 h-5 text-yellow-500 mr-2" />
                     <span className="text-sm font-medium text-slate-600">
-                      {authState.subscription.status === 'trialing' ? 'Prueba Gratuita' : 'Plan Activo'}
+                      {authState.subscription.status === 'TRIALING' ? 'Prueba Gratuita' : 'Plan Activo'}
                     </span>
                   </div>
                 </div>
@@ -464,11 +472,11 @@ export function Settings() {
                     <div>
                       <label className="text-sm text-slate-500">Estado</label>
                       <p className={`text-lg font-semibold ${
-                        authState.subscription.status === 'active' ? 'text-emerald-600' :
-                        authState.subscription.status === 'trialing' ? 'text-blue-600' : 'text-red-600'
+                        authState.subscription.status === 'ACTIVE' ? 'text-emerald-600' :
+                        authState.subscription.status === 'TRIALING' ? 'text-blue-600' : 'text-red-600'
                       }`}>
-                        {authState.subscription.status === 'active' ? 'Activo' :
-                         authState.subscription.status === 'trialing' ? 'Prueba' : 'Vencido'}
+                        {authState.subscription.status === 'ACTIVE' ? 'Activo' :
+                         authState.subscription.status === 'TRIALING' ? 'Prueba' : 'Vencido'}
                       </p>
                     </div>
                     
@@ -514,7 +522,7 @@ export function Settings() {
           )}
 
           {/* Team Tab */}
-          {activeTab === 'team' && (
+          {ACTIVETab === 'team' && (
             <div className="space-y-6">
               <div className="bg-white rounded-xl border border-slate-200 p-6">
                 <div className="flex items-center justify-between mb-6">
@@ -557,7 +565,7 @@ export function Settings() {
           )}
 
           {/* Notifications Tab */}
-          {activeTab === 'notifications' && (
+          {ACTIVETab === 'notifications' && (
             <div className="space-y-6">
               <div className="bg-white rounded-xl border border-slate-200 p-6">
                 <h3 className="text-lg font-semibold text-slate-900 mb-6">Preferencias de Notificación</h3>
@@ -635,7 +643,7 @@ export function Settings() {
           )}
 
           {/* Security Tab */}
-          {activeTab === 'security' && (
+          {ACTIVETab === 'security' && (
             <div className="space-y-6">
               <div className="bg-white rounded-xl border border-slate-200 p-6">
                 <h3 className="text-lg font-semibold text-slate-900 mb-6">Cambiar Contraseña</h3>
@@ -707,7 +715,7 @@ export function Settings() {
           )}
 
           {/* Data Tab */}
-          {activeTab === 'data' && (
+          {ACTIVETab === 'data' && (
             <div className="space-y-6">
               <div className="bg-white rounded-xl border border-slate-200 p-6">
                 <h3 className="text-lg font-semibold text-slate-900 mb-6">Gestión de Datos</h3>

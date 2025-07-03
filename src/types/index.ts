@@ -163,3 +163,4 @@ export interface Notification {
   timestamp: Date;
   read: boolean;
 }
+

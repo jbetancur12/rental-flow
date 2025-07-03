@@ -214,12 +214,7 @@ router.post('/login', [
         lastLogin: user.lastLogin
       },
       organization: user.role !== 'SUPER_ADMIN' ? {
-        id: user.organization.id,
-        name: user.organization.name,
-        slug: user.organization.slug,
-        planId: user.organization.planId,
-        settings: user.organization.settings,
-        isActive: user.organization.isActive
+        ...user.organization,
       } : null,
       subscription: user.role !== 'SUPER_ADMIN' && subscription ? {
         id: subscription.id,
@@ -280,12 +275,7 @@ router.get('/me', authenticateToken, async (req:Request, res:Response) => {
         createdAt: user.createdAt
       },
       organization: user.role !== 'SUPER_ADMIN' ? {
-        id: user.organization.id,
-        name: user.organization.name,
-        slug: user.organization.slug,
-        planId: user.organization.planId,
-        settings: user.organization.settings,
-        isActive: user.organization.isActive
+        ...user.organization,
       } : null,
       subscription: user.role !== 'SUPER_ADMIN' && subscription ? {
         id: subscription.id,

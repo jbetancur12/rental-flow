@@ -374,6 +374,20 @@ class ApiClient {
       body: JSON.stringify(data),
     });
   }
+
+  async updateUserPassword(id: string, currentPassword: string, newPassword: string, confirmPassword?: string) {
+    return this.request<any>(`/users/${id}/password`, {
+      method: 'PUT',
+      body: JSON.stringify({ currentPassword, newPassword, confirmPassword }),
+    });
+  }
+
+  async updateUserProfile(id: string, data: any) {
+    return this.request<any>('/users/' + id, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
 }
 
 

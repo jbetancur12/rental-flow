@@ -23,7 +23,7 @@ function AppRoutes() {
   const { state } = useAuth();
 
   // If user is super admin, redirect to super admin panel
-  if (state.isAuthenticated && state.user?.role === 'super_admin') {
+  if (state.isAuthenticated && state.user?.role === 'SUPER_ADMIN') {
     return (
       <Routes>
         <Route path="/super-admin" element={<SuperAdmin />} />
@@ -36,15 +36,15 @@ function AppRoutes() {
   return (
     <Routes>
       {/* Super Admin Route - only accessible by super admins */}
-      <Route 
-        path="/super-admin" 
+      <Route
+        path="/super-admin"
         element={
-          state.user?.role === 'super_admin' ? 
-            <SuperAdmin /> : 
+          state.user?.role === 'SUPER_ADMIN' ?
+            <SuperAdmin /> :
             <Navigate to="/" replace />
-        } 
+        }
       />
-      
+
       {/* Regular App Routes */}
       <Route path="/" element={
         <AppProvider>
@@ -67,16 +67,16 @@ function AppRoutes() {
 
 function App() {
   return (
-    <AuthProvider>
-      <ToastProvider>
-      <Router>
-        <AuthGuard fallback={<Auth />}>
-          <AppRoutes />
-          <ToastContainer />
-        </AuthGuard>
-      </Router>
-      </ToastProvider>
-    </AuthProvider>
+    <ToastProvider>
+      <AuthProvider>
+        <Router>
+          <AuthGuard fallback={<Auth />}>
+            <AppRoutes />
+            <ToastContainer />
+          </AuthGuard>
+        </Router>
+      </AuthProvider>
+    </ToastProvider>
   );
 }
 

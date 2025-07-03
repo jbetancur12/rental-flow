@@ -1,9 +1,13 @@
+export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'MANAGER' | 'USER';
+
+export type SubscriptionStatus = 'ACTIVE' | 'CANCELED' | 'PAST_DUE' | 'TRIALING';
+
 export interface User {
   id: string;
   email: string;
   firstName: string;
   lastName: string;
-  role: 'super_admin' | 'admin' | 'manager' | 'user';
+  role: UserRole;
   organizationId: string;
   isActive: boolean;
   lastLogin?: Date;
@@ -67,7 +71,7 @@ export interface Subscription {
   id: string;
   organizationId: string;
   planId: string;
-  status: 'active' | 'canceled' | 'past_due' | 'trialing';
+  status: SubscriptionStatus;
   currentPeriodStart: Date;
   currentPeriodEnd: Date;
   trialEnd?: Date;

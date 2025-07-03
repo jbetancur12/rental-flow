@@ -4,6 +4,7 @@ import { Property, Tenant, Contract, Payment, MaintenanceRequest, Building, Unit
 import { useAuth } from './AuthContext';
 import { apiClient } from '../config/api';
 import { useToast } from '../hooks/useToast';
+import { Organization } from '../types/auth';
 
 interface AppState {
   properties: Property[];
@@ -14,6 +15,7 @@ interface AppState {
   buildings: Building[];
   units: Unit[];
   isLoading: boolean;
+  organization?: Organization; 
 }
 
 type AppAction =
@@ -37,6 +39,7 @@ type AppAction =
   | { type: 'UPDATE_PAYMENT'; payload: Payment }
   | { type: 'ADD_MAINTENANCE_REQUEST'; payload: MaintenanceRequest }
   | { type: 'UPDATE_MAINTENANCE_REQUEST'; payload: MaintenanceRequest }
+  | { type: 'UPDATE_ORGANIZATION'; payload: Organization } 
   | { type: 'LOAD_INITIAL_DATA'; payload: Partial<AppState> }
   | { type: 'CLEAR_DATA' };
 
@@ -127,6 +130,11 @@ function appReducer(state: AppState, action: AppAction): AppState {
           m.id === action.payload.id ? action.payload : m
         )
       };
+    case 'UPDATE_ORGANIZATION':
+      return {
+        ...state,
+        organization: action.payload
+      };
     case 'LOAD_INITIAL_DATA':
       return { ...state, ...action.payload };
     case 'CLEAR_DATA':
@@ -164,6 +172,7 @@ const AppContext = createContext<{
   loadMaintenanceRequests: () => Promise<void>;
   createMaintenanceRequest: (data: any) => Promise<void>;
   updateMaintenanceRequest: (id: string, data: any) => Promise<void>;
+  updateOrganization: (orgId: string, data: any) => Promise<void>;
 } | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -575,6 +584,20 @@ const updateMaintenanceRequest = async (id: string, data: any) => {
     }
 };
 
+const updateOrganization = async (orgId: string, data: any) => {
+    try {
+      const response = await apiClient.updateOrganization(orgId, data);
+      
+      // Actualiza el estado global con la organización actualizada
+      dispatch({ type: 'UPDATE_ORGANIZATION', payload: response.organization });
+      
+      toast.success('¡Éxito!', 'La información de la organización ha sido guardada.');
+    } catch (error: any) {
+      toast.error('Error', error.message || 'No se pudo guardar la información.');
+      throw error;
+    }
+  }
+
 
   // Load initial data when authenticated
   useEffect(() => {
@@ -618,6 +641,9 @@ const updateMaintenanceRequest = async (id: string, data: any) => {
       case 'UPDATE_MAINTENANCE_REQUEST':
         toast.success('Solicitud de Mantenimiento Actualizada', 'La solicitud de mantenimiento ha sido actualizada exitosamente.');
         break;
+      case 'UPDATE_ORGANIZATION':
+        toast.success('¡Éxito!', 'La información de la organización ha sido guardada.');
+        break;
     }
   };
 
@@ -648,7 +674,8 @@ const updateMaintenanceRequest = async (id: string, data: any) => {
       deleteContract,
       loadMaintenanceRequests,
       createMaintenanceRequest,
-      updateMaintenanceRequest
+      updateMaintenanceRequest,
+      updateOrganization
 
     }}>
       {children}

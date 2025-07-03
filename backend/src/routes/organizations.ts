@@ -114,59 +114,82 @@ router.get('/:id',
 
 // Update organization
 router.put('/:id',
-  authenticateToken,
-  [
-    param('id').isUUID(),
-    body('name').optional().trim().isLength({ min: 1 }),
-    body('email').optional().isEmail().normalizeEmail(),
-    body('phone').optional().trim(),
-    body('address').optional().trim(),
-    body('settings').optional().isObject()
-  ],
-  handleValidationErrors,
-  async (req:Request, res:Response) => {
-    try {
-      const { id } = req.params;
-      const user = (req as any).user;
+    authenticateToken,
+    [
+        param('id').isUUID(),
+        body('name').optional().trim().isLength({ min: 1 }),
+        body('email').optional().isEmail().normalizeEmail(),
+        body('phone').optional().trim(),
+        body('address').optional().trim(),
+        body('settings').optional().isObject()
+    ],
+    handleValidationErrors,
+    async (req: Request, res: Response) => {
+        try {
+            const { id } = req.params;
+            const user = (req as any).user;
 
-      // Super admin can update any organization, others only their own
-      if (user.role !== 'SUPER_ADMIN' && user.organizationId !== id) {
-        return res.status(403).json({
-          error: 'Access denied to this organization',
-          code: 'ORGANIZATION_ACCESS_DENIED'
-        });
-      }
+            // Lógica de permisos (esta parte está bien)
+            if (user.role !== 'SUPER_ADMIN' && user.organizationId !== id) {
+                return res.status(403).json({
+                    error: 'Access denied to this organization',
+                    code: 'ORGANIZATION_ACCESS_DENIED'
+                });
+            }
 
-      const organization = await prisma.organization.findUnique({
-        where: { id }
-      });
+            const organization = await prisma.organization.findUnique({
+                where: { id }
+            });
 
-      if (!organization) {
-        return res.status(404).json({
-          error: 'Organization not found',
-          code: 'ORGANIZATION_NOT_FOUND'
-        });
-      }
+            if (!organization) {
+                return res.status(404).json({
+                    error: 'Organization not found',
+                    code: 'ORGANIZATION_NOT_FOUND'
+                });
+            }
 
-      const updatedOrganization = await prisma.organization.update({
-        where: { id },
-        data: req.body
-      });
+            // --- INICIO DE LA CORRECCIÓN ---
 
-      logger.info('Organization updated:', { organizationId: id, updatedBy: user.id });
+            // 1. Desestructuramos solo los campos que permitimos cambiar del body.
+            const { name, email, phone, address, settings } = req.body;
 
-      return res.json({
-        message: 'Organization updated successfully',
-        organization: updatedOrganization
-      });
-    } catch (error) {
-      logger.error('Update organization error:', error);
-      return res.status(500).json({
-        error: 'Failed to update organization',
-        code: 'UPDATE_ORGANIZATION_ERROR'
-      });
+            // 2. Creamos un objeto 'dataToUpdate' seguro.
+            const dataToUpdate: any = {};
+
+            // 3. Añadimos los campos solo si fueron proporcionados en la petición.
+            if (name) dataToUpdate.name = name;
+            if (email) dataToUpdate.email = email;
+            if (phone) dataToUpdate.phone = phone;
+            if (address) dataToUpdate.address = address;
+
+            // 4. Fusionamos los 'settings' para no borrar datos existentes en el JSON.
+            if (settings) {
+                const existingSettings = organization.settings as object || {};
+                dataToUpdate.settings = { ...existingSettings, ...settings };
+            }
+
+            // 5. Usamos el objeto seguro 'dataToUpdate' en la llamada a Prisma.
+            const updatedOrganization = await prisma.organization.update({
+                where: { id },
+                data: dataToUpdate
+            });
+
+            // --- FIN DE LA CORRECCIÓN ---
+
+            logger.info('Organization updated:', { organizationId: id, updatedBy: user.id });
+
+            return res.json({
+                message: 'Organization updated successfully',
+                organization: updatedOrganization
+            });
+        } catch (error) {
+            logger.error('Update organization error:', error);
+            return res.status(500).json({
+                error: 'Failed to update organization',
+                code: 'UPDATE_ORGANIZATION_ERROR'
+            });
+        }
     }
-  }
 );
 
 // Deactivate organization (Super Admin only)

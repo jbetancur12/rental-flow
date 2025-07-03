@@ -8,7 +8,7 @@ async function main() {
 
   // Create super admin user
   const superAdminPassword = await bcrypt.hash(process.env.SUPER_ADMIN_PASSWORD || 'superadmin123', 12);
-  
+
   // Create platform organization for super admin
   const platformOrg = await prisma.organization.upsert({
     where: { slug: 'rentflow-platform' },
@@ -99,7 +99,7 @@ async function main() {
   });
 
   await prisma.subscription.upsert({
-    where: { id: existingSubscription?.id ?? '' }, 
+    where: { id: existingSubscription?.id ?? '' },
     update: {},
     create: {
       organizationId: demoOrg.id,
@@ -113,7 +113,7 @@ async function main() {
 
   // Create demo admin user
   const demoPassword = await bcrypt.hash('demo123', 12);
-  
+
   const demoUser = await prisma.user.upsert({
     where: { email: 'demo@rentflow.com' },
     update: {},
@@ -143,9 +143,9 @@ async function main() {
     demoUnit = await prisma.unit.create({
       data: {
         organizationId: demoOrg.id,
-        name: 'Edificio Demo',
+        name: 'Portal de Gudalupe',
         type: 'BUILDING',
-        address: '123 Calle Falsa, Ciudad Demo',
+        address: 'Calle 34 No 13 - 73',
         totalFloors: 5,
       }
     });
@@ -156,102 +156,108 @@ async function main() {
     name: demoUnit.name,
   });
 
-  // Create a demo property for the demo organization
-  // Try to find an existing property by name and organization (since name is not unique, we need to check manually)
-// Create demo property 1 (Apartment)
-let demoProperty1 = await prisma.property.findFirst({
-  where: { name: 'Apartamento 101', organizationId: demoOrg.id }
-});
-if (!demoProperty1) {
-  demoProperty1 = await prisma.property.create({
-    data: {
-      organizationId: demoOrg.id,
-      unitId: demoUnit.id,
-      name: 'Apartamento 101',
-      type: 'APARTMENT',
-      address: '123 Calle Falsa, Apto 101, Ciudad Demo',
-      size: 80,
-      rooms: 2,
-      bathrooms: 1.5,
-      rent: 1200,
-      unitNumber: '101',
-      status: 'AVAILABLE',
-      floor: 1,
-    }
-  });
-}
-console.log('✅ Demo Property 1 created:', { name: demoProperty1.name });
 
-// Create demo property 2 (Apartment)
-let demoProperty2 = await prisma.property.findFirst({
-  where: { name: 'Apartamento 202', organizationId: demoOrg.id }
-});
-if (!demoProperty2) {
-  demoProperty2 = await prisma.property.create({
-    data: {
-      organizationId: demoOrg.id,
-      unitId: demoUnit.id,
-      name: 'Apartamento 202',
-      type: 'APARTMENT',
-      address: '123 Calle Falsa, Apto 202, Ciudad Demo',
-      size: 95,
-      rooms: 3,
-      bathrooms: 2,
-      rent: 1550,
-      unitNumber: '202',
-      status: 'AVAILABLE',
-      floor: 2,
-    }
-  });
-}
-console.log('✅ Demo Property 2 created:', { name: demoProperty2.name });
-
-// Create demo property 3 (House)
-let demoProperty3 = await prisma.property.findFirst({
-  where: { name: 'Casa del Lago', organizationId: demoOrg.id }
-});
-if (!demoProperty3) {
-  demoProperty3 = await prisma.property.create({
-    data: {
-      organizationId: demoOrg.id,
-      unitId: demoUnit.id,
-      name: 'Apartamento 303',
-      type: 'APARTMENT',
-      address: '123 Calle Falsa, Apto 202, Ciudad Demo',
-      size: 200,
-      rooms: 4,
-      bathrooms: 3,
-      rent: 2800,
-      unitNumber: '303',
-      status: 'AVAILABLE',
-      floor: 3,
-    }
-  });
-}
-console.log('✅ Demo Property 3 created:', { name: demoProperty3.name });
+  // Create demo properties (apartments) for the demo unit
+  // We will create apartments with unit numbers and floors
+  // Ensure we don't create duplicates by checking existing properties
   
 
+ const locales = [
+    { unitNumber: 'Local 1', floor: 1 },
+    { unitNumber: 'Local 2', floor: 1 },
+  ];
 
-let demoTenant1 = await prisma.tenant.findFirst({
-    where: { email: 'juan.inquilino@demo.com', organizationId: demoOrg.id }
-});
-if (!demoTenant1) {
-  demoTenant1 = await prisma.tenant.create({
-    data: {
-      organizationId: demoOrg.id,
-      firstName: 'Juan',
-      lastName: 'Inquilino',
-      email: 'juan.inquilino@demo.com',
-      phone: '555-1234',
-      applicationDate: new Date(),
-      status: 'APPROVED',
-      creditScore: 700,
-      emergencyContact: { name: 'Maria Inquilino', phone: '555-5678', relationship: 'hermana' },
-      employment: { employer: 'Empresa Demo', position: 'Desarrollador', income: 60000 }
+  for (const local of locales) {
+    const name = `${local.unitNumber}`;
+    const exists = await prisma.property.findFirst({
+      where: { name, organizationId: demoOrg.id }
+    });
+
+    if (!exists) {
+      const created = await prisma.property.create({
+        data: {
+          organizationId: demoOrg.id,
+          unitId: demoUnit.id,
+          name,
+          type: 'COMMERCIAL',
+          address: 'Calle 34 No 13-73',
+          size: 60,
+          rooms: 3,
+          bathrooms: 1,
+          rent: 1800000,
+          unitNumber: local.unitNumber,
+          status: 'AVAILABLE',
+          floor: local.floor,
+        }
+      });
+
+      console.log(`✅ ${name} creado:`, { name: created.name });
+    } else {
+      console.log(`ℹ️ ${name} ya existía, no se creó duplicado.`);
     }
+  }
+
+  const apartamentos = [
+    { unitNumber: '201', floor: 2 },
+    { unitNumber: '202', floor: 2 },
+    { unitNumber: '301', floor: 3 },
+    { unitNumber: '302', floor: 3 },
+    { unitNumber: '401', floor: 4 },
+    { unitNumber: '402', floor: 4 },
+    { unitNumber: '501', floor: 5 },
+    { unitNumber: '502', floor: 5 },
+  ];
+
+  for (const apt of apartamentos) {
+    const name = `Apartamento ${apt.unitNumber}`;
+    const exists = await prisma.property.findFirst({
+      where: { name, organizationId: demoOrg.id }
+    });
+
+    if (!exists) {
+      const created = await prisma.property.create({
+        data: {
+          organizationId: demoOrg.id,
+          unitId: demoUnit.id,
+          name,
+          type: 'APARTMENT',
+          address: 'Calle 34 No 13-73',
+          size: 50,
+          rooms: 3,
+          bathrooms: 1,
+          rent: 900000,
+          unitNumber: apt.unitNumber,
+          status: 'AVAILABLE',
+          floor: apt.floor,
+        }
+      });
+
+      console.log(`✅ ${name} creado:`, { name: created.name });
+    } else {
+      console.log(`ℹ️ ${name} ya existía, no se creó duplicado.`);
+    }
+  }
+
+  let demoTenant1 = await prisma.tenant.findFirst({
+    where: { email: 'juan.inquilino@demo.com', organizationId: demoOrg.id }
   });
-}
-console.log('✅ Demo Tenant 1 created:', { email: demoTenant1.email });
+  if (!demoTenant1) {
+    demoTenant1 = await prisma.tenant.create({
+      data: {
+        organizationId: demoOrg.id,
+        firstName: 'Juan',
+        lastName: 'Inquilino',
+        email: 'juan.inquilino@demo.com',
+        phone: '555-1234',
+        applicationDate: new Date(),
+        status: 'APPROVED',
+        creditScore: 700,
+        emergencyContact: { name: 'Maria Inquilino', phone: '555-5678', relationship: 'hermana' },
+        employment: { employer: 'Empresa Demo', position: 'Desarrollador', income: 60000 }
+      }
+    });
+  }
+  console.log('✅ Demo Tenant 1 created:', { email: demoTenant1.email });
 
   // Create demo tenant 2
   let demoTenant2 = await prisma.tenant.findFirst({
