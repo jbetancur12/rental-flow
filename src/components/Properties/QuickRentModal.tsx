@@ -85,9 +85,16 @@ export function QuickRentModal({ property, isOpen, onClose }: QuickRentModalProp
 
       // --- FIN DE LA LÓGICA CORREGIDA ---
 
+      const contractUpdatePayload = {
+  status: 'ACTIVE' as const,
+  propertyId: property.id,
+  // Si la fecha de firma no existe, usa la fecha actual. Si existe, la mantiene.
+  signedDate: contract.signedDate || new Date()
+};
+
       // Actualizaciones de estado (sin cambios)
       await updateProperty(property.id, { ...property, status: 'RENTED' });
-      await updateContract(contract.id, { ...contract, status: 'ACTIVE', propertyId: property.id });
+      await updateContract(contract.id, contractUpdatePayload);
       const tenant = state.tenants.find(t => t.id === contract.tenantId);
       if (tenant && tenant.status !== 'ACTIVE') {
         await updateTenant(tenant.id, { ...tenant, status: 'ACTIVE' });
