@@ -16,7 +16,7 @@ router.get('/',
       const organizations = await prisma.organization.findMany({
         include: {
           subscriptions: {
-            where: { status: { in: ['ACTIVE', 'TRIALING'] } },
+            where: { status: { in: ['ACTIVE', 'TRIALING', 'DEMO'] } },
             orderBy: { createdAt: 'desc' },
             take: 1
           },

@@ -83,10 +83,10 @@ async function main() {
           prioritySupport: true
         },
         limits: {
-          maxProperties: 100,
-          maxTenants: 200,
-          maxUsers: 5,
-          storageGB: 10
+          maxProperties: 10,
+          maxTenants: 20,
+          maxUsers: 2,
+          storageGB:5
         }
       }
     }
@@ -100,16 +100,19 @@ async function main() {
     where: { organizationId: demoOrg.id }
   });
 
+    const farFutureDate = new Date();
+  farFutureDate.setFullYear(farFutureDate.getFullYear() + 100);
+
   await prisma.subscription.upsert({
     where: { id: existingSubscription?.id ?? '' },
     update: {},
     create: {
       organizationId: demoOrg.id,
-      planId: 'plan-professional',
-      status: 'TRIALING',
+      planId: 'plan-basic',
+      status: 'DEMO',
       currentPeriodStart: new Date(),
-      currentPeriodEnd: trialEnd,
-      trialEnd
+      currentPeriodEnd: farFutureDate,
+      trialEnd: null
     }
   });
 

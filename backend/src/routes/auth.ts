@@ -149,7 +149,7 @@ router.post('/login', [
         organization: {
           include: {
             subscriptions: {
-              where: { status: { in: ['ACTIVE', 'TRIALING'] } },
+              where: { status: { in: ['ACTIVE', 'TRIALING', 'DEMO'] } },
               orderBy: { createdAt: 'desc' },
               take: 1
             }
@@ -245,7 +245,7 @@ router.get('/me', authenticateToken, async (req:Request, res:Response) => {
         organization: {
           include: {
             subscriptions: {
-              where: { status: { in: ['ACTIVE', 'TRIALING'] } },
+              where: { status: { in: ['ACTIVE', 'TRIALING', 'DEMO'] } },
               orderBy: { createdAt: 'desc' },
               take: 1
             }

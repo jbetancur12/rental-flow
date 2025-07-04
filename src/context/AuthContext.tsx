@@ -139,7 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     let isSubscriptionActive = false;
 
-    if (subscription.status === 'ACTIVE') {
+    if (subscription.status === 'ACTIVE' || subscription.status === 'DEMO') {
         isSubscriptionActive = true;
     } else if (
         subscription.status === 'TRIALING' &&

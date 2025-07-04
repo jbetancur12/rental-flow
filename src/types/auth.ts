@@ -1,6 +1,6 @@
 export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'MANAGER' | 'USER';
 
-export type SubscriptionStatus = 'ACTIVE' | 'CANCELED' | 'PAST_DUE' | 'TRIALING';
+export type SubscriptionStatus = 'ACTIVE' | 'CANCELED' | 'PAST_DUE' | 'TRIALING' | 'DEMO';
 
 export interface User {
   id: string;

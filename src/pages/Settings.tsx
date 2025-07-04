@@ -25,6 +25,14 @@ import { OrganizationSettings } from '../types/auth';
 import { PlanSelector } from '../components/Subscription/PlanSelector';
 import { plans } from '../components/Auth/RegisterForm';
 
+const statusDetails = {
+    ACTIVE: { text: 'Activo', color: 'text-emerald-600' },
+    TRIALING: { text: 'Prueba', color: 'text-blue-600' },
+    DEMO: { text: 'Demostración', color: 'text-purple-600' }, // <-- Nuevo estado
+    PAST_DUE: { text: 'Vencido', color: 'text-red-600' },
+    CANCELED: { text: 'Cancelado', color: 'text-slate-600' },
+};
+
 export function Settings() {
 
   const { state: authState, updateUserProfile, changePassword } = useAuth();
@@ -71,17 +79,17 @@ export function Settings() {
 
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [selectedPlanInModal, setSelectedPlanInModal] = useState(authState.subscription?.planId || '');
-  
-  
+
+
 
   const activeTab = searchParams.get('tab') || 'profile';
 
-   const handleOpenUpgradeModal = () => {
+  const handleOpenUpgradeModal = () => {
     setSelectedPlanInModal(authState.subscription?.planId || ''); // Resetea la selección al plan actual
     setIsUpgradeModalOpen(true);
   };
 
-   const handleProceedToCheckout = () => {
+  const handleProceedToCheckout = () => {
     // Aquí iría la lógica para llamar al backend e iniciar el proceso de pago con Stripe
     // Por ahora, mostramos una alerta.
     alert(`Iniciando actualización al plan: ${selectedPlanInModal}`);
@@ -220,31 +228,31 @@ export function Settings() {
     setSearchParams({ tab: tabId });
   };
 
-      useEffect(() => {
-        if (authState.user && authState.organization) {
-            const orgSettings = authState.organization.settings as OrganizationSettings;
-            setSettings(prev => ({
-                ...prev,
-                profile: {
-                    firstName: authState?.user?.firstName || '',
-                    lastName: authState?.user?.lastName || '',
-                    email: authState?.user?.email || '',
-                    phone: '+1 (555) 123-4567', // Este debería venir de la BD
-                    role: authState.user?.role || 'USER'
-                },
-                organization: {
-                    name: authState.organization?.name || '',
-                    email: authState.organization?.email || '',
-                    phone: authState.organization?.phone || '',
-                    address: authState.organization?.address || '',
-                    currency: orgSettings.currency || 'USD',
-                    timezone: orgSettings.timezone || 'America/Mexico_City',
-                    dateFormat: orgSettings.dateFormat || 'DD/MM/YYYY',
-                    language: orgSettings.language || 'es'
-                }
-            }));
+  useEffect(() => {
+    if (authState.user && authState.organization) {
+      const orgSettings = authState.organization.settings as OrganizationSettings;
+      setSettings(prev => ({
+        ...prev,
+        profile: {
+          firstName: authState?.user?.firstName || '',
+          lastName: authState?.user?.lastName || '',
+          email: authState?.user?.email || '',
+          phone: '+1 (555) 123-4567', // Este debería venir de la BD
+          role: authState.user?.role || 'USER'
+        },
+        organization: {
+          name: authState.organization?.name || '',
+          email: authState.organization?.email || '',
+          phone: authState.organization?.phone || '',
+          address: authState.organization?.address || '',
+          currency: orgSettings.currency || 'USD',
+          timezone: orgSettings.timezone || 'America/Mexico_City',
+          dateFormat: orgSettings.dateFormat || 'DD/MM/YYYY',
+          language: orgSettings.language || 'es'
         }
-    }, [authState.user, authState.organization]);
+      }));
+    }
+  }, [authState.user, authState.organization]);
 
   const tabs = [
     { id: 'profile', label: 'Perfil', icon: User },
@@ -270,8 +278,8 @@ export function Settings() {
                   key={tab.id}
                   onClick={() => handleTabClick(tab.id)}
                   className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === tab.id
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
                     }`}
                 >
                   <tab.icon className="w-5 h-5 mr-2" />
@@ -507,8 +515,19 @@ export function Settings() {
                   <div className="flex items-center">
                     <Crown className="w-5 h-5 text-yellow-500 mr-2" />
                     <span className="text-sm font-medium text-slate-600">
-                      {authState.subscription.status === 'TRIALING' ? 'Prueba Gratuita' : 'Plan Activo'}
-                    </span>
+                      {(() => {
+                        switch (authState.subscription.status) {
+                          case 'TRIALING':
+                            return 'Prueba Gratuita';
+                          case 'DEMO':
+                            return 'Cuenta de Demostración';
+                          case 'ACTIVE':
+                            return 'Plan Activo';
+                          default:
+                            // Un valor por defecto para otros estados como CANCELED, etc.
+                            return 'Inactivo';
+                        }
+                      })()}                    </span>
                   </div>
                 </div>
 
@@ -524,12 +543,16 @@ export function Settings() {
 
                     <div>
                       <label className="text-sm text-slate-500">Estado</label>
-                      <p className={`text-lg font-semibold ${authState.subscription.status === 'ACTIVE' ? 'text-emerald-600' :
-                          authState.subscription.status === 'TRIALING' ? 'text-blue-600' : 'text-red-600'
-                        }`}>
-                        {authState.subscription.status === 'ACTIVE' ? 'Activo' :
-                          authState.subscription.status === 'TRIALING' ? 'Prueba' : 'Vencido'}
-                      </p>
+                    {(() => {
+    const currentStatus = authState.subscription.status;
+    const details = statusDetails[currentStatus] || { text: 'Desconocido', color: 'text-slate-500' };
+
+    return (
+        <p className={`text-lg font-semibold ${details.color}`}>
+            {details.text}
+        </p>
+    );
+})()}
                     </div>
 
                     <div>
@@ -561,7 +584,8 @@ export function Settings() {
                   </div>
                 </div>
 
-                <div className="mt-6 flex space-x-4">
+               {authState.subscription.status !== "DEMO" && (
+                 <div className="mt-6 flex space-x-4">
                   <button onClick={handleOpenUpgradeModal} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                     Actualizar Plan
                   </button>
@@ -569,6 +593,7 @@ export function Settings() {
                     Ver Historial de Facturación
                   </button>
                 </div>
+               )}
               </div>
             </div>
           )}
@@ -820,7 +845,7 @@ export function Settings() {
         </div>
       </div>
 
-       {isUpgradeModalOpen && (
+      {isUpgradeModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-5xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b border-slate-200">
@@ -832,9 +857,9 @@ export function Settings() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
+
             <div className="p-8">
-              <PlanSelector 
+              <PlanSelector
                 plans={plans}
                 selectedPlan={selectedPlanInModal}
                 onSelectPlan={setSelectedPlanInModal}

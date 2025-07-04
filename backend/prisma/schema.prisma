@@ -244,6 +244,7 @@ enum SubscriptionStatus {
   CANCELED
   PAST_DUE
   TRIALING
+  DEMO
 }
 
 enum UnitType {

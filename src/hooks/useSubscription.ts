@@ -89,6 +89,8 @@ const isLimitExceeded = useCallback((usageType: keyof SubscriptionUsage) => {
     const limit = limits[limitKey];
     const current = usage[usageType];
 
+    console.log("🚀 ~ isLimitExceeded ~ current:", limit)
+
     // 4. Realizamos la comparación segura
     return limit > 0 && current >= limit;
 }, [usage, limits]);

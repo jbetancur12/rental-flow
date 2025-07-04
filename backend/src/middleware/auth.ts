@@ -29,7 +29,7 @@ export async function authenticateToken(req: AuthRequest, res: Response, next: N
         organization: {
           include: {
             subscriptions: {
-              where: { status: { in: ['ACTIVE', 'TRIALING'] } },
+              where: { status: { in: ['ACTIVE', 'TRIALING', 'DEMO'] } },
               orderBy: { createdAt: 'desc' },
               take: 1
             }
