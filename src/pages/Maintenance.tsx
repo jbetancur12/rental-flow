@@ -169,7 +169,7 @@ useEffect(() => {
     setIsAssignModalOpen(true);
   };
 
-  // NEW: Función para ver detalles
+
   const handleViewDetails = (request: MaintenanceRequest) => {
     setSelectedRequest(request);
     setIsDetailsModalOpen(true);
