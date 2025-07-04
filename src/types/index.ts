@@ -85,6 +85,7 @@ export interface Tenant {
   applicationDate: Date;
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'ACTIVE' | 'FORMER';
   creditScore?: number;
+  createdAt: Date;
 }
 
 export interface Reference {
@@ -126,6 +127,7 @@ export interface Payment {
   notes?: string;
   periodStart?: Date; // Start date of the billing period
   periodEnd?: Date; // End date of the billing period
+  createdAt: Date
 }
 
 export interface MaintenanceRequest {
