@@ -25,7 +25,7 @@ jobs:
             npm run build
             pm2 restart 0
 
-  deploy-frontend:
+deploy-frontend:
     name: Deploy Frontend
     runs-on: ubuntu-latest
     steps:
@@ -48,7 +48,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "./dist/" # ✅ Es mejor copiar el directorio completo
+          source: "./dist/"
           target: "/var/www/rentflow-frontend"
-          # ✅ AÑADE ESTA LÍNEA PARA SOLUCIONAR EL ERROR
-          script_before: rm -rf /var/www/rentflow-frontend/*
+          # ✅ LA LÍNEA CORRECTA ES ESTA:
+          rm: true
