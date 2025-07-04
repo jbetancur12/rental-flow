@@ -10,10 +10,13 @@ import { User, AlertTriangle, Download } from 'lucide-react';
 import { Tenant } from '../types';
 import { useConfirm } from '../hooks/useConfirm';
 import { ConfirmDialog } from '../components/UI/ConfirmDialog';
+import { useSubscription } from '../hooks/useSubscription';
 
 export function Tenants() {
   const { state, createTenant, updateTenant, getTenants, deleteTenant } = useApp();
   const { isOpen: isConfirmOpen, options: confirmOptions, confirm, handleConfirm, handleCancel } = useConfirm();
+  const { limits, isLimitExceeded } = useSubscription();
+
   const [filter, setFilter] = useState<'all' | 'PENDING' | 'APPROVED' | 'ACTIVE' | 'FORMER' | 'OVERDUE'>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
@@ -22,7 +25,7 @@ export function Tenants() {
   const [selectedTenant, setSelectedTenant] = useState<Tenant | undefined>();
   const [paymentTenant, setPaymentTenant] = useState<Tenant | undefined>();
 
-
+const limitReached = isLimitExceeded('tenants');
 
   const fetchTenants = useCallback(async () => {
     try {
@@ -129,7 +132,14 @@ export function Tenants() {
         title="Tenants"
         onNewItem={handleNewTenant}
         newItemLabel="Add Tenant"
+        isNewItemDisabled={limitReached}
       />
+
+       {limitReached && (
+        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 text-sm">
+          Has alcanzado el límite de **{limits.maxTenants} iniquilinos** de tu plan actual. Para añadir más, por favor <a href="/settings?tab=subscription" className="font-bold underline">actualiza tu plan</a>.
+        </div>
+      )}
 
       <div className="p-6">
         {/* Summary Cards */}

@@ -1,7 +1,7 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { apiClient } from '../config/api';
 import { OrganizationSettings } from '../types/auth';
+import { useApp } from '../context/AppContext';
 
 interface SubscriptionLimits {
     maxProperties: number;
@@ -27,15 +27,17 @@ interface SubscriptionUsage {
 
 export function useSubscription() {
     const { state: authState } = useAuth();
-    const [usage, setUsage] = useState<SubscriptionUsage>({
-        properties: 0,
-        tenants: 0,
-        users: 0,
-        storageUsed: 0
-    });
-    const [isLoading, setIsLoading] = useState(false);
+    const { state: appState } = useApp();
+
 
     const { subscription, organization } = authState;
+
+    const usage = useMemo((): SubscriptionUsage => ({
+        properties: appState.properties.length,
+        tenants: appState.tenants.length,
+        users: 1, // Puedes hacer este cálculo más complejo si es necesario
+        storageUsed: 0 // Esto es más difícil de calcular en el front, 0 es un placeholder
+    }), [appState.properties, appState.tenants]);
 
     // Calculate days remaining in trial
     const daysRemaining = useMemo(() => {
@@ -71,19 +73,29 @@ export function useSubscription() {
         return settings?.features || defaultFeatures;
     }, [organization]);
 
-    const isLimitExceeded = useCallback((type: keyof SubscriptionLimits) => {
-        return usage[type as keyof SubscriptionUsage] >= limits[type];
-    }, [usage, limits]);
+const isLimitExceeded = useCallback((usageType: keyof SubscriptionUsage) => {
+    // 1. Mapa que conecta el tipo de uso con el nombre de su límite
+    const usageToLimitMap: { [key in keyof SubscriptionUsage]: keyof SubscriptionLimits } = {
+        properties: 'maxProperties',
+        tenants: 'maxTenants',
+        users: 'maxUsers',
+        storageUsed: 'storageGB'
+    };
+
+    // 2. Obtenemos el nombre del límite correspondiente
+    const limitKey = usageToLimitMap[usageType];
+    
+    // 3. Obtenemos los valores correctos de cada objeto
+    const limit = limits[limitKey];
+    const current = usage[usageType];
+
+    // 4. Realizamos la comparación segura
+    return limit > 0 && current >= limit;
+}, [usage, limits]);
 
     const hasFeature = useCallback((feature: keyof SubscriptionFeatures) => {
         return !!features[feature];
     }, [features]);
-    // Check if subscription is active
-    const isSubscriptionActive = useMemo(() => {
-        if (!subscription) return false;
-        return subscription.status === 'ACTIVE' ||
-            (subscription.status === 'TRIALING' && !isTrialExpired());
-    }, [subscription]);
 
     // Get current limits based on plan
     const getLimits = (): SubscriptionLimits => {
@@ -120,22 +132,7 @@ export function useSubscription() {
         return Math.min(100, (currentUsage / limits[type]) * 100);
     };
 
-    // Load current usage from API
-    const loadUsage = async () => {
-        if (!authState.isAuthenticated) return;
 
-        setIsLoading(true);
-        try {
-            const response = await apiClient.request('/organizations/usage', {
-                method: 'GET'
-            });
-            setUsage(response.usage);
-        } catch (error) {
-            console.error('Failed to load usage:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
 
     // Upgrade subscription
     const upgradeSubscription = async (planId: string) => {
@@ -177,29 +174,20 @@ export function useSubscription() {
         }
     };
 
-    // Load usage on mount and when auth state changes
-    useEffect(() => {
-        if (authState.isAuthenticated && authState.organization) {
-            loadUsage();
-        }
-    }, [authState.isAuthenticated, authState.organization]);
 
     return {
         subscription,
         organization,
         usage,
-        isLoading,
         daysRemaining,
         isTrialExpired,
         isActive,
-        isSubscriptionActive,
         limits,
         getLimits,
         getFeatures,
         isLimitExceeded,
         hasFeature,
         getUsagePercentage,
-        loadUsage,
         upgradeSubscription,
         cancelSubscription,
         reactivateSubscription

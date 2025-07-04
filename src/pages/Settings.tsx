@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Header } from '../components/Layout/Header';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
-import { 
-  User, 
-  Bell, 
-  Shield, 
-  Database, 
+import {
+  User,
+  Bell,
+  Shield,
+  Database,
 
   Building2,
   Save,
@@ -17,14 +17,21 @@ import {
   EyeOff,
   CreditCard,
   Users,
-  Crown
+  Crown,
+  X
 } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { OrganizationSettings } from '../types/auth';
+import { PlanSelector } from '../components/Subscription/PlanSelector';
+import { plans } from '../components/Auth/RegisterForm';
 
 export function Settings() {
-  const { state: authState,  updateUserProfile, changePassword } = useAuth();
-  const {updateOrganization} = useApp();
+
+  const { state: authState, updateUserProfile, changePassword } = useAuth();
+  const { updateOrganization } = useApp();
   const { state, dispatch } = useApp();
-  const [ACTIVETab, setACTIVETab] = useState('profile');
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const [showPassword, setShowPassword] = useState(false);
   const [settings, setSettings] = useState({
     profile: {
@@ -62,6 +69,25 @@ export function Settings() {
     }
   });
 
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const [selectedPlanInModal, setSelectedPlanInModal] = useState(authState.subscription?.planId || '');
+  
+  
+
+  const activeTab = searchParams.get('tab') || 'profile';
+
+   const handleOpenUpgradeModal = () => {
+    setSelectedPlanInModal(authState.subscription?.planId || ''); // Resetea la selección al plan actual
+    setIsUpgradeModalOpen(true);
+  };
+
+   const handleProceedToCheckout = () => {
+    // Aquí iría la lógica para llamar al backend e iniciar el proceso de pago con Stripe
+    // Por ahora, mostramos una alerta.
+    alert(`Iniciando actualización al plan: ${selectedPlanInModal}`);
+    setIsUpgradeModalOpen(false);
+  };
+
   const handleSaveProfile = async () => {
     if (authState.user) {
       const updatedUser = {
@@ -72,7 +98,7 @@ export function Settings() {
       };
       await updateUserProfile(authState.user.id, updatedUser);
     }
-    
+
   };
 
   const handleSaveOrganization = async () => {
@@ -120,7 +146,7 @@ export function Settings() {
       newPassword: settings.security.newPassword,
       confirmPassword: settings.security.confirmPassword
     });
-    
+
     setSettings({
       ...settings,
       security: {
@@ -142,7 +168,7 @@ export function Settings() {
       organization: authState.organization,
       exportDate: new Date().toISOString()
     };
-    
+
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -152,7 +178,7 @@ export function Settings() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    
+
     alert('Datos exportados exitosamente!');
   };
 
@@ -190,6 +216,36 @@ export function Settings() {
     }
   };
 
+  const handleTabClick = (tabId: string) => {
+    setSearchParams({ tab: tabId });
+  };
+
+      useEffect(() => {
+        if (authState.user && authState.organization) {
+            const orgSettings = authState.organization.settings as OrganizationSettings;
+            setSettings(prev => ({
+                ...prev,
+                profile: {
+                    firstName: authState?.user?.firstName || '',
+                    lastName: authState?.user?.lastName || '',
+                    email: authState?.user?.email || '',
+                    phone: '+1 (555) 123-4567', // Este debería venir de la BD
+                    role: authState.user?.role || 'USER'
+                },
+                organization: {
+                    name: authState.organization?.name || '',
+                    email: authState.organization?.email || '',
+                    phone: authState.organization?.phone || '',
+                    address: authState.organization?.address || '',
+                    currency: orgSettings.currency || 'USD',
+                    timezone: orgSettings.timezone || 'America/Mexico_City',
+                    dateFormat: orgSettings.dateFormat || 'DD/MM/YYYY',
+                    language: orgSettings.language || 'es'
+                }
+            }));
+        }
+    }, [authState.user, authState.organization]);
+
   const tabs = [
     { id: 'profile', label: 'Perfil', icon: User },
     { id: 'organization', label: 'Organización', icon: Building2 },
@@ -203,7 +259,7 @@ export function Settings() {
   return (
     <div className="flex-1 overflow-auto">
       <Header title="Configuración" />
-      
+
       <div className="p-6">
         <div className="max-w-6xl mx-auto">
           {/* Tab Navigation */}
@@ -212,12 +268,11 @@ export function Settings() {
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setACTIVETab(tab.id)}
-                  className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
-                    ACTIVETab === tab.id
+                  onClick={() => handleTabClick(tab.id)}
+                  className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === tab.id
                       ? 'border-blue-500 text-blue-600'
                       : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
-                  }`}
+                    }`}
                 >
                   <tab.icon className="w-5 h-5 mr-2" />
                   {tab.label}
@@ -227,11 +282,11 @@ export function Settings() {
           </div>
 
           {/* Profile Tab */}
-          {ACTIVETab === 'profile' && (
+          {activeTab === 'profile' && (
             <div className="space-y-6">
               <div className="bg-white rounded-xl border border-slate-200 p-6">
                 <h3 className="text-lg font-semibold text-slate-900 mb-6">Información Personal</h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -247,7 +302,7 @@ export function Settings() {
                       className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
                       Apellido
@@ -262,7 +317,7 @@ export function Settings() {
                       className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
                       Correo Electrónico
@@ -277,7 +332,7 @@ export function Settings() {
                       className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
                       Teléfono
@@ -292,7 +347,7 @@ export function Settings() {
                       className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
                       Rol
@@ -309,7 +364,7 @@ export function Settings() {
                     <p className="text-xs text-slate-500 mt-1">Contacta al administrador para cambiar tu rol</p>
                   </div>
                 </div>
-                
+
                 <div className="mt-6 flex justify-end">
                   <button
                     onClick={handleSaveProfile}
@@ -324,11 +379,11 @@ export function Settings() {
           )}
 
           {/* Organization Tab */}
-          {ACTIVETab === 'organization' && (
+          {activeTab === 'organization' && (
             <div className="space-y-6">
               <div className="bg-white rounded-xl border border-slate-200 p-6">
                 <h3 className="text-lg font-semibold text-slate-900 mb-6">Información de la Organización</h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -344,7 +399,7 @@ export function Settings() {
                       className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
                       Email de Contacto
@@ -359,7 +414,7 @@ export function Settings() {
                       className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
                       Teléfono
@@ -374,7 +429,7 @@ export function Settings() {
                       className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
-                  
+
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-slate-700 mb-2">
                       Dirección
@@ -389,7 +444,7 @@ export function Settings() {
                       className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
                       Moneda
@@ -408,7 +463,7 @@ export function Settings() {
                       <option value="CAD">CAD - Dólar Canadiense</option>
                     </select>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
                       Zona Horaria
@@ -429,7 +484,7 @@ export function Settings() {
                     </select>
                   </div>
                 </div>
-                
+
                 <div className="mt-6 flex justify-end">
                   <button
                     onClick={handleSaveOrganization}
@@ -444,7 +499,7 @@ export function Settings() {
           )}
 
           {/* Subscription Tab */}
-          {ACTIVETab === 'subscription' && authState.subscription && (
+          {activeTab === 'subscription' && authState.subscription && (
             <div className="space-y-6">
               <div className="bg-white rounded-xl border border-slate-200 p-6">
                 <div className="flex items-center justify-between mb-6">
@@ -463,21 +518,20 @@ export function Settings() {
                       <label className="text-sm text-slate-500">Plan Actual</label>
                       <p className="text-lg font-semibold text-slate-900">
                         {authState.subscription.planId === 'plan-basic' ? 'Básico' :
-                         authState.subscription.planId === 'plan-professional' ? 'Profesional' : 'Empresarial'}
+                          authState.subscription.planId === 'plan-professional' ? 'Profesional' : 'Empresarial'}
                       </p>
                     </div>
-                    
+
                     <div>
                       <label className="text-sm text-slate-500">Estado</label>
-                      <p className={`text-lg font-semibold ${
-                        authState.subscription.status === 'ACTIVE' ? 'text-emerald-600' :
-                        authState.subscription.status === 'TRIALING' ? 'text-blue-600' : 'text-red-600'
-                      }`}>
+                      <p className={`text-lg font-semibold ${authState.subscription.status === 'ACTIVE' ? 'text-emerald-600' :
+                          authState.subscription.status === 'TRIALING' ? 'text-blue-600' : 'text-red-600'
+                        }`}>
                         {authState.subscription.status === 'ACTIVE' ? 'Activo' :
-                         authState.subscription.status === 'TRIALING' ? 'Prueba' : 'Vencido'}
+                          authState.subscription.status === 'TRIALING' ? 'Prueba' : 'Vencido'}
                       </p>
                     </div>
-                    
+
                     <div>
                       <label className="text-sm text-slate-500">Próxima Facturación</label>
                       <p className="text-lg font-semibold text-slate-900">
@@ -508,7 +562,7 @@ export function Settings() {
                 </div>
 
                 <div className="mt-6 flex space-x-4">
-                  <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                  <button onClick={handleOpenUpgradeModal} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                     Actualizar Plan
                   </button>
                   <button className="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg hover:bg-slate-50">
@@ -520,7 +574,7 @@ export function Settings() {
           )}
 
           {/* Team Tab */}
-          {ACTIVETab === 'team' && (
+          {activeTab === 'team' && (
             <div className="space-y-6">
               <div className="bg-white rounded-xl border border-slate-200 p-6">
                 <div className="flex items-center justify-between mb-6">
@@ -554,7 +608,7 @@ export function Settings() {
 
                 <div className="mt-6 p-4 bg-slate-50 rounded-lg">
                   <p className="text-sm text-slate-600">
-                    Tu plan actual permite hasta {authState.organization?.settings.limits.maxUsers} usuarios. 
+                    Tu plan actual permite hasta {authState.organization?.settings.limits.maxUsers} usuarios.
                     <a href="#" className="text-blue-600 hover:text-blue-800 ml-1">Actualiza tu plan</a> para agregar más miembros al equipo.
                   </p>
                 </div>
@@ -563,11 +617,11 @@ export function Settings() {
           )}
 
           {/* Notifications Tab */}
-          {ACTIVETab === 'notifications' && (
+          {activeTab === 'notifications' && (
             <div className="space-y-6">
               <div className="bg-white rounded-xl border border-slate-200 p-6">
                 <h3 className="text-lg font-semibold text-slate-900 mb-6">Preferencias de Notificación</h3>
-                
+
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
@@ -587,7 +641,7 @@ export function Settings() {
                       <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="font-medium text-slate-900">Recordatorios de Pago</h4>
@@ -606,7 +660,7 @@ export function Settings() {
                       <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="font-medium text-slate-900">Alertas de Mantenimiento</h4>
@@ -626,7 +680,7 @@ export function Settings() {
                     </label>
                   </div>
                 </div>
-                
+
                 <div className="mt-6 flex justify-end">
                   <button
                     onClick={handleSaveNotifications}
@@ -641,11 +695,11 @@ export function Settings() {
           )}
 
           {/* Security Tab */}
-          {ACTIVETab === 'security' && (
+          {activeTab === 'security' && (
             <div className="space-y-6">
               <div className="bg-white rounded-xl border border-slate-200 p-6">
                 <h3 className="text-lg font-semibold text-slate-900 mb-6">Cambiar Contraseña</h3>
-                
+
                 <div className="space-y-4 max-w-md">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -670,7 +724,7 @@ export function Settings() {
                       </button>
                     </div>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
                       Nueva Contraseña
@@ -685,7 +739,7 @@ export function Settings() {
                       className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
                       Confirmar Nueva Contraseña
@@ -700,7 +754,7 @@ export function Settings() {
                       className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
-                  
+
                   <button
                     onClick={handleChangePassword}
                     className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -713,11 +767,11 @@ export function Settings() {
           )}
 
           {/* Data Tab */}
-          {ACTIVETab === 'data' && (
+          {activeTab === 'data' && (
             <div className="space-y-6">
               <div className="bg-white rounded-xl border border-slate-200 p-6">
                 <h3 className="text-lg font-semibold text-slate-900 mb-6">Gestión de Datos</h3>
-                
+
                 <div className="space-y-6">
                   <div>
                     <h4 className="font-medium text-slate-900 mb-3">Exportar e Importar Datos</h4>
@@ -729,7 +783,7 @@ export function Settings() {
                         <Download className="w-4 h-4 mr-2" />
                         Exportar Datos
                       </button>
-                      
+
                       <button
                         onClick={handleImportData}
                         className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -765,6 +819,46 @@ export function Settings() {
           )}
         </div>
       </div>
+
+       {isUpgradeModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-5xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-slate-200">
+              <h2 className="text-xl font-semibold text-slate-900">Actualiza tu Plan</h2>
+              <button
+                onClick={() => setIsUpgradeModalOpen(false)}
+                className="p-2 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-8">
+              <PlanSelector 
+                plans={plans}
+                selectedPlan={selectedPlanInModal}
+                onSelectPlan={setSelectedPlanInModal}
+              />
+
+              <div className="mt-8 flex justify-end space-x-3">
+                <button
+                  onClick={() => setIsUpgradeModalOpen(false)}
+                  className="px-6 py-2 text-slate-600 hover:bg-slate-100 rounded-lg"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleProceedToCheckout}
+                  className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+                >
+                  Continuar al Pago
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

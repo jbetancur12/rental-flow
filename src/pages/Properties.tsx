@@ -8,11 +8,12 @@ import { Property } from '../types';
 import { useApp } from '../context/AppContext';
 import { ConfirmDialog } from '../components/UI/ConfirmDialog';
 import { useConfirm } from '../hooks/useConfirm';
-import { useAuth } from '../context/AuthContext';
+import { useSubscription } from '../hooks/useSubscription';
 
 export function Properties() {
   const { state, dispatch, updateProperty, updateTenant, updateContract, deleteProperty } = useApp();
-  const { state: authState } = useAuth();
+  const { limits, isLimitExceeded } = useSubscription();
+
   const { isOpen: isConfirmOpen, options: confirmOptions, confirm, handleConfirm, handleCancel } = useConfirm();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -26,13 +27,9 @@ export function Properties() {
   // FIX: Filtros funcionando correctamente
   const [filter, setFilter] = useState<'all' | Property['status']>('all');
 
-  const maxProperties = authState.organization?.settings.limits.maxProperties || 0;
-  const currentProperties = state.properties.length;
-  const limitReached = currentProperties >= maxProperties;
+ const limitReached = isLimitExceeded('properties');
 
 
-
-  // FIX: Filtros funcionando correctamente
   const filteredProperties = useMemo(() => {
     // 1. Empieza con todas las propiedades
     let properties = state.properties;
@@ -214,7 +211,7 @@ export function Properties() {
       />
       {limitReached && (
         <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 text-sm">
-          Has alcanzado el límite de **{maxProperties} propiedades** de tu plan actual. Para añadir más, por favor <a href="/settings?tab=subscription" className="font-bold underline">actualiza tu plan</a>.
+          Has alcanzado el límite de **{limits.maxProperties} propiedades** de tu plan actual. Para añadir más, por favor <a href="/settings?tab=subscription" className="font-bold underline">actualiza tu plan</a>.
         </div>
       )}
       <div className="p-6">
