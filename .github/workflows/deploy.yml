@@ -22,9 +22,9 @@ jobs:
               cd /var/www/rentflow-api
               git pull origin main
               cd backend
-              npm install --production
-              npm run build
-              pm2 restart 0
+              /home/edelmirajaramillo53/.nvm/versions/node/v20.19.3/bin/npm install --production
+              /home/edelmirajaramillo53/.nvm/versions/node/v20.19.3/bin/npm run build
+              /home/edelmirajaramillo53/.nvm/versions/node/v20.19.3/bin/pm2 restart 0
             '
 
 
