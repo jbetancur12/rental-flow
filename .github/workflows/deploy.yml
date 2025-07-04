@@ -16,17 +16,15 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # Carga el entorno de NVM para encontrar npm y pm2
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            
-            # Ahora el despliegue funcionará porque el usuario es el dueño
-            cd /var/www/rentflow-api
-            git pull origin main
-            cd backend
-            npm install --production
-            npm run build
-            pm2 restart 0
+            bash -l -c '
+              cd /var/www/rentflow-api
+              git pull origin main
+              cd backend
+              npm install
+              npm run build
+              pm2 restart 0
+            '
+
 
   deploy-frontend:
       name: Deploy Frontend
