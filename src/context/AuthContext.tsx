@@ -2,6 +2,7 @@ import { createContext, useContext, useReducer, useEffect, ReactNode, useCallbac
 import { User, Organization, Subscription, AuthState, UserRole, SubscriptionStatus } from '../types/auth';
 import { apiClient } from '../config/api';
 import { useToast } from '../hooks/useToast';
+import { isPast } from 'date-fns';
 
 interface UpdateUserProfileData {
   firstName?: string;
@@ -24,7 +25,7 @@ interface UpdateUserProfileResponse {
 
 type AuthAction =
   | { type: 'LOGIN_START' }
-  | { type: 'LOGIN_SUCCESS'; payload: { user: User; organization: Organization; subscription: Subscription; token: string } }
+  | { type: 'LOGIN_SUCCESS'; payload: { user: User; organization: Organization; subscription: Subscription; token: string; isSubscriptionActive: boolean } }
   | { type: 'LOGIN_FAILURE'; payload: string }
   | { type: 'LOGOUT' }
   | { type: 'UPDATE_USER'; payload: User }
@@ -38,6 +39,7 @@ const initialState: AuthState = {
   isAuthenticated: false,
   isLoading: true,
   error: null,
+   isSubscriptionActive: false
 };
 
 function authReducer(state: AuthState, action: AuthAction): AuthState {
@@ -51,6 +53,7 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
         organization: action.payload.organization,
         subscription: action.payload.subscription,
         isAuthenticated: true,
+        isSubscriptionActive: action.payload.isSubscriptionActive,
         isLoading: false,
         error: null,
       };
@@ -132,19 +135,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       createdAt: new Date(response.subscription.createdAt),
     };
 
+    
+
+    let isSubscriptionActive = false;
+
+    if (subscription.status === 'ACTIVE') {
+        isSubscriptionActive = true;
+    } else if (
+        subscription.status === 'TRIALING' &&
+        subscription.trialEnd &&
+        !isPast(new Date(subscription.trialEnd)) // Comprueba si la fecha de fin de la prueba NO ha pasado
+    ) {
+        isSubscriptionActive = true;
+    }
+
+    // 4. Despacha la acción de éxito con el nuevo flag
     dispatch({
-      type: 'LOGIN_SUCCESS',
-      payload: { user, organization, subscription, token: response.token },
+        type: 'LOGIN_SUCCESS',
+        payload: {
+            user,
+            organization,
+            subscription,
+            token: response.token,
+            isSubscriptionActive, // Se añade el estado de la suscripción
+        },
     });
 
+    // Devuelve 'true' porque la autenticación (login) fue exitosa,
+    // aunque la suscripción pueda no estar activa.
+    return true;
+  }, []);
+
+    const logout = useCallback(async () => {
+    try {
+      await apiClient.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      localStorage.removeItem('auth_token');
+      apiClient.setToken(null);
+      apiClient.setOrganizationId(null);
+      dispatch({ type: 'LOGOUT' });
+    }
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
     dispatch({ type: 'LOGIN_START' });
     try {
       const response = await apiClient.login(email, password);
-      processAuthResponse(response);
-      toast.success('', '¡Bienvenido de nuevo!');
+      const wasSuccessful = processAuthResponse(response);
+      if (wasSuccessful) {
+      toast.success('','¡Bienvenido de nuevo!');
+    }
     } catch (error: any) {
       dispatch({ type: 'LOGIN_FAILURE', payload: error.message || 'Error de autenticación' });
       toast.error('Error de autenticación', error.message);
@@ -163,18 +205,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [processAuthResponse, toast]);
 
-  const logout = useCallback(async () => {
-    try {
-      await apiClient.logout();
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      localStorage.removeItem('auth_token');
-      apiClient.setToken(null);
-      apiClient.setOrganizationId(null);
-      dispatch({ type: 'LOGOUT' });
-    }
-  }, []);
+
 
   const changePassword = useCallback(
   async ({ userId, currentPassword, newPassword, confirmPassword }: ChangePasswordData): Promise<void> => {

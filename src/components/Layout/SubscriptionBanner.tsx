@@ -7,12 +7,13 @@ export function SubscriptionBanner() {
 
   if (!state.subscription) return null;
 
-  const isTrialing = state.subscription.status === 'trialing';
-  const isPastDue = state.subscription.status === 'past_due';
+  const isTrialing = state.subscription.status === 'TRIALING';
+  const isPastDue = state.subscription.status === 'PAST_DUE';
   const daysLeft = state.subscription.trialEnd 
-    ? Math.ceil((state.subscription.trialEnd.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-    : 0;
-
+  ? Math.ceil((state.subscription.trialEnd.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+  : 0;
+  
+  console.log("🚀 ~ SubscriptionBanner ~ daysLeft:", state.subscription.trialEnd )
   if (!isTrialing && !isPastDue) return null;
 
   return (

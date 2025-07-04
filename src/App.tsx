@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AppProvider } from './context/AppContext';
@@ -17,40 +16,18 @@ import { Reports } from './pages/Reports';
 import { Settings } from './pages/Settings';
 import { ToastContainer } from './components/UI/ToastContainer';
 import { ToastProvider } from './hooks/useToast';
+import { Subscribe } from './pages/Subscribe';
+import { SubscriptionGuard } from './components/Auth/SubscriptionGuard';
 
-// Component to handle routing based on user role
+// 1. Lógica de rutas unificada y más limpia
 function AppRoutes() {
   const { state } = useAuth();
 
-  // If user is super admin, redirect to super admin panel
-  if (state.isAuthenticated && state.user?.role === 'SUPER_ADMIN') {
-    return (
-      <Routes>
-        <Route path="/super-admin" element={<SuperAdmin />} />
-        <Route path="*" element={<Navigate to="/super-admin" replace />} />
-      </Routes>
-    );
-  }
-
-  // Regular user routes
   return (
     <Routes>
-      {/* Super Admin Route - only accessible by super admins */}
-      <Route
-        path="/super-admin"
-        element={
-          state.user?.role === 'SUPER_ADMIN' ?
-            <SuperAdmin /> :
-            <Navigate to="/" replace />
-        }
-      />
-
-      {/* Regular App Routes */}
-      <Route path="/" element={
-        <AppProvider>
-          <Layout />
-        </AppProvider>
-      }>
+      <Route element={<SubscriptionGuard />}>
+      {/* Rutas principales envueltas en el Layout */}
+      <Route path="/" element={<Layout />}>
         <Route index element={<Dashboard />} />
         <Route path="properties" element={<Properties />} />
         <Route path="units" element={<Units />} />
@@ -61,6 +38,21 @@ function AppRoutes() {
         <Route path="reports" element={<Reports />} />
         <Route path="settings" element={<Settings />} />
       </Route>
+
+      {/* Ruta específica para el Super Admin, protegida individualmente */}
+      <Route
+        path="/super-admin"
+        element={
+          state.user?.role === 'SUPER_ADMIN' 
+            ? <SuperAdmin /> 
+            : <Navigate to="/" replace />
+        }
+      />
+
+      {/* Redirección para cualquier otra ruta no encontrada */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
+       <Route path="/subscribe" element={<Subscribe />} />
     </Routes>
   );
 }
@@ -69,12 +61,15 @@ function App() {
   return (
     <ToastProvider>
       <AuthProvider>
-        <Router>
-          <AuthGuard fallback={<Auth />}>
-            <AppRoutes />
+        {/* 2. AppProvider se mueve aquí para que su estado sea global y persistente */}
+        <AppProvider>
+          <Router>
+            <AuthGuard fallback={<Auth />}>
+              <AppRoutes />
+            </AuthGuard>
             <ToastContainer />
-          </AuthGuard>
-        </Router>
+          </Router>
+        </AppProvider>
       </AuthProvider>
     </ToastProvider>
   );

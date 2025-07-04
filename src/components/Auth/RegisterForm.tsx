@@ -7,7 +7,7 @@ interface RegisterFormProps {
   onSwitchToLogin: () => void;
 }
 
-const plans: SubscriptionPlan[] = [
+export const plans: SubscriptionPlan[] = [
   {
     id: 'plan-basic',
     name: 'Básico',
