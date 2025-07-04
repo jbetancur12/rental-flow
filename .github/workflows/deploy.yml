@@ -25,30 +25,30 @@ jobs:
             npm run build
             pm2 restart 0
 
-deploy-frontend:
-    name: Deploy Frontend
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+  deploy-frontend:
+      name: Deploy Frontend
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
+        - name: Setup Node.js
+          uses: actions/setup-node@v3
+          with:
+            node-version: '18'
 
-      - name: Install and Build
-        run: |
-          npm install
-          npm run build
+        - name: Install and Build
+          run: |
+            npm install
+            npm run build
 
-      - name: Copy files to server
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "./dist/"
-          target: "/var/www/rentflow-frontend"
-          # ✅ LA LÍNEA CORRECTA ES ESTA:
-          rm: true
+        - name: Copy files to server
+          uses: appleboy/scp-action@master
+          with:
+            host: ${{ secrets.SSH_HOST }}
+            username: ${{ secrets.SSH_USERNAME }}
+            key: ${{ secrets.SSH_PRIVATE_KEY }}
+            source: "./dist/"
+            target: "/var/www/rentflow-frontend"
+            # ✅ LA LÍNEA CORRECTA ES ESTA:
+            rm: true
