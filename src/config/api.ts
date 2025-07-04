@@ -61,7 +61,7 @@ class ApiClient {
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+throw errorData;
       }
 
       return await response.json();
@@ -371,6 +371,20 @@ class ApiClient {
   async updateMaintenanceRequest(id: string, data: any) {
     return this.request<any>(`/maintenance/${id}`, {
       method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async asignMaintenanceTechinician(id: string, assignedTo: any){
+    return this.request<any>(`/maintenance/${id}/assign`, {
+      method: 'PATCH',
+      body: JSON.stringify(assignedTo),
+    });
+  }
+
+    async markMaintenanceAsComplete(id: string, data:any){
+    return this.request<any>(`/maintenance/${id}/complete`, {
+      method: 'PATCH',
       body: JSON.stringify(data),
     });
   }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Header } from '../components/Layout/Header';
 import { MaintenanceForm } from '../components/Maintenance/MaintenanceForm';
 import { useApp } from '../context/AppContext';
@@ -6,9 +6,12 @@ import { generateMaintenanceReport } from '../utils/reportGenerator';
 import { Wrench, AlertTriangle, User, Home, Calendar, DollarSign, Clock, Download, Edit, Trash2, Filter, UserPlus, Eye, X } from 'lucide-react';
 import { MaintenanceRequest } from '../types';
 import { formatInTimeZone } from 'date-fns-tz';
+import { ConfirmDialog } from '../components/UI/ConfirmDialog';
+import { useConfirm } from '../hooks/useConfirm';
 
 export function Maintenance() {
-  const { state, dispatch, updateMaintenanceRequest, createMaintenanceRequest, loadMaintenanceRequests, loadProperties, loadUnits } = useApp();
+  const { state, updateMaintenanceRequest, createMaintenanceRequest,markMaintenanceAsComplete, loadMaintenanceRequests, loadProperties, loadUnits, asignMaintenanceTechinician } = useApp();
+    const { isOpen: isConfirmOpen, options: confirmOptions, confirm, handleConfirm, handleCancel } = useConfirm();
   
   // FIX: Estados para filtros funcionando
   const [statusFilter, setStatusFilter] = useState<'all' | 'OPEN' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'>('all');
@@ -24,6 +27,10 @@ export function Maintenance() {
   const [selectedRequest, setSelectedRequest] = useState<MaintenanceRequest | undefined>();
   const [assigningRequest, setAssigningRequest] = useState<MaintenanceRequest | undefined>();
   const [technicianName, setTechnicianName] = useState('');
+
+    const [isCostModalOpen, setIsCostModalOpen] = useState(false);
+    const [completingRequest, setCompletingRequest] = useState<MaintenanceRequest | undefined>();
+    const [actualCost, setActualCost] = useState(0);
 
 useEffect(() => {
   // 1. Definimos una única función para cargar todos los datos iniciales.
@@ -64,29 +71,28 @@ useEffect(() => {
 ]);
 
   // FIX: Filtros funcionando correctamente
-  const filteredRequests = state.maintenanceRequests.filter(request => {
-    // Filtro por status
-    if (statusFilter !== 'all' && request.status !== statusFilter) {
-      return false;
-    }
-    
-    // Filtro por mes y año
-    if (monthFilter !== 'all') {
-      const requestMonth = new Date(request.reportedDate).getMonth() + 1;
-      const requestYear = new Date(request.reportedDate).getFullYear();
+    const filteredRequests = useMemo(() => {
       
-      if (requestMonth !== monthFilter || requestYear !== yearFilter) {
-        return false;
-      }
-    } else if (yearFilter) {
-      const requestYear = new Date(request.reportedDate).getFullYear();
-      if (requestYear !== yearFilter) {
-        return false;
-      }
-    }
-    
-    return true;
-  });
+        return state.maintenanceRequests.filter(request => {
+            if (statusFilter !== 'all' && request.status !== statusFilter) {
+                return false;
+            }
+            
+            if (monthFilter !== 'all' || yearFilter) {
+                const reportedDate = new Date(request.reportedDate);
+                const requestMonth = reportedDate.getUTCMonth() + 1;
+                const requestYear = reportedDate.getUTCFullYear();
+
+                if (monthFilter !== 'all' && requestMonth !== monthFilter) {
+                    return false;
+                }
+                if (yearFilter && requestYear !== yearFilter) {
+                    return false;
+                }
+            }
+            return true;
+        });
+    }, [state.maintenanceRequests, statusFilter, monthFilter, yearFilter]);
 
   const getPriorityColor = (priority: string) => {
     const colors = {
@@ -141,10 +147,18 @@ useEffect(() => {
     setIsFormOpen(true);
   };
 
-  const handleDeleteRequest = (id: string) => {
-    if (confirm('¿Está seguro de que desea eliminar esta solicitud de mantenimiento?')) {
+  const handleDeleteRequest = async (id: string) => {
+
+       const confirmed = await confirm({
+      title: 'Anular Pago',
+      message: '¿Está seguro de que desea eliminar esta solicitud de mantenimiento?',
+      confirmText: 'Sí, Elimminar',
+      type: 'danger' // Un color de advertencia es más adecuado que 'danger'
+    });
+    
+    if (confirmed) {
       // In a real app, you'd dispatch a DELETE_MAINTENANCE_REQUEST action
-      console.log('Delete maintenance request:', id);
+      alert('Funcionalidad aún no habilitada - ' + id);
     }
   };
 
@@ -162,19 +176,51 @@ useEffect(() => {
   };
 
   // NEW: Función para marcar como completada
-  const handleMarkComplete = (request: MaintenanceRequest) => {
-    if (confirm('¿Está seguro de que desea marcar esta solicitud como completada?')) {
-      const updatedRequest = {
-        ...request,
-        status: 'COMPLETED' as const,
-        completedDate: new Date()
-      };
-      dispatch({ type: 'UPDATE_MAINTENANCE_REQUEST', payload: updatedRequest });
-    }
-  };
+const handleMarkComplete = async (request: MaintenanceRequest) => {
+        const confirmed = await confirm({
+            title: 'Completar Solicitud',
+            message: '¿Está seguro de que desea marcar esta solicitud como completada?',
+            confirmText: 'Sí, Completar',
+            type: 'danger'
+        });
 
+        if (confirmed) {
+            // Si el costo ya existe, la completamos directamente.
+            if (request.actualCost && request.actualCost > 0) {
+                await markMaintenanceAsComplete(request.id, { status: 'COMPLETED', completedDate: new Date() });
+            } else {
+                // Si no hay costo, abrimos el nuevo modal para que el usuario lo ingrese.
+                setCompletingRequest(request);
+                setActualCost(request.estimatedCost || 0); // Pre-rellenamos con el costo estimado si existe
+                setIsCostModalOpen(true);
+            }
+        }
+    };
+
+    const handleSaveCostAndComplete = async () => {
+        if (!completingRequest) return;
+
+        if (actualCost <= 0) {
+            alert('Por favor, ingrese un costo real válido.');
+            return;
+        }
+
+        const dataToUpdate = {
+            status: 'COMPLETED' as const,
+            completedDate: new Date(),
+            actualCost: actualCost
+        };
+
+        try {
+            await markMaintenanceAsComplete(completingRequest.id, dataToUpdate);
+            setIsCostModalOpen(false); // Cierra el modal si todo sale bien
+        } catch (error) {
+            // El error se mostrará con un toast desde el contexto, no es necesario hacer nada más aquí.
+            console.error("Failed to mark as complete with cost", error);
+        }
+    };
   // NEW: Guardar asignación de técnico
-  const handleSaveAssignment = () => {
+  const handleSaveAssignment = async () => {
     if (!assigningRequest || !technicianName.trim()) {
       alert('Por favor ingrese el nombre del técnico');
       return;
@@ -186,7 +232,11 @@ useEffect(() => {
       status: 'IN_PROGRESS' as const
     };
 
-    dispatch({ type: 'UPDATE_MAINTENANCE_REQUEST', payload: updatedRequest });
+    await  asignMaintenanceTechinician(
+      updatedRequest.id,
+      updatedRequest
+    );
+
     setIsAssignModalOpen(false);
     setAssigningRequest(undefined);
     setTechnicianName('');
@@ -366,7 +416,8 @@ useEffect(() => {
 
         {/* Maintenance Requests */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {filteredRequests.map((request) => (
+          {filteredRequests.map((request) => {
+            return (
             <div key={request.id} className="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-shadow">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-start">
@@ -416,7 +467,7 @@ useEffect(() => {
                 </div>
                 <div className="flex items-center text-slate-600">
                   <Calendar className="w-4 h-4 mr-3" />
-                  <span className="text-sm">Reportado: {formatInTimeZone(request.reportedDate, 'UTC', 'MMM d, yyyy')}</span>
+  Reportado: {request.reportedDate ? formatInTimeZone(request.reportedDate, 'UTC', 'MMM d, yyyy') : 'N/A'}
                 </div>
               </div>
 
@@ -472,7 +523,7 @@ useEffect(() => {
                 </button>
               </div>
             </div>
-          ))}
+          )})}
         </div>
 
         {filteredRequests.length === 0 && (
@@ -658,6 +709,66 @@ useEffect(() => {
           </div>
         </div>
       )}
+      {isCostModalOpen && completingRequest && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-xl max-w-md w-full mx-4">
+                        <div className="flex items-center justify-between p-6 border-b border-slate-200">
+                            <h2 className="text-xl font-semibold text-slate-900">Registrar Costo Final</h2>
+                            <button
+                                onClick={() => setIsCostModalOpen(false)}
+                                className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        
+                        <div className="p-6">
+                            <div className="mb-4">
+                                <h3 className="font-medium text-slate-900 mb-2">{completingRequest.title}</h3>
+                                <p className="text-sm text-slate-600">{getPropertyName(completingRequest.propertyId)}</p>
+                            </div>
+                            
+                            <div className="mb-6">
+                                <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    Costo Real ($)
+                                </label>
+                                <input
+                                    type="number"
+                                    value={actualCost}
+                                    onChange={(e) => setActualCost(parseFloat(e.target.value) || 0)}
+                                    placeholder="Ingrese el costo final del trabajo"
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+                            
+                            <div className="flex justify-end space-x-3">
+                                <button
+                                    onClick={() => setIsCostModalOpen(false)}
+                                    className="px-4 py-2 text-slate-600 hover:text-slate-800"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={handleSaveCostAndComplete}
+                                    className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+                                >
+                                    Guardar y Completar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+         <ConfirmDialog
+              isOpen={isConfirmOpen}
+              title={confirmOptions.title}
+              message={confirmOptions.message}
+              confirmText={confirmOptions.confirmText}
+              cancelText={confirmOptions.cancelText}
+              type={confirmOptions.type}
+              onConfirm={handleConfirm}
+              onCancel={handleCancel}
+            />
     </div>
   );
 }

@@ -296,6 +296,88 @@ export const generateFinancialReport = async (
   pdf.save('reporte-financiero.pdf');
 };
 
+export const generateTenantFinancialStatement = async (
+  tenant: Tenant,
+  contracts: Contract[],
+  payments: Payment[],
+  properties: Property[]
+) => {
+  const pdf = new jsPDF();
+  
+  // 2. Filtramos los datos para obtener solo los de este inquilino.
+  const tenantPayments = payments.filter(p => p.tenantId === tenant.id);
+  const tenantContracts = contracts.filter(c => c.tenantId === tenant.id);
+
+  // Título dinámico
+  pdf.setFontSize(20);
+  pdf.text(`Estado de Cuenta: ${tenant.firstName} ${tenant.lastName}`, 14, 22);
+  
+  pdf.setFontSize(10);
+  pdf.text(`Generado el: ${formatInTimeZone(new Date(), 'UTC', 'dd/MM/yyyy')}`, 14, 30);
+  
+  // 3. El resumen ahora es específico para el inquilino.
+  const totalPaid = tenantPayments.filter(p => p.status === 'PAID').reduce((sum, p) => sum + p.amount, 0);
+  const totalPending = tenantPayments.filter(p => ['PENDING', 'OVERDUE'].includes(p.status)).reduce((sum, p) => sum + p.amount, 0);
+  
+  pdf.setFontSize(12);
+  pdf.text('Resumen Personal', 14, 45);
+  pdf.setFontSize(10);
+  pdf.text(`Total Pagado: $${totalPaid.toLocaleString()}`, 14, 52);
+  pdf.text(`Monto Pendiente/Vencido: $${totalPending.toLocaleString()}`, 14, 59);
+
+  // 4. Definimos las nuevas columnas para la tabla.
+  const tableHead = [['Propiedad', 'Período Cubierto', 'Tipo', 'Monto', 'Estado', 'Fecha de Pago']];
+  
+  // 5. Mapeamos los pagos del inquilino para crear las filas.
+  const tableBody = tenantPayments.map(payment => {
+    const contract = tenantContracts.find(c => c.id === payment.contractId);
+    const propertyName = properties.find(p => p.id === contract?.propertyId)?.name || 'N/A';
+    
+    // Formateamos el período o mostramos N/A si no existe (ej: para un depósito)
+    const period = payment.periodStart && payment.periodEnd 
+      ? `${formatInTimeZone(payment.periodStart, 'UTC', 'dd/MM/yy')} - ${formatInTimeZone(payment.periodEnd, 'UTC', 'dd/MM/yy')}`
+      : 'N/A';
+      
+    const paidDate = payment.paidDate 
+      ? formatInTimeZone(payment.paidDate, 'UTC', 'dd/MM/yyyy')
+      : '---';
+
+    return [
+      propertyName,
+      period,
+      paymentTypeSpanish[payment.type as keyof typeof paymentTypeSpanish] || payment.type,
+      `$${payment.amount.toLocaleString()}`,
+      paymentStatusSpanish[payment.status as keyof typeof paymentStatusSpanish] || payment.status,
+      paidDate
+    ];
+  });
+
+  autoTable(pdf, {
+    head: tableHead,
+    body: tableBody,
+    startY: 70, // Ajustamos la posición de inicio
+    headStyles: {
+      fillColor: [34, 139, 34],
+      textColor: 255,
+      fontStyle: 'bold',
+      halign: 'center'
+    },
+    bodyStyles:{
+      halign: 'center'
+    },
+    columnStyles: {
+      0: { halign: 'left' },
+      1: { halign: 'center' },
+      3: { halign: 'right' },
+      5: { halign: 'center' },
+    }
+  });
+
+  // 6. Guardamos el PDF con un nombre de archivo dinámico.
+  const filename = `estado-cuenta-${tenant.firstName.toLowerCase()}-${tenant.lastName.toLowerCase()}.pdf`;
+  pdf.save(filename);
+};
+
 export const generateMaintenanceReport = async (
   requests: MaintenanceRequest[], 
   properties: Property[]

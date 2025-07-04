@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { MaintenanceRequest, Property, Tenant } from '../../types';
 import { X } from 'lucide-react';
+import { formatDateToYYYYMMDD } from '../../utils/formatDate';
 
 interface MaintenanceFormProps {
   request?: MaintenanceRequest;
@@ -38,9 +39,9 @@ export function MaintenanceForm({ request, properties, tenants, isOpen, onClose,
         priority: request.priority,
         category: request.category,
         status: request.status,
-        reportedDate: request.reportedDate.toISOString().split('T')[0],
-        completedDate: request.completedDate ? request.completedDate.toISOString().split('T')[0] : '',
-        assignedTo: request.assignedTo || '',
+        reportedDate: formatDateToYYYYMMDD(request.reportedDate),
+            completedDate: request.completedDate ? formatDateToYYYYMMDD(request.completedDate) : '',
+            assignedTo: request.assignedTo || '',
         estimatedCost: request.estimatedCost || 0,
         actualCost: request.actualCost || 0,
         notes: request.notes || ''
@@ -68,8 +69,8 @@ export function MaintenanceForm({ request, properties, tenants, isOpen, onClose,
     e.preventDefault();
     onSave({
       ...formData,
-      reportedDate: new Date(formData.reportedDate),
-      completedDate: formData.completedDate ? new Date(formData.completedDate) : undefined,
+      reportedDate: new Date(`${formData.reportedDate}T00:00:00`),
+        completedDate: formData.completedDate ? new Date(`${formData.completedDate}T00:00:00`) : undefined,
       tenantId: formData.tenantId || undefined,
       estimatedCost: formData.estimatedCost || undefined,
       actualCost: formData.actualCost || undefined
@@ -80,7 +81,6 @@ export function MaintenanceForm({ request, properties, tenants, isOpen, onClose,
   if (!isOpen) return null;
 
   // DEBUG: Log para verificar propiedades disponibles
-  console.log('Properties available in MaintenanceForm:', properties);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

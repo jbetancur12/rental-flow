@@ -19,3 +19,8 @@ export const parseUTCDate = (isoString?: string | Date | null): Date | null => {
   return new Date(date.getTime() + userTimezoneOffset);
 };
 
+export const formatDateToYYYYMMDD = (dateInput?: Date | string | null): string => {
+    if (!dateInput) return '';
+    return new Date(dateInput).toISOString().split('T')[0];
+}
+

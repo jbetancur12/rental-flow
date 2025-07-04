@@ -308,10 +308,21 @@ export function Tenants() {
                 .filter(p => p.tenantId === selectedTenant.id)
                 .sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime()); // Opcional: ordenar por fecha
 
+                const contractsForSelectedTenant = state.contracts
+                .filter(c => c.tenantId === selectedTenant.id)
+
+                const propertiesForSelectedTenant = state.properties
+                .filter(p => contractsForSelectedTenant.some(c => c.propertyId === p.id))
+
+            
+
+
             return (
                 <TenantDetails
                     tenant={selectedTenant}
-                    payments={paymentsForSelectedTenant} // 2. Pasa los pagos como prop
+                    payments={paymentsForSelectedTenant} 
+                    contracts={contractsForSelectedTenant}
+                    properties={propertiesForSelectedTenant}
                     isOpen={isDetailsOpen}
                     onClose={() => setIsDetailsOpen(false)}
                     onEdit={() => {

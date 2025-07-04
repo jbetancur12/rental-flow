@@ -16,7 +16,7 @@ interface AppState {
   buildings: Building[];
   units: Unit[];
   isLoading: boolean;
-  organization?: Organization; 
+  organization?: Organization;
 }
 
 type AppAction =
@@ -40,7 +40,7 @@ type AppAction =
   | { type: 'UPDATE_PAYMENT'; payload: Payment }
   | { type: 'ADD_MAINTENANCE_REQUEST'; payload: MaintenanceRequest }
   | { type: 'UPDATE_MAINTENANCE_REQUEST'; payload: MaintenanceRequest }
-  | { type: 'UPDATE_ORGANIZATION'; payload: Organization } 
+  | { type: 'UPDATE_ORGANIZATION'; payload: Organization }
   | { type: 'LOAD_INITIAL_DATA'; payload: Partial<AppState> }
   | { type: 'CLEAR_DATA' };
 
@@ -173,6 +173,8 @@ const AppContext = createContext<{
   loadMaintenanceRequests: () => Promise<void>;
   createMaintenanceRequest: (data: any) => Promise<void>;
   updateMaintenanceRequest: (id: string, data: any) => Promise<void>;
+  asignMaintenanceTechinician: (id: string, asignTo: any) => Promise<void>;
+  markMaintenanceAsComplete: (id: string, data: any) => Promise<void>;
   updateOrganization: (orgId: string, data: any) => Promise<void>;
 } | null>(null);
 
@@ -206,8 +208,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         unitName: prop.unit.name,
         unitNumber: prop.unitNumber,
         floor: prop.floor,
-        createdAt:new Date(prop.createdAt),
-        updatedAt:new Date(prop.updatedAt),
+        createdAt: new Date(prop.createdAt),
+        updatedAt: new Date(prop.updatedAt),
       }));
 
       dispatch({ type: 'SET_PROPERTIES', payload: properties });
@@ -238,8 +240,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         amenities: unit.amenities || [],
         photos: unit.photos || [],
         manager: unit.manager,
-        createdAt:new Date(unit.createdAt),
-        updatedAt:new Date(unit.updatedAt),
+        createdAt: new Date(unit.createdAt),
+        updatedAt: new Date(unit.updatedAt),
       }));
 
       dispatch({ type: 'SET_UNITS', payload: units });
@@ -267,8 +269,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ...response.property,
         type: response.property.type,
         status: response.property.status,
-        createdAt:new Date(response.property.createdAt),
-        updatedAt:new Date(response.property.updatedAt),
+        createdAt: new Date(response.property.createdAt),
+        updatedAt: new Date(response.property.updatedAt),
       };
 
       dispatch({ type: 'ADD_PROPERTY', payload: property });
@@ -296,8 +298,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ...response.property,
         type: response.property.type,
         status: response.property.status,
-        createdAt:new Date(response.property.createdAt),
-        updatedAt:new Date(response.property.updatedAt),
+        createdAt: new Date(response.property.createdAt),
+        updatedAt: new Date(response.property.updatedAt),
       };
 
       dispatch({ type: 'UPDATE_PROPERTY', payload: property });
@@ -335,8 +337,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const unit = {
         ...response.unit,
         type: response.unit.type,
-        createdAt:new Date(response.unit.createdAt),
-        updatedAt:new Date(response.unit.updatedAt),
+        createdAt: new Date(response.unit.createdAt),
+        updatedAt: new Date(response.unit.updatedAt),
       };
 
       dispatch({ type: 'ADD_UNIT', payload: unit });
@@ -362,8 +364,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const unit = {
         ...response.unit,
         type: response.unit.type,
-        createdAt:new Date(response.unit.createdAt),
-        updatedAt:new Date(response.unit.updatedAt),
+        createdAt: new Date(response.unit.createdAt),
+        updatedAt: new Date(response.unit.updatedAt),
       };
 
       dispatch({ type: 'UPDATE_UNIT', payload: unit });
@@ -525,170 +527,212 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-const updatePaymentStatus = async (id: string, status: 'CANCELLED' | 'REFUNDED') => {
+  const updatePaymentStatus = async (id: string, status: 'CANCELLED' | 'REFUNDED') => {
     try {
-        const response = await apiClient.updatePaymentStatus(id, status);
+      const response = await apiClient.updatePaymentStatus(id, status);
 
-        dispatch({ type: 'UPDATE_PAYMENT', payload: response.updatedPayment });
+      dispatch({ type: 'UPDATE_PAYMENT', payload: response.updatedPayment });
 
-        if (response.newPayment) {
-            dispatch({ type: 'ADD_PAYMENT', payload: response.newPayment });
-        }
-        toast.success('Operación Completada', response.message);
-        
+      if (response.newPayment) {
+        dispatch({ type: 'ADD_PAYMENT', payload: response.newPayment });
+      }
+      toast.success('Operación Completada', response.message);
+
     } catch (error: any) {
-        toast.error('Error', error.message || 'Failed to update payment status');
-        throw error;
-    }
-};
-
-const loadMaintenanceRequests = async () => {
-    if (!authState.isAuthenticated || !authState.organization) return;
-
-    try {
-        const response = await apiClient.getMaintenanceRequests();
-
-        // Transform backend requests to frontend format
-        const requests = response.maintenanceRequests.map((request: any) => ({
-            ...request,
-            priority: request.priority.toUpperCase(),
-            category: request.category.toUpperCase(),
-            status: request.status.toUpperCase(),
-            reportedDate: formatDateInUTC(request.reportedDate),
-            completedDate: request.completedDate ? formatDateInUTC(request.completedDate) : null,
-        }));
-
-        dispatch({ type: 'LOAD_INITIAL_DATA', payload: { maintenanceRequests: requests } });
-    } catch (error: any) {
-        toast.error('Error', error.message || 'Failed to load maintenance requests');
-    }
-}
-
-const createMaintenanceRequest = async (data: any) => {
-    try {
-        const response = await apiClient.createMaintenaceRequest(data);
-        dispatch({ type: 'ADD_MAINTENANCE_REQUEST', payload: response.maintenanceRequest });
-        toast.success('Solicitud de Mantenimiento Creada', 'La nueva solicitud de mantenimiento ha sido enviada.');
-    } catch (error: any) {
-        toast.error('Error', error.message || 'Failed to create maintenance request');
-        throw error;
-    }
-};
-
-const updateMaintenanceRequest = async (id: string, data: any) => {
-    try {
-        const response = await apiClient.updateMaintenanceRequest(id, data);
-        dispatch({ type: 'UPDATE_MAINTENANCE_REQUEST', payload: response.maintenanceRequest });
-        toast.success('Solicitud de Mantenimiento Actualizada', 'La solicitud de mantenimiento ha sido actualizada exitosamente.');
-    } catch (error: any) {
-        toast.error('Error', error.message || 'Failed to update maintenance request');
-        throw error;
-    }
-};
-
-const updateOrganization = async (orgId: string, data: any) => {
-    try {
-      const response = await apiClient.updateOrganization(orgId, data);
-      
-      // Actualiza el estado global con la organización actualizada
-      dispatch({ type: 'UPDATE_ORGANIZATION', payload: response.organization });
-      
-      toast.success('¡Éxito!', 'La información de la organización ha sido guardada.');
-    } catch (error: any) {
-      toast.error('Error', error.message || 'No se pudo guardar la información.');
+      toast.error('Error', error.message || 'Failed to update payment status');
       throw error;
-    }
-  }
-
-
-  // Load initial data when authenticated
-  useEffect(() => {
-    if (authState.isAuthenticated && authState.organization) {
-      loadUnits();
-      loadProperties();
-      getTenants();
-      loadContracts();
-      loadPayments();
-      loadMaintenanceRequests();
-    }
-  }, [authState.isAuthenticated, authState.organization]);
-
-  // Enhanced dispatch with notifications for local operations
-  const enhancedDispatch = (action: AppAction) => {
-    dispatch(action);
-
-    // Add success notifications for local CRUD operations
-    switch (action.type) {
-      case 'ADD_TENANT':
-        toast.success('Inquilino Agregado', 'El nuevo inquilino ha sido agregado exitosamente al sistema.');
-        break;
-      case 'UPDATE_TENANT':
-        toast.success('Inquilino Actualizado', 'La información del inquilino ha sido actualizada exitosamente.');
-        break;
-      case 'ADD_CONTRACT':
-        toast.success('Contrato Creado', 'El nuevo contrato de alquiler ha sido creado exitosamente.');
-        break;
-      case 'UPDATE_CONTRACT':
-        toast.success('Contrato Actualizado', 'El contrato ha sido actualizado exitosamente.');
-        break;
-      case 'ADD_PAYMENT':
-        toast.success('Pago Registrado', 'El pago ha sido registrado exitosamente en el sistema.');
-        break;
-      case 'UPDATE_PAYMENT':
-        toast.success('Pago Actualizado', 'La información del pago ha sido actualizada exitosamente.');
-        break;
-      case 'ADD_MAINTENANCE_REQUEST':
-        toast.success('Solicitud de Mantenimiento Creada', 'La nueva solicitud de mantenimiento ha sido enviada.');
-        break;
-      case 'UPDATE_MAINTENANCE_REQUEST':
-        toast.success('Solicitud de Mantenimiento Actualizada', 'La solicitud de mantenimiento ha sido actualizada exitosamente.');
-        break;
-      case 'UPDATE_ORGANIZATION':
-        toast.success('¡Éxito!', 'La información de la organización ha sido guardada.');
-        break;
     }
   };
 
-  return (
-    <AppContext.Provider value={{
-      state,
-      dispatch: enhancedDispatch,
-      toast,
-      loadProperties,
-      loadUnits,
-      createProperty,
-      updateProperty,
-      deleteProperty,
-      createUnit,
-      updateUnit,
-      deleteUnit,
-      createTenant,
-      updateTenant,
-      deleteTenant,
-      getTenants,
-      loadContracts,
-      createContract,
-      updateContract,
-      loadPayments,
-      createPayment,
-      updatePayment,
-      updatePaymentStatus,
-      deleteContract,
-      loadMaintenanceRequests,
-      createMaintenanceRequest,
-      updateMaintenanceRequest,
-      updateOrganization
+  const loadMaintenanceRequests = async () => {
+    if (!authState.isAuthenticated || !authState.organization) return;
 
-    }}>
-      {children}
-    </AppContext.Provider>
-  );
-}
+    try {
+      const response = await apiClient.getMaintenanceRequests();
 
-export function useApp() {
-  const context = useContext(AppContext);
-  if (!context) {
-    throw new Error('useApp must be used within an AppProvider');
+      // Transform backend requests to frontend format
+      const requests = response.maintenanceRequests.map((request: any) => ({
+        ...request,
+        priority: request.priority.toUpperCase(),
+        category: request.category.toUpperCase(),
+        status: request.status.toUpperCase(),
+        reportedDate: request.reportedDate,
+        completedDate: request.completedDate ? formatDateInUTC(request.completedDate) : null,
+      }));
+
+      dispatch({ type: 'LOAD_INITIAL_DATA', payload: { maintenanceRequests: requests } });
+    } catch (error: any) {
+      toast.error('Error', error.message || 'Failed to load maintenance requests');
+    }
   }
-  return context;
-}
+
+  const createMaintenanceRequest = async (data: any) => {
+    try {
+      const response = await apiClient.createMaintenaceRequest(data);
+      dispatch({ type: 'ADD_MAINTENANCE_REQUEST', payload: response.maintenanceRequest });
+      toast.success('Solicitud de Mantenimiento Creada', 'La nueva solicitud de mantenimiento ha sido enviada.');
+    } catch (error: any) {
+      toast.error('Error', error.message || 'Failed to create maintenance request');
+      throw error;
+    }
+  };
+
+  const updateMaintenanceRequest = async (id: string, data: any) => {
+    try {
+      const response = await apiClient.updateMaintenanceRequest(id, data);
+      dispatch({ type: 'UPDATE_MAINTENANCE_REQUEST', payload: response.maintenanceRequest });
+      toast.success('Solicitud de Mantenimiento Actualizada', 'La solicitud de mantenimiento ha sido actualizada exitosamente.');
+    } catch (error: any) {
+      toast.error('Error', error.message || 'Failed to update maintenance request');
+      throw error;
+    }
+  };
+
+    const asignMaintenanceTechinician = async (id: string, asignTo: any) => {
+      try {
+        const response = await apiClient.asignMaintenanceTechinician(id, asignTo);
+        dispatch({ type: 'UPDATE_MAINTENANCE_REQUEST', payload: response.maintenanceRequest });
+        toast.success('Solicitud de Mantenimiento Actualizada', 'La solicitud de mantenimiento ha sido actualizada exitosamente.');
+      } catch (error: any) {
+        toast.error('Error', error.message || 'Failed to update maintenance request');
+        throw error;
+      }
+    };
+
+     const markMaintenanceAsComplete = async (id: string, data: any) => {
+      try {
+        const response = await apiClient.markMaintenanceAsComplete(id, data);
+        dispatch({ type: 'UPDATE_MAINTENANCE_REQUEST', payload: response.maintenanceRequest });
+        toast.success('Solicitud de Mantenimiento Actualizada', 'La solicitud de mantenimiento ha sido actualizada exitosamente.');
+      } catch (error: any) {
+        if (error.code === 'VALIDATION_ERROR' && error.details && error.details.length > 0) {
+            const firstError = error.details[0];
+            const fieldName = firstError.field;
+            const message = firstError.message;
+
+            const fieldTranslations: { [key: string]: string } = {
+                actualCost: 'Costo Real',
+                completedDate: 'Fecha de Completado',
+                notes: 'Notas'
+            };
+
+            const friendlyFieldName = fieldTranslations[fieldName] || fieldName;
+            toast.error(`Error en el campo: ${friendlyFieldName}`, `Detalle: ${message}`);
+
+        } else {
+            // El mensaje de error ahora vendrá de la propiedad .error del objeto
+            toast.error('Error Inesperado', error.error || 'No se pudo completar la solicitud.');
+        }
+
+        throw error;
+    }
+      
+    };
+  
+    const updateOrganization = async (orgId: string, data: any) => {
+      try {
+        const response = await apiClient.updateOrganization(orgId, data);
+  
+        // Actualiza el estado global con la organización actualizada
+        dispatch({ type: 'UPDATE_ORGANIZATION', payload: response.organization });
+  
+        toast.success('¡Éxito!', 'La información de la organización ha sido guardada.');
+      } catch (error: any) {
+        toast.error('Error', error.message || 'No se pudo guardar la información.');
+        throw error;
+      }
+    };
+  
+    // Load initial data when authenticated
+    useEffect(() => {
+      if (authState.isAuthenticated && authState.organization) {
+        loadUnits();
+        loadProperties();
+        getTenants();
+        loadContracts();
+        loadPayments();
+        loadMaintenanceRequests();
+      }
+    }, [authState.isAuthenticated, authState.organization]);
+  
+    // Enhanced dispatch with notifications for local operations
+    const enhancedDispatch = (action: AppAction) => {
+      dispatch(action);
+  
+      // Add success notifications for local CRUD operations
+      switch (action.type) {
+        case 'ADD_TENANT':
+          toast.success('Inquilino Agregado', 'El nuevo inquilino ha sido agregado exitosamente al sistema.');
+          break;
+        case 'UPDATE_TENANT':
+          toast.success('Inquilino Actualizado', 'La información del inquilino ha sido actualizada exitosamente.');
+          break;
+        case 'ADD_CONTRACT':
+          toast.success('Contrato Creado', 'El nuevo contrato de alquiler ha sido creado exitosamente.');
+          break;
+        case 'UPDATE_CONTRACT':
+          toast.success('Contrato Actualizado', 'El contrato ha sido actualizado exitosamente.');
+          break;
+        case 'ADD_PAYMENT':
+          toast.success('Pago Registrado', 'El pago ha sido registrado exitosamente en el sistema.');
+          break;
+        case 'UPDATE_PAYMENT':
+          toast.success('Pago Actualizado', 'La información del pago ha sido actualizada exitosamente.');
+          break;
+        case 'ADD_MAINTENANCE_REQUEST':
+          toast.success('Solicitud de Mantenimiento Creada', 'La nueva solicitud de mantenimiento ha sido enviada.');
+          break;
+        case 'UPDATE_MAINTENANCE_REQUEST':
+          toast.success('Solicitud de Mantenimiento Actualizada', 'La solicitud de mantenimiento ha sido actualizada exitosamente.');
+          break;
+        case 'UPDATE_ORGANIZATION':
+          toast.success('¡Éxito!', 'La información de la organización ha sido guardada.');
+          break;
+      }
+    };
+  
+    return (
+      <AppContext.Provider value={{
+        state,
+        dispatch: enhancedDispatch,
+        toast,
+        loadProperties,
+        loadUnits,
+        createProperty,
+        updateProperty,
+        deleteProperty,
+        createUnit,
+        updateUnit,
+        deleteUnit,
+        createTenant,
+        updateTenant,
+        deleteTenant,
+        getTenants,
+        loadContracts,
+        createContract,
+        updateContract,
+        loadPayments,
+        createPayment,
+        updatePayment,
+        updatePaymentStatus,
+        deleteContract,
+        loadMaintenanceRequests,
+        createMaintenanceRequest,
+        updateMaintenanceRequest,
+        asignMaintenanceTechinician,
+        markMaintenanceAsComplete,
+        updateOrganization
+  
+      }}>
+        {children}
+      </AppContext.Provider>
+    );
+  }
+  
+  export function useApp() {
+    const context = useContext(AppContext);
+    if (!context) {
+      throw new Error('useApp must be used within an AppProvider');
+    }
+    return context;
+  }

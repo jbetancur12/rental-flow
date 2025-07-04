@@ -1,17 +1,20 @@
 
-import { Payment, Tenant } from '../../types';
-import { X, User, Mail, Phone, Building, DollarSign, Calendar, Star } from 'lucide-react';
+import { Contract, Payment, Property, Tenant } from '../../types';
+import { X, User, Mail, Phone, Building, DollarSign, Calendar, Star, FileText } from 'lucide-react';
 import { PaymentHistory } from '../Payments/PaymentHistory';
+import { generateTenantFinancialStatement } from '../../utils/reportGenerator';
 
 interface TenantDetailsProps {
   tenant: Tenant;
   payments: Payment[];
+  contracts: Contract[];
+  properties: Property[];
   isOpen: boolean;
   onClose: () => void;
   onEdit: () => void;
 }
 
-export function TenantDetails({ tenant, isOpen, payments=[], onClose, onEdit }: TenantDetailsProps) {
+export function TenantDetails({ tenant, isOpen, payments=[],contracts, properties, onClose, onEdit }: TenantDetailsProps) {
   if (!isOpen) return null;
 
   const getCreditScoreColor = (score: number) => {
@@ -31,6 +34,11 @@ export function TenantDetails({ tenant, isOpen, payments=[], onClose, onEdit }: 
     return colors[status as keyof typeof colors] || colors.PENDING;
   };
 
+   const handleGenerateStatement = () => {
+        // Usamos los datos que ya tenemos para generar el reporte específico
+        generateTenantFinancialStatement(tenant, contracts, payments, properties);
+    };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
@@ -49,6 +57,14 @@ export function TenantDetails({ tenant, isOpen, payments=[], onClose, onEdit }: 
             </div>
           </div>
           <div className="flex items-center space-x-2">
+            <button
+                    onClick={handleGenerateStatement}
+                    className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm"
+                >
+                    <FileText className="w-4 h-4 mr-2" />
+                    Estado de Cuenta
+                </button>
+
             <button
               onClick={onEdit}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
