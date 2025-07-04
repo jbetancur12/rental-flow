@@ -8,9 +8,11 @@ import { Property } from '../types';
 import { useApp } from '../context/AppContext';
 import { ConfirmDialog } from '../components/UI/ConfirmDialog';
 import { useConfirm } from '../hooks/useConfirm';
+import { useAuth } from '../context/AuthContext';
 
 export function Properties() {
   const { state, dispatch, updateProperty, updateTenant, updateContract, deleteProperty } = useApp();
+  const { state: authState } = useAuth();
   const { isOpen: isConfirmOpen, options: confirmOptions, confirm, handleConfirm, handleCancel } = useConfirm();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -23,6 +25,10 @@ export function Properties() {
 
   // FIX: Filtros funcionando correctamente
   const [filter, setFilter] = useState<'all' | Property['status']>('all');
+
+  const maxProperties = authState.organization?.settings.limits.maxProperties || 0;
+  const currentProperties = state.properties.length;
+  const limitReached = currentProperties >= maxProperties;
 
 
 
@@ -40,7 +46,7 @@ export function Properties() {
     if (searchQuery) {
       properties = properties.filter(property =>
         property.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        property.unitName?.toLowerCase().includes(searchQuery.toLowerCase()) 
+        property.unitName?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
@@ -203,8 +209,14 @@ export function Properties() {
         showSearch={true}
         onSearchChange={setSearchQuery}
         searchPlaceholder="Buscar por nombre o dirección..."
-      />
+        isNewItemDisabled={limitReached} 
 
+      />
+      {limitReached && (
+        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 text-sm">
+          Has alcanzado el límite de **{maxProperties} propiedades** de tu plan actual. Para añadir más, por favor <a href="/settings?tab=subscription" className="font-bold underline">actualiza tu plan</a>.
+        </div>
+      )}
       <div className="p-6">
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -271,8 +283,8 @@ export function Properties() {
                 key={status}
                 onClick={() => setFilter(status as 'all' | 'AVAILABLE' | 'RENTED' | 'RESERVED' | 'MAINTENANCE')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === status
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
                   }`}
               >
                 {status === 'all' ? 'Todas' :

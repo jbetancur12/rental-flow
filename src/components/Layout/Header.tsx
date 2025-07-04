@@ -8,10 +8,11 @@ interface HeaderProps {
   newItemLabel?: string;
   showSearch?: boolean; 
   onSearchChange?: (query: string) => void;
-  searchPlaceholder?: string; 
+  searchPlaceholder?: string;
+  isNewItemDisabled?: boolean; 
 }
 
-export function Header({ title, onNewItem, newItemLabel, showSearch = false, onSearchChange, searchPlaceholder = 'Buscar...' }: HeaderProps) {
+export function Header({ title, onNewItem, newItemLabel, showSearch = false, onSearchChange, searchPlaceholder = 'Buscar...', isNewItemDisabled = false }: HeaderProps) {
   const [query, setQuery] = useState('');
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,7 +50,8 @@ export function Header({ title, onNewItem, newItemLabel, showSearch = false, onS
           {onNewItem && (
             <button
               onClick={onNewItem}
-              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              disabled={isNewItemDisabled}
+              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Plus className="w-4 h-4 mr-2" />
               {newItemLabel}

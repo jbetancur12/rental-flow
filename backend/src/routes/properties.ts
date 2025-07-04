@@ -5,6 +5,26 @@ import { authenticateToken, requireRole } from '../middleware/auth';
 import { handleValidationErrors, validateOrganizationAccess } from '../middleware/validation';
 import { logger } from '../config/logger';
 
+export interface OrganizationSettings {
+  currency: string;
+  timezone: string;
+  dateFormat: string;
+  language: string;
+  features: {
+    multipleProperties: boolean;
+    advancedReports: boolean;
+    apiAccess: boolean;
+    customBranding: boolean;
+    prioritySupport: boolean;
+  };
+  limits: {
+    maxProperties: number;
+    maxTenants: number;
+    maxUsers: number;
+    storageGB: number;
+  };
+}
+
 const router = express.Router();
 
 // Get all properties for organization
@@ -134,6 +154,29 @@ router.post('/',
   async (req:Request, res:Response) => {
     try {
       const organizationId = (req as any).organizationId;
+
+      const organization = await prisma.organization.findUnique({
+        where: { id: organizationId }
+      });
+
+       if (!organization) {
+        return res.status(404).json({ error: 'Organization not found' });
+      }
+
+      const settings = organization.settings as unknown as OrganizationSettings;
+      const limit = settings?.limits?.maxProperties;
+
+      const currentCount = await prisma.property.count({
+        where: { organizationId }
+      });
+
+      if (limit !== undefined && currentCount >= limit) {
+        return res.status(403).json({ // 403 Forbidden o 402 Payment Required
+          error: 'Plan limit reached. Upgrade your plan to add more properties.',
+          code: 'PLAN_LIMIT_REACHED'
+        });
+      }
+      
       const propertyData = {
         ...req.body,
         organizationId,
