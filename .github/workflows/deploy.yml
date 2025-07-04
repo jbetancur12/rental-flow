@@ -24,23 +24,29 @@ jobs:
             pm2 reload rentflow-api
 
   deploy-frontend:
+    name: Deploy Frontend
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-      - name: Install and Build Frontend
-        working-directory: ./frontend
+
+      # CORRECCIÓN: Se elimina 'working-directory' para ejecutar en la raíz
+      - name: Install and Build
         run: |
           npm install
           npm run build
-      - name: Copy Files to Server via SCP
+
+      # CORRECCIÓN: Se ajusta la ruta de 'source'
+      - name: Copy files to server
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "./frontend/build/*"
+          source: "./dist/*"  # La carpeta 'dist' (o 'build') ahora está en la raíz
           target: "/var/www/rentflow-frontend"
