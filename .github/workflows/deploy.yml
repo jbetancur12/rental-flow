@@ -28,6 +28,7 @@ jobs:
   deploy-frontend:
       name: Deploy Frontend
       runs-on: ubuntu-latest
+      needs: deploy-backend # Opcional: si quieres que espere al backend
       steps:
         - name: Checkout code
           uses: actions/checkout@v3
@@ -35,13 +36,23 @@ jobs:
         - name: Setup Node.js
           uses: actions/setup-node@v3
           with:
-            node-version: '18'
+            node-version: '20'
 
         - name: Install and Build
           run: |
             npm install
             npm run build
 
+        # PASO NUEVO: Limpia el directorio en el servidor con sudo
+        - name: Clean remote directory
+          uses: appleboy/ssh-action@master
+          with:
+            host: ${{ secrets.SSH_HOST }}
+            username: ${{ secrets.SSH_USERNAME }}
+            key: ${{ secrets.SSH_PRIVATE_KEY }}
+            script: sudo rm -rf /var/www/rentflow-frontend/*
+
+        # PASO CORREGIDO: Copia los archivos sin el parámetro 'rm'
         - name: Copy files to server
           uses: appleboy/scp-action@master
           with:
@@ -50,5 +61,3 @@ jobs:
             key: ${{ secrets.SSH_PRIVATE_KEY }}
             source: "./dist/"
             target: "/var/www/rentflow-frontend"
-            # ✅ LA LÍNEA CORRECTA ES ESTA:
-            rm: true
