@@ -1,4 +1,16 @@
 import winston from 'winston';
+// 1. Imports actualizados según la documentación
+import { Logtail } from "@logtail/node";
+import { LogtailTransport } from "@logtail/winston";
+
+import dotenv from 'dotenv';
+dotenv.config();
+
+// 2. Crea el cliente de Logtail
+const logtail = new Logtail(process.env.LOGTAIL_SOURCE_TOKEN || '', {
+  endpoint: 'https://in.logs.betterstack.com',
+});
+
 
 const logFormat = winston.format.combine(
   winston.format.timestamp(),
@@ -11,24 +23,14 @@ const logger = winston.createLogger({
   format: logFormat,
   defaultMeta: { service: 'rentflow-api' },
   transports: [
-    // Write all logs with importance level of `error` or less to `error.log`
-    new winston.transports.File({ 
-      filename: 'logs/error.log', 
-      level: 'error',
-      maxsize: 5242880, // 5MB
-      maxFiles: 5
-    }),
-    // Write all logs with importance level of `info` or less to `combined.log`
-    new winston.transports.File({ 
-      filename: 'logs/combined.log',
-      maxsize: 5242880, // 5MB
-      maxFiles: 5
-    })
+    new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
+    new winston.transports.File({ filename: 'logs/combined.log' }),
+    
+    // 3. Añade el nuevo transporte, pasándole el cliente
+    new LogtailTransport(logtail),
   ]
 });
 
-// If we're not in production then log to the `console` with the format:
-// `${info.level}: ${info.message} JSON.stringify({ ...rest }) `
 if (process.env.NODE_ENV !== 'production') {
   logger.add(new winston.transports.Console({
     format: winston.format.combine(
@@ -38,4 +40,4 @@ if (process.env.NODE_ENV !== 'production') {
   }));
 }
 
-export { logger };
+export { logger, logtail };

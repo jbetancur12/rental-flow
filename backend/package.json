@@ -13,9 +13,10 @@
     "seed": "ts-node src/scripts/seed.ts",
     "reset-data": "ts-node src/scripts/reset-data.ts",
     "reset-and-seed": "npm run reset-data && npm run seed"
-
   },
   "dependencies": {
+    "@logtail/node": "^0.5.5",
+    "@logtail/winston": "^0.5.5",
     "@prisma/client": "^5.7.1",
     "@types/jsonwebtoken": "^9.0.10",
     "bcryptjs": "^2.4.3",

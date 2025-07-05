@@ -7,7 +7,6 @@ const prisma = new PrismaClient();
 
 export const generatePendingPayments = async () => {
   logger.info('▶️  Ejecutando cron job: Verificando y generando pagos pendientes...');
-
   const activeContracts = await prisma.contract.findMany({
     where: { status: 'ACTIVE' },
     include: { payments: true },

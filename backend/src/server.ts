@@ -10,7 +10,7 @@ import dotenv from 'dotenv';
 
 // Import configurations and middleware
 import { connectDatabase } from './config/database';
-import { logger } from './config/logger';
+import { logger, logtail } from './config/logger';
 import { errorHandler } from './middleware/errorHandler';
 import { notFound } from './middleware/notFound';
 
@@ -104,7 +104,6 @@ const limiter = rateLimit({
   legacyHeaders: false,
 });
 
-app.use('/', limiter);
 
 // Body parsing middleware
 app.use('/webhooks', express.raw({ type: 'application/json' })); // For Stripe webhooks
@@ -124,7 +123,7 @@ app.get('/health', (req, res) => {
 
 // API routes
 const API_PREFIX = `/${process.env.API_VERSION || 'v1'}`;
-
+app.use(API_PREFIX, limiter);
 app.use(`${API_PREFIX}/auth`, authRoutes);
 app.use(`${API_PREFIX}/organizations`, organizationRoutes);
 app.use(`${API_PREFIX}/users`, userRoutes);
@@ -184,16 +183,18 @@ async function startServer() {
 }
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
+process.on('SIGTERM', async () => {
   logger.info('SIGTERM received, shutting down gracefully');
+  await logtail.flush(); 
   server.close(() => {
     logger.info('Process terminated');
     process.exit(0);
   });
 });
 
-process.on('SIGINT', () => {
+process.on('SIGINT', async() => {
   logger.info('SIGINT received, shutting down gracefully');
+   await logtail.flush(); 
   server.close(() => {
     logger.info('Process terminated');
     process.exit(0);
