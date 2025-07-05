@@ -27,11 +27,11 @@ import { plans } from '../components/Auth/RegisterForm';
 import { RecentActivity } from '../components/Settings/RecentActivity';
 
 const statusDetails = {
-    ACTIVE: { text: 'Activo', color: 'text-emerald-600' },
-    TRIALING: { text: 'Prueba', color: 'text-blue-600' },
-    DEMO: { text: 'Demostración', color: 'text-purple-600' }, // <-- Nuevo estado
-    PAST_DUE: { text: 'Vencido', color: 'text-red-600' },
-    CANCELED: { text: 'Cancelado', color: 'text-slate-600' },
+  ACTIVE: { text: 'Activo', color: 'text-emerald-600' },
+  TRIALING: { text: 'Prueba', color: 'text-blue-600' },
+  DEMO: { text: 'Demostración', color: 'text-purple-600' }, // <-- Nuevo estado
+  PAST_DUE: { text: 'Vencido', color: 'text-red-600' },
+  CANCELED: { text: 'Cancelado', color: 'text-slate-600' },
 };
 
 export function Settings() {
@@ -55,8 +55,8 @@ export function Settings() {
       email: authState.organization?.email || '',
       phone: authState.organization?.phone || '',
       address: authState.organization?.address || '',
-      currency: authState.organization?.settings.currency || 'USD',
-      timezone: authState.organization?.settings.timezone || 'America/Mexico_City',
+      currency: authState.organization?.settings.currency || 'COP',
+      timezone: authState.organization?.settings.timezone || 'America/Bogota',
       dateFormat: authState.organization?.settings.dateFormat || 'DD/MM/YYYY',
       language: authState.organization?.settings.language || 'es'
     },
@@ -263,7 +263,7 @@ export function Settings() {
     { id: 'notifications', label: 'Notificaciones', icon: Bell },
     { id: 'security', label: 'Seguridad', icon: Shield },
     { id: 'data', label: 'Datos', icon: Database },
-    { id: 'logs', label: 'Logs', icon: Download}
+    { id: 'logs', label: 'Logs', icon: Download }
   ];
 
   return (
@@ -467,6 +467,8 @@ export function Settings() {
                       })}
                       className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                     >
+                      <option value="COP">COP - Peso Colombiano</option>
+                      <option value="USD">USD - Dólar Estadounidense</option>
                       <option value="USD">USD - Dólar Estadounidense</option>
                       <option value="EUR">EUR - Euro</option>
                       <option value="MXN">MXN - Peso Mexicano</option>
@@ -478,20 +480,29 @@ export function Settings() {
                     <label className="block text-sm font-medium text-slate-700 mb-2">
                       Zona Horaria
                     </label>
-                    <select
-                      value={settings.organization.timezone}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        organization: { ...settings.organization, timezone: e.target.value }
-                      })}
+                  <select
+                    value={settings.organization.timezone}
+                    onChange={(e) => setSettings({
+                      ...settings,
+                      organization: { ...settings.organization, timezone: e.target.value }
+                    })}
                       className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="America/Mexico_City">Hora de México</option>
-                      <option value="America/New_York">Hora del Este</option>
-                      <option value="America/Chicago">Hora Central</option>
-                      <option value="America/Denver">Hora de Montaña</option>
-                      <option value="America/Los_Angeles">Hora del Pacífico</option>
-                    </select>
+                  >
+                    {/* --- Latinoamérica --- */}
+                    <option value="America/Bogota">Bogotá, Lima, Quito (UTC-5)</option>
+                    <option value="America/Mexico_City">Ciudad de México (UTC-6)</option>
+                    <option value="America/Sao_Paulo">Sao Paulo (UTC-3)</option>
+                    <option value="America/Buenos_Aires">Buenos Aires (UTC-3)</option>
+
+                    {/* --- Norteamérica --- */}
+                    <option value="America/New_York">Hora del Este (NY)</option>
+                    <option value="America/Chicago">Hora Central (Chicago)</option>
+                    <option value="America/Los_Angeles">Hora del Pacífico (LA)</option>
+
+                    {/* --- Europa --- */}
+                    <option value="Europe/Madrid">Madrid, París, Berlín (UTC+2)</option>
+                    <option value="Europe/London">Londres, Lisboa (UTC+1)</option>
+                  </select>
                   </div>
                 </div>
 
@@ -545,16 +556,16 @@ export function Settings() {
 
                     <div>
                       <label className="text-sm text-slate-500">Estado</label>
-                    {(() => {
-    const currentStatus = authState.subscription.status;
-    const details = statusDetails[currentStatus] || { text: 'Desconocido', color: 'text-slate-500' };
+                      {(() => {
+                        const currentStatus = authState.subscription.status;
+                        const details = statusDetails[currentStatus] || { text: 'Desconocido', color: 'text-slate-500' };
 
-    return (
-        <p className={`text-lg font-semibold ${details.color}`}>
-            {details.text}
-        </p>
-    );
-})()}
+                        return (
+                          <p className={`text-lg font-semibold ${details.color}`}>
+                            {details.text}
+                          </p>
+                        );
+                      })()}
                     </div>
 
                     <div>
@@ -586,16 +597,16 @@ export function Settings() {
                   </div>
                 </div>
 
-               {authState.subscription.status !== "DEMO" && (
-                 <div className="mt-6 flex space-x-4">
-                  <button onClick={handleOpenUpgradeModal} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                    Actualizar Plan
-                  </button>
-                  <button className="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg hover:bg-slate-50">
-                    Ver Historial de Facturación
-                  </button>
-                </div>
-               )}
+                {authState.subscription.status !== "DEMO" && (
+                  <div className="mt-6 flex space-x-4">
+                    <button onClick={handleOpenUpgradeModal} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                      Actualizar Plan
+                    </button>
+                    <button className="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg hover:bg-slate-50">
+                      Ver Historial de Facturación
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -844,7 +855,7 @@ export function Settings() {
               </div>
             </div>
           )}
-          {activeTab === 'logs' && <RecentActivity/>}
+          {activeTab === 'logs' && <RecentActivity />}
         </div>
       </div>
 

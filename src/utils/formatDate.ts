@@ -24,3 +24,18 @@ export const formatDateToYYYYMMDD = (dateInput?: Date | string | null): string =
     return new Date(dateInput).toISOString().split('T')[0];
 }
 
+export const formatDateInOrgTimezone = (
+  dateInput?: string | Date | null,
+  timeZone: string = 'UTC' // Usamos UTC como fallback seguro
+): string => {
+  if (!dateInput) {
+    return 'N/A';
+  }
+  
+  // Usamos la timezone proporcionada para formatear la fecha
+  // Añadimos la hora para mayor precisión
+  return formatInTimeZone(dateInput, timeZone, 'dd/MM/yyyy HH:mm');
+};
+
+//  {formatDateInOrgTimezone(payment.dueDate, orgTimezone)}
+
