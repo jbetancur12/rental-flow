@@ -2,11 +2,12 @@
 
 import cron from 'node-cron';
 import { PrismaClient } from '@prisma/client';
+import { logger } from '../config/logger';
 
 const prisma = new PrismaClient();
 
 export const expireContracts = async () => {
-  console.log('▶️  Ejecutando cron job: Verificando contratos expirados...');
+  logger.info('▶️  Ejecutando cron job: Verificando contratos expirados...');
 
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Para comparar solo con la fecha
@@ -25,10 +26,10 @@ export const expireContracts = async () => {
   });
 
   if (result.count > 0) {
-    console.log(`✅ ${result.count} contratos han sido marcados como EXPIRED.`);
+    logger.info(`✅ ${result.count} contratos han sido marcados como EXPIRED.`);
     // Opcional: Podrías añadir lógica aquí para liberar las propiedades asociadas.
   } else {
-    console.log('ℹ️  No se encontraron contratos para expirar.');
+    logger.info('ℹ️  No se encontraron contratos para expirar.');
   }
 };
 

@@ -53,7 +53,6 @@ useEffect(() => {
       // 3. Usamos Promise.all para ejecutar todas las cargas de datos en paralelo.
       //    Esto es mucho más rápido que llamarlas una por una.
       if (promisesToFetch.length > 0) {
-        console.log('Cargando datos iniciales...');
         await Promise.all(promisesToFetch);
       }
       

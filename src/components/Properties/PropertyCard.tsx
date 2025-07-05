@@ -22,7 +22,6 @@ export function PropertyCard({
   onRecordPayment, 
   onTerminateContract 
 }: PropertyCardProps) {
-  console.log("🚀 ~ property:", property)
   const { state } = useApp();
   
   const statusColors = {

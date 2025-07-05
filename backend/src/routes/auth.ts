@@ -174,7 +174,7 @@ router.post('/login', [
       });
     }
 
-    console.log('User found:', user);
+    logger.info('User found:', user);
 
     // Check if organization is active (except for super admin)
     if (user.role !== 'SUPER_ADMIN' && !user.organization.isActive) {

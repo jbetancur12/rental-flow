@@ -77,7 +77,6 @@ export function QuickRentModal({ property, isOpen, onClose }: QuickRentModalProp
 
       // 3. Creamos todos los pagos necesarios en la base de datos
       if (paymentsToCreate.length > 0) {
-        console.log(`Creando ${paymentsToCreate.length} pago(s)...`);
         for (const paymentData of paymentsToCreate) {
           await createPayment(paymentData);
         }

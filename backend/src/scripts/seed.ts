@@ -1,3 +1,4 @@
+import { logger } from '../config/logger';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import 'dotenv/config';
@@ -6,7 +7,7 @@ import 'dotenv/config';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting database seed...');
+  logger.info('🌱 Starting database seed...');
 
   // Create super admin user
   const superAdminPassword = await bcrypt.hash(process.env.SUPER_ADMIN_PASSWORD || 'superadmin123', 12);
@@ -55,7 +56,7 @@ async function main() {
     }
   });
 
-  console.log('✅ Super Admin created:', {
+  logger.info('✅ Super Admin created:', {
     email: superAdmin.email,
     role: superAdmin.role,
     organizationId: superAdmin.organizationId
@@ -132,7 +133,7 @@ async function main() {
     }
   });
 
-  console.log('✅ Demo User created:', {
+  logger.info('✅ Demo User created:', {
     email: demoUser.email,
     role: demoUser.role,
     organizationId: demoUser.organizationId
@@ -156,7 +157,7 @@ async function main() {
     });
   }
 
-  console.log('✅ Demo Unit created:', {
+  logger.info('✅ Demo Unit created:', {
     id: demoUnit.id, // Now this will be a real UUID
     name: demoUnit.name,
   });
@@ -196,9 +197,9 @@ async function main() {
         }
       });
 
-      console.log(`✅ ${name} creado:`, { name: created.name });
+      logger.info(`✅ ${name} creado:`, { name: created.name });
     } else {
-      console.log(`ℹ️ ${name} ya existía, no se creó duplicado.`);
+      logger.info(`ℹ️ ${name} ya existía, no se creó duplicado.`);
     }
   }
 
@@ -237,9 +238,9 @@ async function main() {
         }
       });
 
-      console.log(`✅ ${name} creado:`, { name: created.name });
+      logger.info(`✅ ${name} creado:`, { name: created.name });
     } else {
-      console.log(`ℹ️ ${name} ya existía, no se creó duplicado.`);
+      logger.info(`ℹ️ ${name} ya existía, no se creó duplicado.`);
     }
   }
 
@@ -262,7 +263,7 @@ async function main() {
       }
     });
   }
-  console.log('✅ Demo Tenant 1 created:', { email: demoTenant1.email });
+  logger.info('✅ Demo Tenant 1 created:', { email: demoTenant1.email });
 
   // Create demo tenant 2
   let demoTenant2 = await prisma.tenant.findFirst({
@@ -284,16 +285,16 @@ async function main() {
       }
     });
   }
-  console.log('✅ Demo Tenant 2 created:', { email: demoTenant2.email });
+  logger.info('✅ Demo Tenant 2 created:', { email: demoTenant2.email });
 
-  console.log('✅ Database seeded successfully!');
-  console.log('🔑 Super Admin: admin@rentflow.com / superadmin123');
-  console.log('🎯 Demo User: demo@rentflow.com / demo123');
+  logger.info('✅ Database seeded successfully!');
+  logger.info('🔑 Super Admin: admin@rentflow.com / superadmin123');
+  logger.info('🎯 Demo User: demo@rentflow.com / demo123');
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Seed failed:', e);
+    logger.error('❌ Seed failed:', e);
     process.exit(1);
   })
   .finally(async () => {
