@@ -6,6 +6,9 @@ import 'dotenv/config';
 
 const prisma = new PrismaClient();
 
+const toMidnightUTC = (date: Date): Date =>
+  new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+
 async function main() {
   logger.info('🌱 Starting database seed...');
 
@@ -21,7 +24,7 @@ async function main() {
       slug: 'rentflow-platform',
       planId: 'platform',
       settings: {
-        currency: 'USD',
+        currency: 'COP',
         timezone: 'UTC',
         dateFormat: 'DD/MM/YYYY',
         language: 'en',
@@ -72,8 +75,8 @@ async function main() {
       planId: 'plan-professional',
       email: 'demo@rentflow.com',
       settings: {
-        currency: 'USD',
-        timezone: 'America/Mexico_City',
+        currency: 'COP',
+        timezone: 'America/Bogota',
         dateFormat: 'DD/MM/YYYY',
         language: 'es',
         features: {
@@ -94,14 +97,14 @@ async function main() {
   });
 
   // Create demo subscription
-  const trialEnd = new Date();
+  const trialEnd = toMidnightUTC(new Date());
   trialEnd.setDate(trialEnd.getDate() + 14);
 
   const existingSubscription = await prisma.subscription.findFirst({
     where: { organizationId: demoOrg.id }
   });
 
-    const farFutureDate = new Date();
+    const farFutureDate = toMidnightUTC(new Date());
   farFutureDate.setFullYear(farFutureDate.getFullYear() + 100);
 
   await prisma.subscription.upsert({
@@ -111,7 +114,7 @@ async function main() {
       organizationId: demoOrg.id,
       planId: 'plan-basic',
       status: 'DEMO',
-      currentPeriodStart: new Date(),
+      currentPeriodStart: toMidnightUTC(new Date()),
       currentPeriodEnd: farFutureDate,
       trialEnd: null
     }
@@ -255,7 +258,7 @@ async function main() {
         lastName: 'Inquilino',
         email: 'juan.inquilino@demo.com',
         phone: '555-1234',
-        applicationDate: new Date(),
+        applicationDate: toMidnightUTC(new Date()),
         status: 'APPROVED',
         creditScore: 700,
         emergencyContact: { name: 'Maria Inquilino', phone: '555-5678', relationship: 'hermana' },
@@ -277,7 +280,7 @@ async function main() {
         lastName: 'Arrendataria',
         email: 'ana.arrendataria@demo.com',
         phone: '555-8765',
-        applicationDate: new Date(),
+        applicationDate: toMidnightUTC(new Date()),
         status: 'APPROVED',
         creditScore: 720,
         emergencyContact: { name: 'Carlos Contacto', phone: '555-4321', relationship: 'esposo' },
