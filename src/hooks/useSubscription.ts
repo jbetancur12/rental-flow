@@ -137,18 +137,18 @@ const isLimitExceeded = useCallback((usageType: keyof SubscriptionUsage) => {
 
 
     // Upgrade subscription
-    const upgradeSubscription = async (planId: string) => {
-        try {
-            // const response = await apiClient.request('/subscriptions/upgrade', {
-            //     method: 'POST',
-            //     body: JSON.stringify({ planId })
-            // });
-            // return response;
-        } catch (error) {
-            console.error('Failed to upgrade subscription:', error);
-            throw error;
-        }
-    };
+    // const upgradeSubscription = async (planId: string) => {
+    //     try {
+    //         // const response = await apiClient.request('/subscriptions/upgrade', {
+    //         //     method: 'POST',
+    //         //     body: JSON.stringify({ planId })
+    //         // });
+    //         // return response;
+    //     } catch (error) {
+    //         console.error('Failed to upgrade subscription:', error);
+    //         throw error;
+    //     }
+    // };
 
     // Cancel subscription
     const cancelSubscription = async () => {

@@ -46,14 +46,24 @@ export function RecentActivity() {
         iconColor: 'text-blue-600'
     }))
 
+    const contractActivities = state.contracts.map(contract => ({
+        id: `contract-${contract.id}`,
+        type: 'contract',
+        description: `Nuevo contrato registrado: ${contract.id}`,
+        date: new Date(contract.createdAt),
+        icon: User,
+        iconColor: 'text-blue-600'
+    }))
+
+
     // 5. Unimos todas las actividades, las ordenamos por fecha (más reciente primero) y tomamos las últimas 5
-    const allActivities = [...paymentActivities, ...maintenanceActivities, ...tenantActivities];
+    const allActivities = [...paymentActivities, ...maintenanceActivities, ...tenantActivities, ...contractActivities];
     
     allActivities.sort((a, b) => b.date.getTime() - a.date.getTime());
     
     return allActivities.slice(0, 5);
 
-  }, [state.payments, state.maintenanceRequests, state.tenants, state.properties]);
+  }, [state.payments, state.maintenanceRequests, state.tenants, state.properties, state.contracts]);
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-6">

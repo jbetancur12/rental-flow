@@ -34,42 +34,44 @@ model Organization {
   payments      Payment[]
   maintenance   MaintenanceRequest[]
   units         Unit[]
+  activityLogs  ActivityLog[]
 
   @@map("organizations")
 }
 
 model User {
-  id             String   @id @default(uuid())
-  organizationId String   @map("organization_id")
-  email          String   @unique
-  passwordHash   String   @map("password_hash")
-  firstName      String   @map("first_name")
-  lastName       String   @map("last_name")
-  role           UserRole @default(ADMIN)
-  isActive       Boolean  @default(true) @map("is_active")
+  id             String    @id @default(uuid())
+  organizationId String    @map("organization_id")
+  email          String    @unique
+  passwordHash   String    @map("password_hash")
+  firstName      String    @map("first_name")
+  lastName       String    @map("last_name")
+  role           UserRole  @default(ADMIN)
+  isActive       Boolean   @default(true) @map("is_active")
   lastLogin      DateTime? @map("last_login")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  activityLogs ActivityLog[]
 
   @@map("users")
 }
 
 model Subscription {
-  id                   String            @id @default(uuid())
-  organizationId       String            @map("organization_id")
-  planId               String            @map("plan_id")
+  id                   String             @id @default(uuid())
+  organizationId       String             @map("organization_id")
+  planId               String             @map("plan_id")
   status               SubscriptionStatus
-  currentPeriodStart   DateTime          @map("current_period_start")
-  currentPeriodEnd     DateTime          @map("current_period_end")
-  trialEnd             DateTime?         @map("trial_end")
-  canceledAt           DateTime?         @map("canceled_at")
-  stripeSubscriptionId String?           @map("stripe_subscription_id")
-  stripeCustomerId     String?           @map("stripe_customer_id")
-  createdAt            DateTime          @default(now()) @map("created_at")
-  updatedAt            DateTime          @updatedAt @map("updated_at")
+  currentPeriodStart   DateTime           @map("current_period_start")
+  currentPeriodEnd     DateTime           @map("current_period_end")
+  trialEnd             DateTime?          @map("trial_end")
+  canceledAt           DateTime?          @map("canceled_at")
+  stripeSubscriptionId String?            @map("stripe_subscription_id")
+  stripeCustomerId     String?            @map("stripe_customer_id")
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
 
   // Relations
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -78,20 +80,20 @@ model Subscription {
 }
 
 model Unit {
-  id           String   @id @default(uuid())
-  organizationId String @map("organization_id")
-  name         String
-  type         UnitType
-  address      String
-  description  String?
-  totalFloors  Int?     @map("total_floors")
-  floors       Int?
-  size         Int?
-  amenities    String[] @default([])
-  photos       String[] @default([])
-  manager      String?
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  name           String
+  type           UnitType
+  address        String
+  description    String?
+  totalFloors    Int?     @map("total_floors")
+  floors         Int?
+  size           Int?
+  amenities      String[] @default([])
+  photos         String[] @default([])
+  manager        String?
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
   // Relations
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -101,27 +103,27 @@ model Unit {
 }
 
 model Property {
-  id           String        @id @default(uuid())
-  organizationId String      @map("organization_id")
-  unitId       String?       @map("unit_id")
-  name         String
-  type         PropertyType
-  address      String
-  size         Int
-  rooms        Int
-  bathrooms    Float
-  amenities    String[]      @default([])
-  rent         Int
-  status       PropertyStatus @default(AVAILABLE)
-  photos       String[]      @default([])
-  unitNumber   String?       @map("unit_number")
-  floor        Int?
-  createdAt    DateTime      @default(now()) @map("created_at")
-  updatedAt    DateTime      @updatedAt @map("updated_at")
+  id             String         @id @default(uuid())
+  organizationId String         @map("organization_id")
+  unitId         String?        @map("unit_id")
+  name           String
+  type           PropertyType
+  address        String
+  size           Int
+  rooms          Int
+  bathrooms      Float
+  amenities      String[]       @default([])
+  rent           Int
+  status         PropertyStatus @default(AVAILABLE)
+  photos         String[]       @default([])
+  unitNumber     String?        @map("unit_number")
+  floor          Int?
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
 
   // Relations
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  unit         Unit?        @relation(fields: [unitId], references: [id], onDelete: SetNull)
+  organization Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  unit         Unit?                @relation(fields: [unitId], references: [id], onDelete: SetNull)
   contracts    Contract[]
   maintenance  MaintenanceRequest[]
 
@@ -145,7 +147,7 @@ model Tenant {
   updatedAt        DateTime     @updatedAt @map("updated_at")
 
   // Relations
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   contracts    Contract[]
   payments     Payment[]
   maintenance  MaintenanceRequest[]
@@ -179,21 +181,21 @@ model Contract {
 }
 
 model Payment {
-  id             String        @id @default(uuid())
-  organizationId String        @map("organization_id")
-  contractId     String        @map("contract_id")
-  tenantId       String        @map("tenant_id")
+  id             String         @id @default(uuid())
+  organizationId String         @map("organization_id")
+  contractId     String         @map("contract_id")
+  tenantId       String         @map("tenant_id")
   amount         Int
   type           PaymentType
-  dueDate        DateTime      @map("due_date")
-  paidDate       DateTime?     @map("paid_date")
-  status         PaymentStatus @default(PENDING)
+  dueDate        DateTime       @map("due_date")
+  paidDate       DateTime?      @map("paid_date")
+  status         PaymentStatus  @default(PENDING)
   method         PaymentMethod?
   periodStart    DateTime?
   periodEnd      DateTime?
   notes          String?
-  createdAt      DateTime      @default(now()) @map("created_at")
-  updatedAt      DateTime      @updatedAt @map("updated_at")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
 
   // Relations
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -231,7 +233,50 @@ model MaintenanceRequest {
   @@map("maintenance_requests")
 }
 
+model ActivityLog {
+  id             String     @id @default(uuid())
+  organizationId String     @map("organization_id")
+  userId         String     @map("user_id")
+  entityType     EntityType @map("entity_type") // Ej: PROPERTY, PAYMENT
+  entityId       String     @map("entity_id") // El ID de la propiedad, pago, etc.
+  action         ActionType // Ej: CREATE, UPDATE, DELETE
+  description    String // Texto legible: "Juan Pérez actualizó la propiedad 'Apto 101'"
+  details        Json? // Para guardar datos extra si es necesario
+  isSystemAction Boolean    @default(false) @map("is_system_action")
+  createdAt      DateTime   @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("activity_logs")
+}
+
 // Enums
+
+enum EntityType {
+  PROPERTY
+  UNIT
+  TENANT
+  CONTRACT
+  PAYMENT
+  MAINTENANCE
+  USER
+}
+
+enum ActionType {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  RENT
+  TERMINATE_CONTRACT
+  ASSIGN_TECHNICIAN
+  COMPLETE_MAINTENANCE
+  CANCEL_PAYMENT
+  REFUND_PAYMENT
+}
+
 enum UserRole {
   SUPER_ADMIN
   ADMIN

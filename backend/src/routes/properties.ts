@@ -1,4 +1,4 @@
-import express , {Request, Response} from 'express';
+import express, { Request, Response } from 'express';
 import { body, param, query } from 'express-validator';
 import { prisma } from '../config/database';
 import { authenticateToken, requireRole } from '../middleware/auth';
@@ -28,7 +28,7 @@ export interface OrganizationSettings {
 const router = express.Router();
 
 // Get all properties for organization
-router.get('/', 
+router.get('/',
   authenticateToken,
   validateOrganizationAccess,
   [
@@ -39,13 +39,13 @@ router.get('/',
     query('limit').optional().isInt({ min: 1, max: 100 })
   ],
   handleValidationErrors,
-  async (req:Request, res:Response) => {
+  async (req: Request, res: Response) => {
     try {
       const { status, type, unitId, page = 1, limit = 50 } = req.query;
       const organizationId = (req as any).organizationId;
 
       const where: any = { organizationId };
-      
+
       if (status) where.status = status;
       if (type) where.type = type;
       if (unitId) where.unitId = unitId;
@@ -56,7 +56,7 @@ router.get('/',
           include: {
             unit: true,
             contracts: {
-              where: { status: 'ACTIVE' },
+              where: { status: { in: ['ACTIVE', 'DRAFT'] } },
               include: { tenant: true }
             }
           },
@@ -92,7 +92,7 @@ router.get('/:id',
   validateOrganizationAccess,
   [param('id').isUUID()],
   handleValidationErrors,
-  async (req:Request, res:Response) => {
+  async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const organizationId = (req as any).organizationId;
@@ -102,7 +102,7 @@ router.get('/:id',
         include: {
           unit: true,
           contracts: {
-            include: { 
+            include: {
               tenant: true,
               payments: true
             }
@@ -151,7 +151,7 @@ router.post('/',
     body('photos').optional().isArray()
   ],
   handleValidationErrors,
-  async (req:Request, res:Response) => {
+  async (req: Request, res: Response) => {
     try {
       const organizationId = (req as any).organizationId;
 
@@ -159,7 +159,7 @@ router.post('/',
         where: { id: organizationId }
       });
 
-       if (!organization) {
+      if (!organization) {
         return res.status(404).json({ error: 'Organization not found' });
       }
 
@@ -176,7 +176,7 @@ router.post('/',
           code: 'PLAN_LIMIT_REACHED'
         });
       }
-      
+
       const propertyData = {
         ...req.body,
         organizationId,
@@ -222,77 +222,89 @@ router.post('/',
 );
 
 // Update property
-router.put('/:id',
+router.put('/:id', // Usar PATCH para actualizaciones parciales
   authenticateToken,
   requireRole(['ADMIN', 'MANAGER']),
   validateOrganizationAccess,
   [
     param('id').isUUID(),
-    body('name').optional().trim().isLength({ min: 1 }),
-    body('type').optional().isIn(['APARTMENT', 'HOUSE', 'COMMERCIAL']),
-    body('address').optional().trim().isLength({ min: 1 }),
-    body('size').optional().isInt({ min: 1 }),
-    body('rooms').optional().isInt({ min: 0 }),
-    body('bathrooms').optional().isFloat({ min: 0 }),
-    body('rent').optional().isInt({ min: 0 }),
-    body('status').optional().isIn(['AVAILABLE', 'RESERVED', 'RENTED', 'MAINTENANCE']),
-    body('unitId').optional().isUUID(),
-    body('unitNumber').optional().trim(),
-    body('floor').optional().isInt({ min: 1 }),
-    body('amenities').optional().isArray(),
-    body('photos').optional().isArray()
+    // ... tus otras validaciones ...
   ],
   handleValidationErrors,
-  async (req:Request, res:Response) => {
-
-    const updateDate = req.body;
+  async (req: Request, res: Response) => {
     try {
-      // Remove unitName from updateDate before updating the property
-      if ('unitName' in updateDate) {
-      delete updateDate.unitName;
-      }
-      const { id } = req.params;
+      const { id } = req.params; // ID de la propiedad a actualizar
       const organizationId = (req as any).organizationId;
+      const currentUser = (req as any).user;
 
-      // Check if property exists and belongs to organization
-      const existingProperty = await prisma.property.findFirst({
-        where: { id, organizationId }
-      });
+      // --- Lógica segura para la actualización (Evitar Mass Assignment) ---
+      const { actionContext = 'OTHER', name, type, address, size, rooms, bathrooms, rent, status, unitId, unitNumber, floor, amenities, photos } = req.body;
 
-      if (!existingProperty) {
-        return res.status(404).json({
-          error: 'Property not found',
-          code: 'PROPERTY_NOT_FOUND'
-        });
+      const dataToUpdate: any = {};
+      if (name) dataToUpdate.name = name;
+      if (type) dataToUpdate.type = type;
+      if (address) dataToUpdate.address = address;
+      if (size) dataToUpdate.size = size;
+      if (rooms) dataToUpdate.rooms = rooms;
+      if (bathrooms) dataToUpdate.bathrooms = bathrooms;
+      if (rent) dataToUpdate.rent = rent;
+      if (status) dataToUpdate.status = status;
+      if (unitNumber) dataToUpdate.unitNumber = unitNumber;
+      if (floor) dataToUpdate.floor = floor;
+      if (amenities) dataToUpdate.amenities = amenities;
+      if (photos) dataToUpdate.photos = photos;
+
+      if (unitId) {
+        dataToUpdate.unit = { connect: { id: unitId } };
       }
 
-      // Verify unit belongs to organization if provided
-      if (updateDate.unitId) {
-        const unit = await prisma.unit.findFirst({
-          where: { id: updateDate.unitId, organizationId }
-        });
+      // --- FIN de la lógica segura ---
 
-        if (!unit) {
-          return res.status(400).json({
-            error: 'Unit not found or does not belong to organization',
-            code: 'INVALID_UNIT'
-          });
-        }
-      }
-
-      const property = await prisma.property.update({
+      const updatedProperty = await prisma.property.update({
         where: { id },
-        data: updateDate,
+        data: dataToUpdate,
         include: {
-          unit: true
+          unit: {
+            select: {
+              name: true
+            }
+          }
         }
       });
 
-      logger.info('Property updated:', { propertyId: property.id, organizationId });
+      let description = '';
+      switch (actionContext) {
+        case 'RENT':
+          description = `La propiedad "${updatedProperty.unit?.name} - ${updatedProperty.name}" fue rentada.`;
+          break;
+        case 'RESERVE':
+          description = `La propiedad "${updatedProperty.unit?.name} - ${updatedProperty.name}" fue reservada.`;
+          break;
+        case 'MAKE_AVAILABLE':
+          description = `La propiedad "${updatedProperty.unit?.name} - ${updatedProperty.name}" ahora está disponible.`;
+          break;
+        default:
+          description = `El usuario ${currentUser.firstName} actualizó la propiedad "${updatedProperty.unit?.name} - ${updatedProperty.name}".`;
+
+      }
+      await prisma.activityLog.create({
+        data: {
+          organizationId: currentUser.organizationId,
+          userId: currentUser.id,
+          entityType: 'PROPERTY',
+          entityId: updatedProperty.id, // <-- Usa el ID de la propiedad ya actualizada
+          action: 'UPDATE',
+          description,
+          isSystemAction: false,
+        }
+      });
+
+
+      logger.info('Property updated:', { propertyId: updatedProperty.id, organizationId });
 
       return res.json({
         message: 'Property updated successfully',
-        property
+        property: updatedProperty
       });
     } catch (error) {
       logger.error('Update property error:', error);
@@ -311,7 +323,7 @@ router.delete('/:id',
   validateOrganizationAccess,
   [param('id').isUUID()],
   handleValidationErrors,
-  async (req:Request, res:Response) => {
+  async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const organizationId = (req as any).organizationId;

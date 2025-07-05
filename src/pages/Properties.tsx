@@ -94,14 +94,17 @@ export function Properties() {
         const updatedContract = {
           ...activeContract,
           status: 'TERMINATED' as const,
-          terminationDate: new Date()
+          terminationDate: new Date(),
+          actionContext: "TERMINATED"
         };
 
         // Update property status
         const updatedProperty = {
           ...property,
           status: 'AVAILABLE' as const,
-          updatedAt: new Date()
+          updatedAt: new Date(),
+          actionContext: "MAKE_AVAILABLE"
+
         };
 
         // Update tenant status

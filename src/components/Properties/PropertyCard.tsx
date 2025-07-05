@@ -22,6 +22,7 @@ export function PropertyCard({
   onRecordPayment, 
   onTerminateContract 
 }: PropertyCardProps) {
+  console.log("🚀 ~ property:", property)
   const { state } = useApp();
   
   const statusColors = {
@@ -38,6 +39,10 @@ export function PropertyCard({
   
   const currentTenant = activeContract ? 
   state.tenants.find(t => t.id === activeContract.tenantId) : null;
+
+   const draftContractsCount = state.contracts.filter(c =>
+    c.propertyId === property.id && c.status === 'DRAFT'
+  ).length;
 
   // Check for overdue payments
   const overduePayments = state.payments.filter(p => 
@@ -215,6 +220,15 @@ export function PropertyCard({
             </button>
           )}
         </div>
+
+        {property.status === 'AVAILABLE' && draftContractsCount > 0 && (
+          <div className="my-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-center">
+            <p className="text-sm font-medium text-blue-800 flex items-center justify-center">
+              <FileText className="w-4 h-4 mr-2" />
+              {draftContractsCount} contrato(s) en borrador listo(s) para asignar.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

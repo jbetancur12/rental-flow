@@ -23,7 +23,7 @@ export interface Property {
   unitType?: 'APARTMENT' | 'COMMERCIAL' | 'OFFICE';
   contracts?: Contract[]; // Array of contract IDs
   
-  createdAt: Date;
+  createdAt?: Date;
   updatedAt: Date;
 }
 
@@ -47,7 +47,7 @@ export interface Unit {
   amenities: string[];
   photos: string[];
   manager?: string;
-  createdAt: Date;
+  createdAt?: Date;
   updatedAt: Date;
 }
 
@@ -62,7 +62,7 @@ export interface Building {
   occupiedUnits: number;
   amenities: string[];
   manager?: string;
-  createdAt: Date;
+  createdAt?: Date;
 }
 
 export interface Tenant {
@@ -85,7 +85,7 @@ export interface Tenant {
   applicationDate: Date;
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'ACTIVE' | 'FORMER';
   creditScore?: number;
-  createdAt: Date;
+  createdAt?: Date;
 }
 
 export interface Reference {
@@ -112,6 +112,7 @@ export interface Contract {
   terminationDate?: Date;
   terminationReason?: string;
   tenant?: Tenant; // Array of tenant IDs associated with the contract
+  createdAt?: Date
 }
 
 export interface Payment {
@@ -127,7 +128,7 @@ export interface Payment {
   notes?: string;
   periodStart?: Date; // Start date of the billing period
   periodEnd?: Date; // End date of the billing period
-  createdAt: Date
+  createdAt?: Date
 }
 
 export interface MaintenanceRequest {

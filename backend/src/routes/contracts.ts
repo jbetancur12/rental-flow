@@ -1,4 +1,4 @@
-import express, {Request, Response} from 'express';
+import express, { Request, Response } from 'express';
 import { body, param, query } from 'express-validator';
 import { prisma } from '../config/database';
 import { authenticateToken, requireRole } from '../middleware/auth';
@@ -8,7 +8,7 @@ import { logger } from '../config/logger';
 const router = express.Router();
 
 // Get all contracts for organization
-router.get('/', 
+router.get('/',
   authenticateToken,
   validateOrganizationAccess,
   [
@@ -19,7 +19,7 @@ router.get('/',
     query('limit').optional().isInt({ min: 1, max: 100 })
   ],
   handleValidationErrors,
-  async (req:Request, res:Response) => {
+  async (req: Request, res: Response) => {
     try {
       const { status, propertyId, tenantId, page = 1, limit = 50 } = req.query;
       const organizationId = (req as any).organizationId;
@@ -71,7 +71,7 @@ router.get('/:id',
   validateOrganizationAccess,
   [param('id').isUUID()],
   handleValidationErrors,
-  async (req:Request, res:Response) => {
+  async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const organizationId = (req as any).organizationId;
@@ -122,14 +122,21 @@ router.post('/',
     body('signedDate').optional().isISO8601()
   ],
   handleValidationErrors,
-  async (req:Request, res:Response) => {
+  async (req: Request, res: Response) => {
     try {
       const organizationId = (req as any).organizationId;
-      
+      const currentUser = (req as any).user;
       // Verify property and tenant belong to organization
       const [property, tenant] = await Promise.all([
         prisma.property.findFirst({
-          where: { id: req.body.propertyId, organizationId }
+          where: { id: req.body.propertyId, organizationId },
+          include: {
+            unit: {
+              select: {
+                name: true
+              }
+            }
+          }
         }),
         prisma.tenant.findFirst({
           where: { id: req.body.tenantId, organizationId }
@@ -175,6 +182,18 @@ router.post('/',
         });
       }
 
+      await prisma.activityLog.create({
+        data: {
+          organizationId: currentUser.organizationId,
+          userId: currentUser.id,
+          entityType: 'CONTRACT',
+          entityId: contract.id, // <-- Usa el ID de la propiedad ya actualizada
+          action: 'CREATE',
+          description: `Se creo el contrato "${contract.id}" para la propiedad "${property.unit?.name} - ${property.name}"`,
+          isSystemAction: false,
+        }
+      });
+
       logger.info('Contract created:', { contractId: contract.id, organizationId });
 
       return res.status(201).json({
@@ -210,12 +229,14 @@ router.put('/:id',
     body('terminationDate').optional({ checkFalsy: true }).isISO8601()
   ],
   handleValidationErrors,
-  async (req:Request, res:Response) => {
+  async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const organizationId = (req as any).organizationId;
+      const currentUser = (req as any).user;
 
-       const {
+
+      const {
         propertyId,
         tenantId,
         startDate,
@@ -225,7 +246,8 @@ router.put('/:id',
         terms,
         status,
         signedDate,
-        terminationDate
+        terminationDate,
+        actionContext
       } = req.body;
 
       const existingContract = await prisma.contract.findFirst({
@@ -264,7 +286,7 @@ router.put('/:id',
         }
       }
 
-       const updateData: any = {};
+      const updateData: any = {};
 
       // Asigna solo los campos que existen en la solicitud
       if (monthlyRent !== undefined) updateData.monthlyRent = monthlyRent;
@@ -279,9 +301,9 @@ router.put('/:id',
       if (terminationDate) { // Puede ser null, pero si existe, es una fecha
         updateData.terminationDate = new Date(terminationDate);
       } else if (Object.prototype.hasOwnProperty.call(req.body, 'terminationDate') && req.body.terminationDate === null) {
-          updateData.terminationDate = null; // Permite establecer la fecha en null
+        updateData.terminationDate = null; // Permite establecer la fecha en null
       }
-      
+
       // 3. Usa "connect" para actualizar las relaciones
       if (propertyId) {
         updateData.property = { connect: { id: propertyId } };
@@ -295,9 +317,17 @@ router.put('/:id',
       // 4. Llama a Prisma con el objeto `data` limpio y correcto
       const contract = await prisma.contract.update({
         where: { id },
-        data: {...updateData}, // 👍
+        data: { ...updateData }, // 👍
         include: {
-          property: true,
+          property: {
+            include: {
+              unit: {
+                select: {
+                  name: true
+                }
+              }
+            }
+          },
           tenant: true
         }
       });
@@ -306,12 +336,40 @@ router.put('/:id',
       // if (req.body.status) {
       //   let propertyStatus = 'AVAILABLE';
       //   if (req.body.status === 'DRAFT') propertyStatus = 'RENTED';
-        
+
       //   await prisma.property.update({
       //     where: { id: contract.propertyId },
       //     data: { status: propertyStatus as any }
       //   });
       // }
+
+         let description = '';
+      switch (actionContext) {
+        case 'ACTIVED':
+          description = `Se activo el contrato "${contract.id}" para la propiedad "${contract.property.unit?.name} - ${contract.property.name}".`;
+          break;
+        case 'EXPIRED':
+          description = `Expiro el contrato "${contract.id}" para la propiedad "${contract.property.unit?.name} - ${contract.property.name}".`;
+          break;
+        case 'TERMINATED':
+          description = `Se cancelo el contrato "${contract.id}" para la propiedad "${contract.property.unit?.name} - ${contract.property.name}".`;
+          break;
+        default:
+          description = `Se actualizo el contrato "${contract.id}" para la propiedad "${contract.property.unit?.name} - ${contract.property.name}".`;
+
+      }
+
+      await prisma.activityLog.create({
+        data: {
+          organizationId: currentUser.organizationId,
+          userId: currentUser.id,
+          entityType: 'CONTRACT',
+          entityId: contract.id, // <-- Usa el ID de la propiedad ya actualizada
+          action: 'UPDATE',
+          description,
+          isSystemAction: false,
+        }
+      });
 
       logger.info('Contract updated:', { contractId: contract.id, organizationId });
 
@@ -336,7 +394,7 @@ router.delete('/:id',
   validateOrganizationAccess,
   [param('id').isString()],
   handleValidationErrors,
-  async (req:Request, res:Response) => {
+  async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const organizationId = (req as any).organizationId;

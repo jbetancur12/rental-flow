@@ -402,6 +402,23 @@ throw errorData;
       body: JSON.stringify(data),
     });
   }
+
+  async getLogActivities(params?: {
+    page?: number;
+    limit?: number;
+  }) {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString());
+        }
+      });
+    }
+    
+    const query = searchParams.toString();
+    return this.request<any>(`/activity-log${query ? `?${query}` : ''}`);
+  }
 }
 
 

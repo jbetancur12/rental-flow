@@ -208,6 +208,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         unitName: prop.unit.name,
         unitNumber: prop.unitNumber,
         floor: prop.floor,
+        contracts: prop.contracts || [],
         createdAt: new Date(prop.createdAt),
         updatedAt: new Date(prop.updatedAt),
       }));

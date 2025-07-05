@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import {  useState } from 'react';
 import { Property } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { X, FileText, Calendar, DollarSign, User } from 'lucide-react';
@@ -89,11 +89,12 @@ export function QuickRentModal({ property, isOpen, onClose }: QuickRentModalProp
   status: 'ACTIVE' as const,
   propertyId: property.id,
   // Si la fecha de firma no existe, usa la fecha actual. Si existe, la mantiene.
-  signedDate: contract.signedDate || new Date()
+  signedDate: contract.signedDate || new Date(),
+  actionContext: 'ACTIVED'
 };
 
       // Actualizaciones de estado (sin cambios)
-      await updateProperty(property.id, { ...property, status: 'RENTED' });
+      await updateProperty(property.id, { ...property, status: 'RENTED', actionContext: 'RENT' });
       await updateContract(contract.id, contractUpdatePayload);
       const tenant = state.tenants.find(t => t.id === contract.tenantId);
       if (tenant && tenant.status !== 'ACTIVE') {

@@ -1,0 +1,67 @@
+import { useState, useEffect } from 'react';
+import { formatDistanceToNow } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { DollarSign, Wrench, User, Home, FileText } from 'lucide-react';
+import apiClient from '../../config/api';
+
+const entityIconMap: any = {
+  PAYMENT: { icon: DollarSign, color: 'text-emerald-600' },
+  MAINTENANCE: { icon: Wrench, color: 'text-orange-600' },
+  TENANT: { icon: User, color: 'text-blue-600' },
+  PROPERTY: { icon: Home, color: 'text-indigo-600' },
+  CONTRACT: { icon: FileText, color: 'text-purple-600' },
+};
+
+export function RecentActivity() {
+  const [activities, setActivities] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        setIsLoading(true);
+        const response = await apiClient.getLogActivities()
+        console.log("🚀 ~ fetchActivities ~ response:", response.data)
+        setActivities(response.data);
+      } catch (error) {
+        console.error("Failed to fetch recent activities:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchActivities();
+  }, []);
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <h3 className="text-lg font-semibold text-slate-900 mb-6">Actividad Reciente</h3>
+      <div className="space-y-4">
+        {isLoading ? (
+          <p className="text-sm text-slate-500 text-center py-4">Cargando actividad...</p>
+        ) : activities.length > 0 ? (
+          activities.map((activity: any) => {
+            const config = entityIconMap[activity.entityType] || { icon: Wrench, color: 'text-slate-600' };
+            const Icon = config.icon;
+            
+            return (
+              <div key={activity.id} className="flex items-start space-x-3">
+                <div className={`p-2 rounded-lg bg-slate-50 ${config.color}`}>
+                  <Icon className="w-4 h-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-slate-900">{activity.description}</p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {formatDistanceToNow(new Date(activity.createdAt), { addSuffix: true, locale: es })}
+                  </p>
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <p className="text-sm text-slate-500 text-center py-4">No hay actividad reciente.</p>
+        )}
+      </div>
+    </div>
+  );
+}

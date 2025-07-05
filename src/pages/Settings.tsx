@@ -24,6 +24,7 @@ import { useSearchParams } from 'react-router-dom';
 import { OrganizationSettings } from '../types/auth';
 import { PlanSelector } from '../components/Subscription/PlanSelector';
 import { plans } from '../components/Auth/RegisterForm';
+import { RecentActivity } from '../components/Settings/RecentActivity';
 
 const statusDetails = {
     ACTIVE: { text: 'Activo', color: 'text-emerald-600' },
@@ -261,7 +262,8 @@ export function Settings() {
     { id: 'team', label: 'Equipo', icon: Users },
     { id: 'notifications', label: 'Notificaciones', icon: Bell },
     { id: 'security', label: 'Seguridad', icon: Shield },
-    { id: 'data', label: 'Datos', icon: Database }
+    { id: 'data', label: 'Datos', icon: Database },
+    { id: 'logs', label: 'Logs', icon: Download}
   ];
 
   return (
@@ -842,6 +844,7 @@ export function Settings() {
               </div>
             </div>
           )}
+          {activeTab === 'logs' && <RecentActivity/>}
         </div>
       </div>
 
