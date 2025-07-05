@@ -86,7 +86,7 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
 const AuthContext = createContext<{
   state: AuthState;
   dispatch: React.Dispatch<AuthAction>;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User |void>;
   logout: () => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   updateUserProfile: (userId: string, data: UpdateUserProfileData) => Promise<void>;
@@ -107,66 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(authReducer, initialState);
   const toast = useToast();
 
-  const processAuthResponse = useCallback((response: any) => {
-    localStorage.setItem('auth_token', response.token);
-    apiClient.setToken(response.token);
-    apiClient.setOrganizationId(response.organization.id);
-
-    const user: User = {
-      ...response.user,
-      role: response.user.role.toUpperCase() as UserRole,
-      createdAt: new Date(response.user.createdAt),
-      updatedAt: new Date(response.user.updatedAt),
-      lastLogin: response.user.lastLogin ? new Date(response.user.lastLogin) : undefined,
-    };
-
-    const organization: Organization = {
-      ...response.organization,
-      createdAt: new Date(response.organization.createdAt),
-      updatedAt: new Date(response.organization.updatedAt),
-    };
-
-    const subscription: Subscription = {
-      ...response.subscription,
-      status: response.subscription.status.toUpperCase() as SubscriptionStatus,
-      currentPeriodStart: new Date(response.subscription.currentPeriodStart),
-      currentPeriodEnd: new Date(response.subscription.currentPeriodEnd),
-      trialEnd: response.subscription.trialEnd ? new Date(response.subscription.trialEnd) : undefined,
-      createdAt: new Date(response.subscription.createdAt),
-    };
-
-    
-
-    let isSubscriptionActive = false;
-
-    if (subscription.status === 'ACTIVE' || subscription.status === 'DEMO') {
-        isSubscriptionActive = true;
-    } else if (
-        subscription.status === 'TRIALING' &&
-        subscription.trialEnd &&
-        !isPast(new Date(subscription.trialEnd)) // Comprueba si la fecha de fin de la prueba NO ha pasado
-    ) {
-        isSubscriptionActive = true;
-    }
-
-    // 4. Despacha la acción de éxito con el nuevo flag
-    dispatch({
-        type: 'LOGIN_SUCCESS',
-        payload: {
-            user,
-            organization,
-            subscription,
-            token: response.token,
-            isSubscriptionActive, // Se añade el estado de la suscripción
-        },
-    });
-
-    // Devuelve 'true' porque la autenticación (login) fue exitosa,
-    // aunque la suscripción pueda no estar activa.
-    return true;
-  }, []);
-
-    const logout = useCallback(async () => {
+      const logout = useCallback(async () => {
     try {
       await apiClient.logout();
     } catch (error) {
@@ -179,13 +120,101 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+const processAuthResponse = useCallback((response: any): boolean => {
+    localStorage.setItem('auth_token', response.token);
+    apiClient.setToken(response.token);
+
+
+    const user: User = {
+        ...response.user,
+        role: response.user.role.toUpperCase() as UserRole,
+        createdAt: new Date(response.user.createdAt),
+        updatedAt: new Date(response.user.updatedAt),
+        lastLogin: response.user.lastLogin ? new Date(response.user.lastLogin) : undefined,
+    };
+
+    let organization: Organization;
+    let subscription: Subscription;
+    let isSubscriptionActive = false;
+
+    if (user.role === 'SUPER_ADMIN') {
+
+        apiClient.setOrganizationId(user.organizationId); 
+        organization = response.organization || {
+            id: user.organizationId,
+            name: 'Plataforma RentFlow',
+            // ... otros valores por defecto ...
+        };
+        subscription = { 
+            id: 'super-admin-sub', 
+            status: 'ACTIVE',
+            planId: 'platform',
+            organizationId: user.organizationId,
+            currentPeriodStart: new Date(),
+            currentPeriodEnd: new Date(),
+            createdAt: new Date(),
+            // ... otros valores por defecto ...
+        };
+        isSubscriptionActive = true; 
+
+    } else {
+        // 2. Lógica para usuarios normales (la que ya teníamos)
+        if (!response.organization || !response.subscription) {
+            toast.error('Error de Datos', 'Faltan datos de la organización o suscripción.');
+            logout();
+            return false;
+        }
+
+        apiClient.setOrganizationId(response.organization.id);
+
+        organization = {
+            ...response.organization,
+            createdAt: new Date(response.organization.createdAt),
+            updatedAt: new Date(response.organization.updatedAt),
+        };
+
+        subscription = {
+            ...response.subscription,
+            status: response.subscription.status.toUpperCase() as SubscriptionStatus,
+            currentPeriodStart: new Date(response.subscription.currentPeriodStart),
+            currentPeriodEnd: new Date(response.subscription.currentPeriodEnd),
+            trialEnd: response.subscription.trialEnd ? new Date(response.subscription.trialEnd) : undefined,
+            createdAt: new Date(response.subscription.createdAt),
+        };
+
+        if (subscription.status === 'ACTIVE' || subscription.status === 'DEMO') {
+            isSubscriptionActive = true;
+        } else if (
+            subscription.status === 'TRIALING' &&
+            subscription.trialEnd &&
+            !isPast(new Date(subscription.trialEnd))
+        ) {
+            isSubscriptionActive = true;
+        }
+    }
+
+    // 3. Despachamos los datos ya procesados
+    dispatch({
+        type: 'LOGIN_SUCCESS',
+        payload: { user, organization, subscription, token: response.token, isSubscriptionActive },
+    });
+
+
+    
+    return true;
+
+}, [logout, toast]);
+
+
+
   const login = useCallback(async (email: string, password: string) => {
     dispatch({ type: 'LOGIN_START' });
     try {
       const response = await apiClient.login(email, password);
       const wasSuccessful = processAuthResponse(response);
       if (wasSuccessful) {
-      toast.success('','¡Bienvenido de nuevo!');
+        toast.success('','¡Bienvenido de nuevo!');
+        return response.user as User;
     }
     } catch (error: any) {
       dispatch({ type: 'LOGIN_FAILURE', payload: error.message || 'Error de autenticación' });
@@ -270,7 +299,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     changePassword,
     updateUserProfile,
     switchOrganization,
-  }), [state, login, logout, register, switchOrganization]);
+  }), [state, login, logout, register, changePassword, updateUserProfile, switchOrganization]);
 
   return (
     <AuthContext.Provider value={contextValue}>

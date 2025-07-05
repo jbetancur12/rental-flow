@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate} from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AppProvider } from './context/AppContext';
 import { AuthGuard } from './components/Auth/AuthGuard';
@@ -20,7 +20,7 @@ import { Subscribe } from './pages/Subscribe';
 import { SubscriptionGuard } from './components/Auth/SubscriptionGuard';
 import { NotFound } from './pages/NotFound';
 
-// 1. Lógica de rutas unificada y más limpia
+
 function AppRoutes() {
   const { state } = useAuth();
 

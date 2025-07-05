@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Building2, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface LoginFormProps {
   onSwitchToRegister: () => void;
 }
 
 export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
+  const navigate = useNavigate();
   const { login, state } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
@@ -16,7 +18,20 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await login(formData.email, formData.password);
+    try{
+    const user = await login(formData.email, formData.password);
+    if (user) {
+        // ...redirigimos según su rol.
+        if (user.role === 'SUPER_ADMIN') {
+          navigate('/super-admin');
+        } else {
+          navigate('/dashboard'); // o a la ruta principal '/'
+        }
+      }
+    } catch (error) {
+      // El error ya se muestra con un toast desde el contexto
+      console.error("Login failed on component level", error);
+    }
   };
 
   return (
