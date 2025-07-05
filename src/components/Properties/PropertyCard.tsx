@@ -59,6 +59,16 @@ export function PropertyCard({
           alt={property.name}
           className="w-full h-full object-cover"
         />
+        {property.status === 'AVAILABLE' && draftContractsCount > 0 && (
+        <div 
+          className="absolute top-4 left-4" 
+          title={`${draftContractsCount} contrato(s) en borrador`}
+        >
+          <div className="bg-blue-500 text-white p-2 rounded-full flex items-center shadow-lg">
+            <FileText className="w-4 h-4" />
+          </div>
+        </div>
+      )}
         <div className="absolute top-4 right-4">
           <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[property.status]}`}>
             {property.status.charAt(0).toUpperCase() + property.status.slice(1)}
