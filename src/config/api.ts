@@ -406,6 +406,7 @@ throw errorData;
   async getLogActivities(params?: {
     page?: number;
     limit?: number;
+    isSystemAction?: boolean
   }) {
     const searchParams = new URLSearchParams();
     if (params) {

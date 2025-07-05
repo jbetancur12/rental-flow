@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { DollarSign, Wrench, User, Home, FileText } from 'lucide-react';
@@ -14,24 +14,36 @@ const entityIconMap: any = {
 
 export function RecentActivity() {
   const [activities, setActivities] = useState([]);
+    const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchActivities = async () => {
-      try {
-        setIsLoading(true);
-        const response = await apiClient.getLogActivities()
-        console.log("🚀 ~ fetchActivities ~ response:", response.data)
-        setActivities(response.data);
-      } catch (error) {
-        console.error("Failed to fetch recent activities:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchActivities();
+  const fetchActivities = useCallback(async (currentPage: number) => {
+    try {
+      setIsLoading(true);
+      const response = await apiClient.getLogActivities({ page: currentPage, limit: 5, isSystemAction: false });
+      
+      // Si es la primera página, reemplaza los datos. Si no, los añade.
+      setActivities(prev => currentPage === 1 ? response.data : [...prev, ...response.data]);
+      
+      // Actualizamos si hay más páginas por cargar
+      setHasMore(response.pagination.page < response.pagination.pages);
+    } catch (error) {
+      console.error("Failed to fetch recent activities:", error);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchActivities(page);
+  }, [page, fetchActivities]);
+
+  const handleLoadMore = () => {
+    if (!isLoading && hasMore) {
+      setPage(prevPage => prevPage + 1);
+    }
+  }
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-6">
@@ -60,6 +72,20 @@ export function RecentActivity() {
           })
         ) : (
           <p className="text-sm text-slate-500 text-center py-4">No hay actividad reciente.</p>
+        )}
+      </div>
+      <div className="mt-6 text-center">
+        {isLoading && <p className="text-sm text-slate-500">Cargando...</p>}
+        {!isLoading && hasMore && (
+          <button 
+            onClick={handleLoadMore}
+            className="text-sm font-medium text-blue-600 hover:text-blue-800"
+          >
+            Cargar más
+          </button>
+        )}
+        {!isLoading && !hasMore && activities.length > 0 && (
+          <p className="text-sm text-slate-400">No hay más actividades.</p>
         )}
       </div>
     </div>

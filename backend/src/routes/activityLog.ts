@@ -22,40 +22,47 @@ router.get('/',
         try {
             const organizationId = (req as any).organizationId;
 
-            // Leemos los parámetros de la URL (query params)
+          const page = parseInt(req.query.page as string) || 1;
             const limit = parseInt(req.query.limit as string) || 10;
+            const skip = (page - 1) * limit;
+
+            // Leemos los parámetros de la URL (query params)
+
             const isSystemActionQuery = req.query.isSystemAction as string;
 
             // Construimos la condición de búsqueda
             const whereCondition: any = {
-                organizationId: organizationId,
+                organizationId,
+                ...(isSystemActionQuery === 'false' && { isSystemAction: false }),
+                ...(isSystemActionQuery === 'true' && { isSystemAction: true }),
             };
 
-            if (isSystemActionQuery === 'false') {
-                whereCondition.isSystemAction = false;
-            } else if (isSystemActionQuery === 'true') {
-                whereCondition.isSystemAction = true;
-            }
 
-            const logs = await prisma.activityLog.findMany({
-                where: whereCondition,
-                orderBy: {
-                    createdAt: 'desc', // Ordenamos por más reciente
-                },
-                take: limit, // Tomamos solo la cantidad solicitada
-                include: {
-                    // Incluimos el nombre del usuario que realizó la acción
-                    user: {
-                        select: {
-                            firstName: true,
-                            lastName: true,
+
+            const [logs, totalLogs] = await prisma.$transaction([
+                prisma.activityLog.findMany({
+                    where: whereCondition,
+                    orderBy: { createdAt: 'desc' },
+                    take: limit,
+                    skip: skip,
+                    include: {
+                        user: {
+                            select: { firstName: true, lastName: true }
                         }
                     }
+                }),
+                prisma.activityLog.count({ where: whereCondition })
+            ]);
+
+            return res.json({
+                data: logs,
+                pagination: {
+                    total: totalLogs,
+                    page,
+                    pages: Math.ceil(totalLogs / limit),
+                    limit
                 }
             });
-
-            return res.json({ data: logs });
-
         } catch (error) {
             logger.error('Failed to fetch activity log:', error);
             return res.status(500).json({ error: 'Failed to fetch activity log' });
