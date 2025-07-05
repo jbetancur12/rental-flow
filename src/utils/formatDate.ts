@@ -34,8 +34,19 @@ export const formatDateInOrgTimezone = (
   
   // Usamos la timezone proporcionada para formatear la fecha
   // Añadimos la hora para mayor precisión
-  return formatInTimeZone(dateInput, timeZone, 'dd/MM/yyyy HH:mm');
+  return formatInTimeZone(dateInput, timeZone, 'dd/MM/yyyy');
 };
 
 //  {formatDateInOrgTimezone(payment.dueDate, orgTimezone)}
 
+export const toMidnightUTC = (date: Date): Date =>{
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));}
+
+
+export const getStartOfTodayIn = (timeZone: string): Date => {
+  // 1. Obtiene la fecha de hoy como un string en la zona horaria deseada.
+  const todayString = formatInTimeZone(new Date(), timeZone, 'yyyy-MM-dd');
+  
+  // 2. Crea un objeto Date a partir de ese string, forzando la interpretación local.
+  return new Date(`${todayString}T00:00:00`);
+};

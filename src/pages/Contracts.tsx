@@ -7,7 +7,6 @@ import { generateContractPDF } from '../utils/reportGenerator';
 import { FileText, Calendar, DollarSign, User, Home, Download, Edit, Eye, Trash2 } from 'lucide-react';
 import { Contract } from '../types';
 import { formatInTimeZone } from 'date-fns-tz';
-import { subDays } from 'date-fns';
 
 export function Contracts() {
   const { state, updateContract, createContract, loadContracts, deleteContract } = useApp();
@@ -67,13 +66,10 @@ export function Contracts() {
       setEditingContract(undefined);
       setIsFormOpen(false);
     } else {
-      await createContract({
-        ...contractData,
-        id: `contract-${Date.now()}`
-      });
+      await createContract(contractData);
       setIsFormOpen(false); 
     }
-    await fetchContracts(); // <-- Recarga contratos después de guardar
+    // await fetchContracts(); // <-- Recarga contratos después de guardar
   };
 
   const handleDeleteContract = async (id: string) => {
@@ -91,6 +87,7 @@ export function Contracts() {
       generateContractPDF(contract, property, tenant);
     }
   };
+
 
   return (
     <div className="flex-1 overflow-auto">
@@ -162,7 +159,7 @@ export function Contracts() {
                   <div className="flex items-center text-slate-600">
                     <Calendar className="w-4 h-4 mr-3" />
                     <span className="text-sm">
-                      {formatInTimeZone(contract.startDate, 'UTC', 'MMM d, yyyy')} - {formatInTimeZone(subDays(new Date(contract.endDate), 1), 'UTC', 'MMM d, yyyy')}
+                      {formatInTimeZone(contract.startDate, 'UTC', 'MMM d, yyyy')} - {formatInTimeZone(new Date(contract.endDate), 'UTC', 'MMM d, yyyy')}
 
                     </span>
                   </div>

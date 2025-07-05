@@ -24,91 +24,94 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
     signedDate: ''
   });
 
-  const [contractPeriod, setContractPeriod] = useState('12'); // Default to 12 months
+  const [contractPeriod, setContractPeriod] = useState<'12' | 'custom' | string>('12'); // Default to 12 months
   const [newTerm, setNewTerm] = useState('');
 
   // Filter only AVAILABLE properties for new contracts
-  const availableProperties = contract 
-    ? properties 
+  const availableProperties = contract
+    ? properties
     : properties.filter(p => p.status === 'AVAILABLE');
 
   // Function to calculate end date based on start date and period
   const calculateEndDate = (startDate: string, months: number): string => {
     if (!startDate) return '';
-    
+
     const start = new Date(startDate);
     const end = new Date(start);
     end.setMonth(end.getMonth() + months);
-    
+
+    end.setDate(end.getDate() - 1);
+
+
     return end.toISOString().split('T')[0];
   };
 
   // Function to calculate period from existing dates
   const calculatePeriodFromDates = (startDate: string, endDate: string): string => {
     if (!startDate || !endDate) return '12';
-    
+
     const start = new Date(startDate);
     const end = new Date(endDate);
-    
+
     const diffTime = Math.abs(end.getTime() - start.getTime());
     const diffMonths = Math.round(diffTime / (1000 * 60 * 60 * 24 * 30.44)); // Average days per month
-    
+
     // Find closest standard period
     const periods = [6, 12, 18, 24];
-    const closest = periods.reduce((prev, curr) => 
+    const closest = periods.reduce((prev, curr) =>
       Math.abs(curr - diffMonths) < Math.abs(prev - diffMonths) ? curr : prev
     );
-    
+
     return closest.toString();
   };
 
   useEffect(() => {
-    if(isOpen){
-     
-    if (contract) {
-      const startDateStr = new Date(contract.startDate).toISOString().split('T')[0];
-      const endDateStr = new Date(contract.endDate).toISOString().split('T')[0];
-      const period = calculatePeriodFromDates(startDateStr, endDateStr);
-      
-      setFormData({
-        propertyId: contract.propertyId,
-        tenantId: contract.tenantId,
-        startDate: startDateStr,
-        endDate: endDateStr,
-        monthlyRent: contract.monthlyRent,
-        securityDeposit: contract.securityDeposit,
-        terms: [...contract.terms],
-        status: contract.status,
-        signedDate: contract.signedDate ? new Date(contract.signedDate).toISOString().split('T')[0] : ''
-      });
-      setContractPeriod(period);
-    } else {
-      setFormData({
-        propertyId: '',
-        tenantId: '',
-        startDate: new Date().toISOString().split('T')[0],
-        endDate: '',
-        monthlyRent: 0,
-        securityDeposit: 0,
-        terms: [],
-        status: 'DRAFT',
-        signedDate: ''
-      });
-      setContractPeriod('12');
+    if (isOpen) {
+
+      if (contract) {
+        const startDateStr = new Date(contract.startDate).toISOString().split('T')[0];
+        const endDateStr = new Date(contract.endDate).toISOString().split('T')[0];
+        const period = calculatePeriodFromDates(startDateStr, endDateStr);
+
+        setFormData({
+          propertyId: contract.propertyId,
+          tenantId: contract.tenantId,
+          startDate: startDateStr,
+          endDate: endDateStr,
+          monthlyRent: contract.monthlyRent,
+          securityDeposit: contract.securityDeposit,
+          terms: [...contract.terms],
+          status: contract.status,
+          signedDate: contract.signedDate ? new Date(contract.signedDate).toISOString().split('T')[0] : ''
+        });
+        setContractPeriod(period);
+      } else {
+        setFormData({
+          propertyId: '',
+          tenantId: '',
+          startDate: new Date().toISOString().split('T')[0],
+          endDate: '',
+          monthlyRent: 0,
+          securityDeposit: 0,
+          terms: [],
+          status: 'DRAFT',
+          signedDate: ''
+        });
+        setContractPeriod('12');
+      }
     }
-  }
   }, [contract, isOpen]);
 
   // Update end date when start date or period changes
   useEffect(() => {
-    if (isOpen && formData.startDate && contractPeriod) {
+    if (isOpen && formData.startDate && contractPeriod !== 'custom') {
       const newEndDate = calculateEndDate(formData.startDate, parseInt(contractPeriod));
       setFormData(prev => ({
         ...prev,
         endDate: newEndDate
       }));
     }
-    
+
   }, [isOpen, formData.startDate, contractPeriod]);
 
   const handlePropertyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -141,6 +144,11 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
 
   const handlePeriodChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setContractPeriod(e.target.value);
+  };
+
+  const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, endDate: e.target.value });
+    setContractPeriod('custom');
   };
 
   const addTerm = () => {
@@ -186,7 +194,7 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
               <select
                 required
                 value={formData.propertyId}
-                onChange={handlePropertyChange} 
+                onChange={handlePropertyChange}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Select a property</option>
@@ -248,6 +256,8 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
                 <option value="12">12 months</option>
                 <option value="18">18 months</option>
                 <option value="24">24 months</option>
+                {contractPeriod === 'custom' && <option value="custom">Personalizado</option>}
+
               </select>
             </div>
 
@@ -260,9 +270,8 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
                 type="date"
                 required
                 value={formData.endDate}
-                readOnly
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-600 cursor-not-allowed"
-                title="This date is automatically calculated based on start date and period"
+                onChange={handleEndDateChange}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg"
               />
             </div>
           </div>

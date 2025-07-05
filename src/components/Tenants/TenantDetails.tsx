@@ -3,6 +3,7 @@ import { Contract, Payment, Property, Tenant } from '../../types';
 import { X, User, Mail, Phone, Building, DollarSign, Calendar, Star, FileText } from 'lucide-react';
 import { PaymentHistory } from '../Payments/PaymentHistory';
 import { generateTenantFinancialStatement } from '../../utils/reportGenerator';
+import { formatInTimeZone } from 'date-fns-tz';
 
 interface TenantDetailsProps {
   tenant: Tenant;
@@ -154,7 +155,7 @@ export function TenantDetails({ tenant, isOpen, payments=[],contracts, propertie
                 <Calendar className="w-5 h-5 text-slate-400 mr-3" />
                 <div>
                   <p className="text-sm text-slate-500">Application Date</p>
-                  <p className="font-medium text-slate-900">{new Date(tenant.applicationDate).toLocaleDateString()}</p>
+                  <p className="font-medium text-slate-900">{formatInTimeZone(tenant.applicationDate, 'UTC', 'MMM d, yyyy')}</p>
                 </div>
               </div>
               {tenant.creditScore && (

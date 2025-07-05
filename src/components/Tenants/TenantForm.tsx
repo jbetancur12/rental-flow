@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Tenant } from '../../types';
 import { X } from 'lucide-react';
+import { toMidnightUTC } from '../../utils/formatDate';
 
 interface TenantFormProps {
   tenant?: Tenant;
@@ -26,7 +27,7 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
       income: 0
     },
     references: [] as any[],
-    applicationDate: new Date(),
+    applicationDate: toMidnightUTC(new Date()),
     status: 'PENDING' as Tenant['status'],
     creditScore: 0
   });
@@ -62,7 +63,7 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
           income: 0
         },
         references: [],
-        applicationDate: new Date(),
+        applicationDate: toMidnightUTC(new Date()),
         status: 'PENDING',
         creditScore: 0
       });

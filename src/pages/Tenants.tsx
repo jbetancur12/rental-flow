@@ -58,6 +58,7 @@ const limitReached = isLimitExceeded('tenants');
     if (filter === 'all') return state.tenants;
     return state.tenants.filter(t => t.status === filter);
   })();
+  console.log("🚀 ~ filteredTenants ~ filteredTenants:", filteredTenants)
 
   const handleNewTenant = () => {
     setEditingTenant(undefined);

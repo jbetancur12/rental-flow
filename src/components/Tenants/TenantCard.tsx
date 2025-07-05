@@ -1,6 +1,7 @@
 import { Tenant } from '../../types';
 import { useApp } from '../../context/useApp';
 import { User, Mail, Phone, DollarSign, Calendar, AlertTriangle, CreditCard, Edit, Eye, Trash2 } from 'lucide-react';
+import { formatInTimeZone } from 'date-fns-tz';
 
 interface TenantCardProps {
   tenant: Tenant;
@@ -124,7 +125,7 @@ export function TenantCard({ tenant, onEdit, onView, onDelete, onCollectPayment 
         </div>
         <div className="flex items-center text-slate-600">
           <Calendar className="w-4 h-4 mr-3" />
-          <span className="text-sm">Applied: {new Date(tenant.applicationDate).toLocaleDateString()}</span>
+          <span className="text-sm">Applied: {formatInTimeZone(tenant.applicationDate, 'UTC', 'MMM d, yyyy')}</span>
         </div>
       </div>
 

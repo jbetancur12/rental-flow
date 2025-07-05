@@ -1,7 +1,8 @@
-import {  useState } from 'react';
+import { useState } from 'react';
 import { Property } from '../../types';
 import { useApp } from '../../context/useApp';
 import { X, FileText, Calendar, DollarSign, User } from 'lucide-react';
+import { formatDateInOrgTimezone } from '../../utils/formatDate';
 
 interface QuickRentModalProps {
   property: Property;
@@ -19,94 +20,83 @@ export function QuickRentModal({ property, isOpen, onClose }: QuickRentModalProp
     c.propertyId === property.id // Contratos que no tienen propiedad asignada
   );
 
-  const handleQuickRent = async () => {
+const handleQuickRent = async () => {
     if (!selectedContract) {
-      alert('Please select a contract');
-      return;
+        alert('Please select a contract');
+        return;
     }
 
     const contract = availableContracts.find(c => c.id === selectedContract);
     if (!contract) return;
 
     try {
-      const paymentsToCreate = [];
-      const today = new Date();
-      const todayUTC = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
-
-      const currentPeriodStart = new Date(contract.startDate);
+        const paymentsToCreate = [];
+        const today = new Date();
+        const contractStartDate = new Date(contract.startDate);
         const contractEndDate = new Date(contract.endDate);
-      
 
-
-      if (contract.securityDeposit > 0) {
-        paymentsToCreate.push({
-          contractId: contract.id,
-          tenantId: contract.tenantId,
-          amount: contract.securityDeposit,
-          type: 'DEPOSIT' as const,
-          dueDate: new Date(currentPeriodStart),
-          status: 'PENDING' as const,
-        });
-      }
-
-
-      while (currentPeriodStart <= todayUTC && currentPeriodStart <= contractEndDate) {
-
-        // La fecha de vencimiento es el inicio del período.
-        const dueDate = new Date(currentPeriodStart);
-
-        // El fin del período es un mes después del inicio, menos un día.
-        const periodEnd = new Date(currentPeriodStart);
-        periodEnd.setMonth(periodEnd.getMonth() + 1);
-        periodEnd.setDate(periodEnd.getDate());
-
-        paymentsToCreate.push({
-          contractId: contract.id,
-          tenantId: contract.tenantId,
-          amount: contract.monthlyRent,
-          type: 'RENT' as const,
-          dueDate: dueDate,
-          status: 'PENDING' as const,
-          periodStart: new Date(currentPeriodStart),
-          periodEnd: periodEnd,
-        });
-
-        // Avanzamos al inicio del siguiente período.
-        currentPeriodStart.setMonth(currentPeriodStart.getMonth() + 1);
-      }
-
-      // 3. Creamos todos los pagos necesarios en la base de datos
-      if (paymentsToCreate.length > 0) {
-        for (const paymentData of paymentsToCreate) {
-          await createPayment(paymentData);
+        if (contract.securityDeposit > 0) {
+            paymentsToCreate.push({
+                contractId: contract.id,
+                tenantId: contract.tenantId,
+                amount: contract.securityDeposit,
+                type: 'DEPOSIT' as const,
+                dueDate: new Date(contractStartDate),
+                status: 'PENDING' as const,
+            });
         }
-      }
 
-      // --- FIN DE LA LÓGICA CORREGIDA ---
+        const periodIterator = new Date(contractStartDate);
 
-      const contractUpdatePayload = {
-  status: 'ACTIVE' as const,
-  propertyId: property.id,
-  // Si la fecha de firma no existe, usa la fecha actual. Si existe, la mantiene.
-  signedDate: contract.signedDate || new Date(),
-  actionContext: 'ACTIVED'
-};
+        while (periodIterator <= today && periodIterator < contractEndDate) {
+            
+            const periodStart = new Date(periodIterator);
+            const periodEnd = new Date(periodIterator);
+            
+            // LÓGICA CORREGIDA PARA EL FIN DEL PERÍODO
+            periodEnd.setMonth(periodEnd.getMonth() + 1);
+            periodEnd.setDate(periodEnd.getDate() - 1); // Restamos un día
 
-      // Actualizaciones de estado (sin cambios)
-      await updateProperty(property.id, { ...property, status: 'RENTED', actionContext: 'RENT' });
-      await updateContract(contract.id, contractUpdatePayload);
-      const tenant = state.tenants.find(t => t.id === contract.tenantId);
-      if (tenant && tenant.status !== 'ACTIVE') {
-        await updateTenant(tenant.id, { ...tenant, status: 'ACTIVE' });
-      }
+            paymentsToCreate.push({
+                contractId: contract.id,
+                tenantId: contract.tenantId,
+                amount: contract.monthlyRent,
+                type: 'RENT' as const,
+                dueDate: periodStart,
+                status: 'PENDING' as const,
+                periodStart: periodStart,
+                periodEnd: periodEnd,
+            });
 
-      onClose();
+            periodIterator.setMonth(periodIterator.getMonth() + 1);
+        }
+        
+        if (paymentsToCreate.length > 0) {
+            for (const paymentData of paymentsToCreate) {
+                await createPayment(paymentData);
+            }
+        }
+        
+        const contractUpdatePayload = {
+            status: 'ACTIVE' as const,
+            propertyId: property.id,
+            signedDate: contract.signedDate || new Date(),
+        };
+
+        await updateProperty(property.id, { status: 'RENTED' });
+        await updateContract(contract.id, contractUpdatePayload);
+        const tenant = state.tenants.find(t => t.id === contract.tenantId);
+        if (tenant && tenant.status !== 'ACTIVE') {
+            await updateTenant(tenant.id, { ...tenant, status: 'ACTIVE' });
+        }
+
+        onClose();
 
     } catch (error) {
-      console.error('Error assigning contract to property:', error);
-      alert('Error occurred while renting property');
+        console.error('Error assigning contract to property:', error);
+        alert('Error occurred while renting property');
     }
-  };
+};
 
   if (!isOpen) return null;
 
@@ -170,7 +160,6 @@ export function QuickRentModal({ property, isOpen, onClose }: QuickRentModalProp
             const tenant = state.tenants.find(t => t.id === contract?.tenantId);
 
             if (!contract || !tenant) return null;
-
             return (
               <div className="space-y-4">
                 {/* Contract Info */}
@@ -197,11 +186,12 @@ export function QuickRentModal({ property, isOpen, onClose }: QuickRentModalProp
                     <div>
                       <p className="flex items-center mb-2">
                         <Calendar className="w-4 h-4 mr-2" />
-                        <strong>Start Date:</strong> {new Date(contract.startDate).toLocaleDateString()}
+                        <strong>Start Date:</strong> {formatDateInOrgTimezone(contract.startDate, state.organization?.settings.timezone)}
+
                       </p>
                       <p className="flex items-center mb-2">
                         <Calendar className="w-4 h-4 mr-2" />
-                        <strong>End Date:</strong> {new Date(contract.endDate).toLocaleDateString()}
+                        <strong>End Date:</strong> {formatDateInOrgTimezone(contract.endDate, state.organization?.settings.timezone)}
                       </p>
                       <p className="flex items-center">
                         <Calendar className="w-4 h-4 mr-2" />
