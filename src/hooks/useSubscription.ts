@@ -1,7 +1,7 @@
 import { useMemo, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { OrganizationSettings } from '../types/auth';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/useApp';
 
 interface SubscriptionLimits {
     maxProperties: number;

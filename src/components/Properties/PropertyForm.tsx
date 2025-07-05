@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Property } from '../../types';
-import { useApp } from '../../context/AppContext';
+import { useApp } from '../../context/useApp';
 import { X, Upload } from 'lucide-react';
 
 interface PropertyFormProps {

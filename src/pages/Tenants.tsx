@@ -4,7 +4,7 @@ import { TenantForm } from '../components/Tenants/TenantForm';
 import { TenantDetails } from '../components/Tenants/TenantDetails';
 import { TenantCard } from '../components/Tenants/TenantCard';
 import { QuickPaymentModal } from '../components/Payments/QuickPaymentModal';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/useApp';
 import { generateTenantReport } from '../utils/reportGenerator';
 import { User, AlertTriangle, Download } from 'lucide-react';
 import { Tenant } from '../types';

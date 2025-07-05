@@ -13,7 +13,7 @@ import {
     Calendar,
     Plus
 } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/useApp';
 import { es } from 'date-fns/locale';
 import { formatInTimeZone } from 'date-fns-tz';
 

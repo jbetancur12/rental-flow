@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Header } from '../components/Layout/Header';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/useApp';
 import { generatePropertyReport, generateTenantReport, generateFinancialReport, generateMaintenanceReport, generateUnitReport } from '../utils/reportGenerator';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import { DollarSign, TrendingUp, FileText, Download, Filter } from 'lucide-react';

@@ -18,6 +18,7 @@ import { ToastContainer } from './components/UI/ToastContainer';
 import { ToastProvider } from './hooks/useToast';
 import { Subscribe } from './pages/Subscribe';
 import { SubscriptionGuard } from './components/Auth/SubscriptionGuard';
+import { NotFound } from './pages/NotFound';
 
 // 1. Lógica de rutas unificada y más limpia
 function AppRoutes() {
@@ -50,7 +51,7 @@ function AppRoutes() {
       />
 
       {/* Redirección para cualquier otra ruta no encontrada */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*"  element={<NotFound />} />
       </Route>
        <Route path="/subscribe" element={<Subscribe />} />
     </Routes>

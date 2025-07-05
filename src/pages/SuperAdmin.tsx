@@ -66,7 +66,7 @@ export function SuperAdmin() {
   const [statusFilter, setStatusFilter] = useState('all');
 
   // Check if user is super admin
-  if (state.user?.role !== 'super_admin') {
+  if (state.user?.role !== 'SUPER_ADMIN') {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">

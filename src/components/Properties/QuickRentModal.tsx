@@ -1,6 +1,6 @@
 import {  useState } from 'react';
 import { Property } from '../../types';
-import { useApp } from '../../context/AppContext';
+import { useApp } from '../../context/useApp';
 import { X, FileText, Calendar, DollarSign, User } from 'lucide-react';
 
 interface QuickRentModalProps {

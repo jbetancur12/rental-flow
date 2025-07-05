@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
+import { createContext, useReducer, ReactNode, useEffect, useCallback, useMemo } from 'react';
 import { Property, Tenant, Contract, Payment, MaintenanceRequest, Building, Unit } from '../types';
 
 import { useAuth } from './AuthContext';
@@ -145,7 +145,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
   }
 }
 
-const AppContext = createContext<{
+export const AppContext = createContext<{
   state: AppState;
   dispatch: React.Dispatch<AppAction>;
   toast: ReturnType<typeof useToast>;
@@ -184,7 +184,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const { state: authState } = useAuth();
 
   // Load properties from backend
-  const loadProperties = async () => {
+  const loadProperties = useCallback(async () => {
     if (!authState.isAuthenticated) return;
 
     try {
@@ -219,10 +219,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
-  };
+  },[authState.isAuthenticated, toast]);
 
   // Load units from backend
-  const loadUnits = async () => {
+  const loadUnits = useCallback(async () => {
     if (!authState.isAuthenticated || !authState.organization) return;
 
     try {
@@ -249,12 +249,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } catch (error: any) {
       toast.error('Error', error.message || 'Failed to load units');
     }
-  };
+  }, [authState.isAuthenticated, authState.organization, toast]);
 
 
 
   // Create property
-  const createProperty = async (data: any) => {
+  const createProperty = useCallback(async (data: any) => {
     try {
       // Transform frontend data to backend format
       const backendData = {
@@ -280,10 +280,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to create property');
       throw error;
     }
-  };
+  },[toast]);
 
   // Update property
-  const updateProperty = async (id: string, data: any) => {
+  const updateProperty = useCallback(async (id: string, data: any) => {
     try {
       // Transform frontend data to backend format
       const backendData = {
@@ -309,10 +309,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to update property');
       throw error;
     }
-  };
+  },[toast]);
 
   // Delete property
-  const deleteProperty = async (id: string) => {
+  const deleteProperty = useCallback(async (id: string) => {
     try {
       await apiClient.deleteProperty(id);
       dispatch({ type: 'DELETE_PROPERTY', payload: id });
@@ -321,10 +321,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to delete property');
       throw error;
     }
-  };
+  },[toast]);
 
   // Create unit
-  const createUnit = async (data: any) => {
+  const createUnit = useCallback(async (data: any) => {
     try {
       // Transform frontend data to backend format
       const backendData = {
@@ -348,10 +348,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to create unit');
       throw error;
     }
-  };
+  },[toast]);
 
   // Update unit
-  const updateUnit = async (id: string, data: any) => {
+  const updateUnit = useCallback(async (id: string, data: any) => {
     try {
       // Transform frontend data to backend format
       const backendData = {
@@ -375,10 +375,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to update unit');
       throw error;
     }
-  };
+  }, [toast]);
 
   // Delete unit
-  const deleteUnit = async (id: string) => {
+  const deleteUnit = useCallback(async (id: string) => {
     try {
       await apiClient.deleteUnit(id);
       dispatch({ type: 'DELETE_UNIT', payload: id });
@@ -387,10 +387,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to delete unit');
       throw error;
     }
-  };
+  },[toast]);
 
   // Get tenants
-  const getTenants = async () => {
+  const getTenants = useCallback(async () => {
     if (!authState.isAuthenticated || !authState.organization) return;
 
     try {
@@ -403,9 +403,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } catch (error: any) {
       toast.error('Error', error.message || 'Failed to load tenants');
     }
-  }
+  }, [authState.isAuthenticated, authState.organization, toast])
 
-  const createTenant = async (data: any) => {
+  const createTenant = useCallback(async (data: any) => {
     try {
       const response = await apiClient.createTenant(data);
       dispatch({ type: 'ADD_TENANT', payload: response.tenant });
@@ -414,9 +414,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to create tenant');
       throw error;
     }
-  }
+  },[toast])
 
-  const deleteTenant = async (id: string) => {
+  const deleteTenant = useCallback(async (id: string) => {
     try {
       await apiClient.deleteTenant(id);
       dispatch({ type: 'DELETE_TENANT', payload: id });
@@ -425,9 +425,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to delete tenant');
       throw error;
     }
-  }
+  },[toast])
 
-  const updateContract = async (id: string, data: any) => {
+  const updateContract = useCallback(async (id: string, data: any) => {
     try {
       const response = await apiClient.updateContract(id, data);
       dispatch({ type: 'UPDATE_CONTRACT', payload: response.contract });
@@ -436,9 +436,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to update contract');
       throw error;
     }
-  }
+  },[toast])
 
-  const updateTenant = async (id: string, data: any) => {
+  const updateTenant = useCallback(async (id: string, data: any) => {
     try {
       const response = await apiClient.updateTenant(id, data);
       dispatch({ type: 'UPDATE_TENANT', payload: response.tenant });
@@ -447,9 +447,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to update tenant');
       throw error;
     }
-  }
+  },[toast])
 
-  const loadContracts = async () => {
+  const loadContracts = useCallback(async () => {
     if (!authState.isAuthenticated || !authState.organization) return;
 
     try {
@@ -462,9 +462,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } catch (error: any) {
       toast.error('Error', error.message || 'Failed to load contracts');
     }
-  }
+  }, [authState.isAuthenticated, authState.organization, toast])
 
-  const createContract = async (data: any) => {
+  const createContract = useCallback(async (data: any) => {
     try {
       const response = await apiClient.createContract(data);
       dispatch({ type: 'ADD_CONTRACT', payload: response.contract });
@@ -473,9 +473,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to create contract');
       throw error;
     }
-  }
+  },[toast])
 
-  const deleteContract = async (id: string) => {
+  const deleteContract = useCallback(async (id: string) => {
     try {
       await apiClient.deleteContract(id);
       dispatch({ type: 'DELETE_CONTRACT', payload: id });
@@ -484,9 +484,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to delete contract');
       throw error;
     }
-  }
+  },[toast])
 
-  const loadPayments = async () => {
+  const loadPayments = useCallback(async () => {
     if (!authState.isAuthenticated || !authState.organization) return;
     try {
       const response = await apiClient.getPayments();
@@ -504,9 +504,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } catch (error: any) {
       toast.error('Error', error.message || 'Failed to load payments');
     }
-  }
+  }, [authState.isAuthenticated, authState.organization, toast])
 
-  const createPayment = async (data: any) => {
+  const createPayment = useCallback(async (data: any) => {
     try {
       const response = await apiClient.createPayment(data);
       dispatch({ type: 'ADD_PAYMENT', payload: response.payment });
@@ -515,9 +515,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to create payment');
       throw error;
     }
-  }
+  },[toast])
 
-  const updatePayment = async (id: string, data: any) => {
+  const updatePayment = useCallback(async (id: string, data: any) => {
     try {
       const response = await apiClient.updatePayment(id, data);
       dispatch({ type: 'UPDATE_PAYMENT', payload: response.payment });
@@ -526,9 +526,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to update payment');
       throw error;
     }
-  };
+  },[toast]);
 
-  const updatePaymentStatus = async (id: string, status: 'CANCELLED' | 'REFUNDED') => {
+  const updatePaymentStatus = useCallback(async (id: string, status: 'CANCELLED' | 'REFUNDED') => {
     try {
       const response = await apiClient.updatePaymentStatus(id, status);
 
@@ -543,9 +543,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to update payment status');
       throw error;
     }
-  };
+  },[toast]);
 
-  const loadMaintenanceRequests = async () => {
+  const loadMaintenanceRequests = useCallback(async () => {
     if (!authState.isAuthenticated || !authState.organization) return;
 
     try {
@@ -565,9 +565,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } catch (error: any) {
       toast.error('Error', error.message || 'Failed to load maintenance requests');
     }
-  }
+  }, [authState.isAuthenticated, authState.organization, toast])
 
-  const createMaintenanceRequest = async (data: any) => {
+  const createMaintenanceRequest = useCallback(async (data: any) => {
     try {
       const response = await apiClient.createMaintenaceRequest(data);
       dispatch({ type: 'ADD_MAINTENANCE_REQUEST', payload: response.maintenanceRequest });
@@ -576,9 +576,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to create maintenance request');
       throw error;
     }
-  };
+  },[toast]);
 
-  const updateMaintenanceRequest = async (id: string, data: any) => {
+  const updateMaintenanceRequest = useCallback(async (id: string, data: any) => {
     try {
       const response = await apiClient.updateMaintenanceRequest(id, data);
       dispatch({ type: 'UPDATE_MAINTENANCE_REQUEST', payload: response.maintenanceRequest });
@@ -587,9 +587,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to update maintenance request');
       throw error;
     }
-  };
+  },[toast]);
 
-    const asignMaintenanceTechinician = async (id: string, asignTo: any) => {
+    const asignMaintenanceTechinician = useCallback(async (id: string, asignTo: any) => {
       try {
         const response = await apiClient.asignMaintenanceTechinician(id, asignTo);
         dispatch({ type: 'UPDATE_MAINTENANCE_REQUEST', payload: response.maintenanceRequest });
@@ -598,9 +598,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         toast.error('Error', error.message || 'Failed to update maintenance request');
         throw error;
       }
-    };
+    },[toast]);
 
-     const markMaintenanceAsComplete = async (id: string, data: any) => {
+     const markMaintenanceAsComplete = useCallback(async (id: string, data: any) => {
       try {
         const response = await apiClient.markMaintenanceAsComplete(id, data);
         dispatch({ type: 'UPDATE_MAINTENANCE_REQUEST', payload: response.maintenanceRequest });
@@ -628,9 +628,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         throw error;
     }
       
-    };
+    },[toast]);
   
-    const updateOrganization = async (orgId: string, data: any) => {
+    const updateOrganization = useCallback(async (orgId: string, data: any) => {
       try {
         const response = await apiClient.updateOrganization(orgId, data);
   
@@ -642,7 +642,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         toast.error('Error', error.message || 'No se pudo guardar la información.');
         throw error;
       }
-    };
+    },[toast]);
   
     // Load initial data when authenticated
     useEffect(() => {
@@ -654,10 +654,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         loadPayments();
         loadMaintenanceRequests();
       }
-    }, [authState.isAuthenticated, authState.organization]);
+    }, [authState.isAuthenticated, authState.organization, loadUnits, loadProperties, getTenants, loadContracts, loadPayments, loadMaintenanceRequests]);
   
     // Enhanced dispatch with notifications for local operations
-    const enhancedDispatch = (action: AppAction) => {
+    const enhancedDispatch = useCallback((action: AppAction) => {
       dispatch(action);
   
       // Add success notifications for local CRUD operations
@@ -690,50 +690,53 @@ export function AppProvider({ children }: { children: ReactNode }) {
           toast.success('¡Éxito!', 'La información de la organización ha sido guardada.');
           break;
       }
-    };
+    }, [toast, dispatch]);
+
+    const contextValue = useMemo(() => ({
+    state,
+    dispatch:enhancedDispatch,
+    toast,
+    loadProperties,
+    loadUnits,
+    createProperty,
+    updateProperty,
+    deleteProperty,
+    createUnit,
+    updateUnit,
+    deleteUnit,
+    getTenants,
+    createTenant,
+    updateTenant,
+    deleteTenant,
+    loadContracts,
+    createContract,
+    updateContract,
+    deleteContract,
+    loadPayments,
+    createPayment,
+    updatePayment,
+    updatePaymentStatus,
+    loadMaintenanceRequests,
+    createMaintenanceRequest,
+    updateMaintenanceRequest,
+    asignMaintenanceTechinician,
+    markMaintenanceAsComplete,
+    updateOrganization,
+    
+  }), [
+    state, toast, enhancedDispatch,
+    loadProperties, loadUnits, createProperty, updateProperty, deleteProperty,
+    createUnit, updateUnit, deleteUnit, getTenants, createTenant, updateTenant,
+    deleteTenant, loadContracts, createContract, updateContract, deleteContract,
+    loadPayments, createPayment, updatePayment, updatePaymentStatus,
+    loadMaintenanceRequests, createMaintenanceRequest, updateMaintenanceRequest,
+    asignMaintenanceTechinician, markMaintenanceAsComplete, updateOrganization
+  ]);
   
     return (
-      <AppContext.Provider value={{
-        state,
-        dispatch: enhancedDispatch,
-        toast,
-        loadProperties,
-        loadUnits,
-        createProperty,
-        updateProperty,
-        deleteProperty,
-        createUnit,
-        updateUnit,
-        deleteUnit,
-        createTenant,
-        updateTenant,
-        deleteTenant,
-        getTenants,
-        loadContracts,
-        createContract,
-        updateContract,
-        loadPayments,
-        createPayment,
-        updatePayment,
-        updatePaymentStatus,
-        deleteContract,
-        loadMaintenanceRequests,
-        createMaintenanceRequest,
-        updateMaintenanceRequest,
-        asignMaintenanceTechinician,
-        markMaintenanceAsComplete,
-        updateOrganization
-  
-      }}>
+      <AppContext.Provider value={contextValue}>
         {children}
       </AppContext.Provider>
     );
   }
   
-  export function useApp() {
-    const context = useContext(AppContext);
-    if (!context) {
-      throw new Error('useApp must be used within an AppProvider');
-    }
-    return context;
-  }

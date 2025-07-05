@@ -9,7 +9,7 @@ export function OrganizationSwitcher() {
   if (!state.user) return null;
 
   // Special display for super admin
-  if (state.user.role === 'super_admin') {
+  if (state.user.role === 'SUPER_ADMIN') {
     return (
       <div className="flex items-center w-full p-3 text-left bg-purple-900/20 rounded-lg">
         <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center mr-3">
@@ -50,7 +50,7 @@ export function OrganizationSwitcher() {
           <div className="px-4 py-2 border-b border-slate-200">
             <p className="text-sm font-medium text-slate-900">{state.organization.name}</p>
             <p className="text-xs text-slate-500">
-              Plan {state.subscription?.status === 'trialing' ? 'Prueba' : 'Activo'}
+              Plan {state.subscription?.status === 'TRIALING' ? 'Prueba' : 'Activo'}
             </p>
           </div>
           

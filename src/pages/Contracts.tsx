@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Header } from '../components/Layout/Header';
 import { ContractForm } from '../components/Contracts/ContractForm';
 import { ContractDetails } from '../components/Contracts/ContractDetails';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/useApp';
 import { generateContractPDF } from '../utils/reportGenerator';
 import { FileText, Calendar, DollarSign, User, Home, Download, Edit, Eye, Trash2 } from 'lucide-react';
 import { Contract } from '../types';

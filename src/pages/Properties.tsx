@@ -5,7 +5,7 @@ import { PropertyForm } from '../components/Properties/PropertyForm';
 import { QuickRentModal } from '../components/Properties/QuickRentModal';
 import { QuickPaymentModal } from '../components/Payments/QuickPaymentModal';
 import { Property } from '../types';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/useApp';
 import { ConfirmDialog } from '../components/UI/ConfirmDialog';
 import { useConfirm } from '../hooks/useConfirm';
 import { useSubscription } from '../hooks/useSubscription';

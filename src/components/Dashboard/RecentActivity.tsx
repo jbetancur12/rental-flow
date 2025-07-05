@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useApp } from '../../context/AppContext';
+import { useApp } from '../../context/useApp';
 import { DollarSign, User, Wrench } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -17,7 +17,7 @@ export function RecentActivity() {
         id: `payment-${payment.id}`,
         type: 'payment',
         description: `Pago de $${payment.amount.toLocaleString()} recibido de ${tenant?.firstName || 'un inquilino'}`,
-        date: new Date(payment.paidDate || payment.createdAt), // Usamos la fecha de pago o creación
+        date: new Date(payment.paidDate || payment.createdAt as Date), // Usamos la fecha de pago o creación
         icon: DollarSign,
         iconColor: 'text-emerald-600',
       };
@@ -41,7 +41,7 @@ export function RecentActivity() {
         id: `tenant-${tenant.id}`,
         type: 'tenant',
         description: `Nuevo inquilino registrado: ${tenant.firstName} ${tenant.lastName}`,
-        date: new Date(tenant.createdAt),
+        date: new Date(tenant.createdAt as Date),
         icon: User,
         iconColor: 'text-blue-600'
     }))
@@ -50,7 +50,7 @@ export function RecentActivity() {
         id: `contract-${contract.id}`,
         type: 'contract',
         description: `Nuevo contrato registrado: ${contract.id}`,
-        date: new Date(contract.createdAt),
+        date: new Date(contract.createdAt as Date),
         icon: User,
         iconColor: 'text-blue-600'
     }))

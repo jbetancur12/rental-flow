@@ -1,6 +1,6 @@
 import  { useState, useMemo } from 'react';
 import { Payment, Contract, Tenant } from '../../types';
-import { useApp } from '../../context/AppContext';
+import { useApp } from '../../context/useApp';
 import { CheckCircle, X } from 'lucide-react';
 import { formatInTimeZone } from 'date-fns-tz';
 

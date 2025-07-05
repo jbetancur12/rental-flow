@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from '../components/Layout/Header';
 import { PaymentForm } from '../components/Payments/PaymentForm';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/useApp';
 import { generateFinancialReport, generateReceiptForPayment } from '../utils/reportGenerator';
 import { CreditCard, Calendar, User, Home, AlertCircle, CheckCircle, Clock, Download, Edit, Filter, BarChart3, Receipt, XCircle, Undo2 } from 'lucide-react';
 import {  isAfter } from 'date-fns';
@@ -38,15 +38,13 @@ export function Payments() {
   const [showKPIs, setShowKPIs] = useState(true);
 
 
-  const fetchPayments = useCallback(async () => {
-    await loadPayments();
-  }, [loadPayments]);
 
-  useEffect(() => {
+
+useEffect(() => {
     if (state.payments.length === 0) {
-      fetchPayments()
+        loadPayments();
     }
-  }, [state.payments.length, fetchPayments]);
+}, [state.payments.length, loadPayments]);
 
   // NEW: Listen for receipt generation events
   useEffect(() => {

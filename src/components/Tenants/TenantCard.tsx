@@ -1,5 +1,5 @@
 import { Tenant } from '../../types';
-import { useApp } from '../../context/AppContext';
+import { useApp } from '../../context/useApp';
 import { User, Mail, Phone, DollarSign, Calendar, AlertTriangle, CreditCard, Edit, Eye, Trash2 } from 'lucide-react';
 
 interface TenantCardProps {

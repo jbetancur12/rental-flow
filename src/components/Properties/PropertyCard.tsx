@@ -1,6 +1,6 @@
 
 import { Property } from '../../types';
-import { useApp } from '../../context/AppContext';
+import { useApp } from '../../context/useApp';
 import { MapPin, Home, Users, DollarSign, Edit, Trash2, Key, FileText, CreditCard, XCircle, Building } from 'lucide-react';
 
 interface PropertyCardProps {
