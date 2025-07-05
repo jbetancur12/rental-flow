@@ -190,7 +190,7 @@ const isLimitExceeded = useCallback((usageType: keyof SubscriptionUsage) => {
         isLimitExceeded,
         hasFeature,
         getUsagePercentage,
-        upgradeSubscription,
+        // upgradeSubscription,
         cancelSubscription,
         reactivateSubscription
     };
