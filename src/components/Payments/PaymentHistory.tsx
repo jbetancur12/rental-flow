@@ -3,7 +3,6 @@
 import { Payment } from '../../types';
 import { DollarSign, Calendar, Tag, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 import { formatDateInOrgTimezone } from '../../utils/formatDate';
-import { useApp } from '../../context/useApp';
 import { useAuth } from '../../context/AuthContext';
 import { OrganizationSettings } from '../../types/auth';
 

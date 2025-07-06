@@ -28,8 +28,6 @@ export const formatDateInOrgTimezone = (
   dateInput?: string | Date | null,
   timeZone: string = 'UTC' // Usamos UTC como fallback seguro
 ): string => {
-  console.log("🚀 ~ timeZone:", timeZone)
-  console.log("🚀 ~ dateInput:", dateInput)
   if (!dateInput) {
     return 'N/A';
   }

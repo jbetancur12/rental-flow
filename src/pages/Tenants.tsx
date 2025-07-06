@@ -324,10 +324,6 @@ export function Tenants() {
           const propertiesForSelectedTenant = state.properties
             .filter(p => contractsForSelectedTenant.some(c => c.propertyId === p.id))
             
-            console.log("🚀 ~ Tenants ~ paymentsForSelectedTenant:", paymentsForSelectedTenant)
-
-
-
           return (
             <TenantDetails
               tenant={selectedTenant}
