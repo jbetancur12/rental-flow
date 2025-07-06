@@ -25,7 +25,7 @@ export function Tenants() {
   const [selectedTenant, setSelectedTenant] = useState<Tenant | undefined>();
   const [paymentTenant, setPaymentTenant] = useState<Tenant | undefined>();
 
-const limitReached = isLimitExceeded('tenants');
+  const limitReached = isLimitExceeded('tenants');
 
   const fetchTenants = useCallback(async () => {
     try {
@@ -58,7 +58,6 @@ const limitReached = isLimitExceeded('tenants');
     if (filter === 'all') return state.tenants;
     return state.tenants.filter(t => t.status === filter);
   })();
-  console.log("🚀 ~ filteredTenants ~ filteredTenants:", filteredTenants)
 
   const handleNewTenant = () => {
     setEditingTenant(undefined);
@@ -136,7 +135,7 @@ const limitReached = isLimitExceeded('tenants');
         isNewItemDisabled={limitReached}
       />
 
-       {limitReached && (
+      {limitReached && (
         <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 text-sm">
           Has alcanzado el límite de **{limits.maxTenants} iniquilinos** de tu plan actual. Para añadir más, por favor <a href="/settings?tab=subscription" className="font-bold underline">actualiza tu plan</a>.
         </div>
@@ -242,8 +241,8 @@ const limitReached = isLimitExceeded('tenants');
                 key={status}
                 onClick={() => setFilter(status as 'all' | 'PENDING' | 'APPROVED' | 'ACTIVE' | 'FORMER' | 'OVERDUE')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === status
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
                   }`}
               >
                 {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -312,38 +311,39 @@ const limitReached = isLimitExceeded('tenants');
         onSave={handleSaveTenant}
       />
 
-   {selectedTenant && (
+      {selectedTenant && (
         (() => {
-            // 1. Filtra los pagos para el inquilino seleccionado
-            const paymentsForSelectedTenant = state.payments
-                .filter(p => p.tenantId === selectedTenant.id)
-                .sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime()); // Opcional: ordenar por fecha
+          // 1. Filtra los pagos para el inquilino seleccionado
+          const paymentsForSelectedTenant = state.payments
+          .filter(p => p.tenantId === selectedTenant.id)
+          .sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime()); // Opcional: ordenar por fecha
+          
+          const contractsForSelectedTenant = state.contracts
+          .filter(c => c.tenantId === selectedTenant.id)
 
-                const contractsForSelectedTenant = state.contracts
-                .filter(c => c.tenantId === selectedTenant.id)
-
-                const propertiesForSelectedTenant = state.properties
-                .filter(p => contractsForSelectedTenant.some(c => c.propertyId === p.id))
-
+          const propertiesForSelectedTenant = state.properties
+            .filter(p => contractsForSelectedTenant.some(c => c.propertyId === p.id))
             
+            console.log("🚀 ~ Tenants ~ paymentsForSelectedTenant:", paymentsForSelectedTenant)
 
 
-            return (
-                <TenantDetails
-                    tenant={selectedTenant}
-                    payments={paymentsForSelectedTenant} 
-                    contracts={contractsForSelectedTenant}
-                    properties={propertiesForSelectedTenant}
-                    isOpen={isDetailsOpen}
-                    onClose={() => setIsDetailsOpen(false)}
-                    onEdit={() => {
-                        setIsDetailsOpen(false);
-                        handleEditTenant(selectedTenant);
-                    }}
-                />
-            );
+
+          return (
+            <TenantDetails
+              tenant={selectedTenant}
+              payments={paymentsForSelectedTenant}
+              contracts={contractsForSelectedTenant}
+              properties={propertiesForSelectedTenant}
+              isOpen={isDetailsOpen}
+              onClose={() => setIsDetailsOpen(false)}
+              onEdit={() => {
+                setIsDetailsOpen(false);
+                handleEditTenant(selectedTenant);
+              }}
+            />
+          );
         })()
-    )}
+      )}
 
       {paymentTenant && (
         <QuickPaymentModal

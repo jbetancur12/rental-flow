@@ -497,7 +497,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         type: payment.type.toUpperCase(),
         status: payment.status,
         dueDate: payment.dueDate,
-        paidDate: payment.paidDate ? formatDateInUTC(payment.paidDate) : null,
+        paidDate: payment.paidDate ,
       }));
 
       dispatch({ type: 'LOAD_INITIAL_DATA', payload: { payments } });

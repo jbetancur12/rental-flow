@@ -2,7 +2,10 @@
 
 import { Payment } from '../../types';
 import { DollarSign, Calendar, Tag, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
-import { formatDateInUTC } from '../../utils/formatDate';
+import { formatDateInOrgTimezone } from '../../utils/formatDate';
+import { useApp } from '../../context/useApp';
+import { useAuth } from '../../context/AuthContext';
+import { OrganizationSettings } from '../../types/auth';
 
 interface PaymentHistoryProps {
   payments: Payment[];
@@ -50,6 +53,12 @@ const getPaymentStatusStyle = (status: Payment['status']) => {
 };
 
 export function PaymentHistory({ payments }: PaymentHistoryProps) {
+
+    const { state: authState } = useAuth();
+
+   const settings = authState.organization?.settings as OrganizationSettings;
+  const orgTimezone = settings?.timezone || 'UTC';
+
   if (!payments || payments.length === 0) {
     return (
       <div>
@@ -87,7 +96,8 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
                   <div>
                     <p className="text-sm text-slate-500">Paid Date</p>
                     <p className="font-medium text-slate-900">
-                      {payment.paidDate ? formatDateInUTC(payment.paidDate) : 'N/A'}
+                      {payment.paidDate ? formatDateInOrgTimezone(payment.paidDate, orgTimezone) : '-'}
+
                     </p>
                   </div>
                 </div>
