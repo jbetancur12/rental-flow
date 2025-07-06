@@ -1,4 +1,4 @@
-import { GetOrganizationsResponse } from "../types";
+import { GetOrganizationsResponse, Plan } from "../types";
 
 // API Configuration
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/v1';
@@ -23,14 +23,14 @@ class ApiClient {
     }
   }
 
- setOrganizationId(organizationId: string | null) {
-  this.organizationId = organizationId;
-  if (organizationId) {
-    localStorage.setItem('organization_id', organizationId);
-  } else {
-    localStorage.removeItem('organization_id');
+  setOrganizationId(organizationId: string | null) {
+    this.organizationId = organizationId;
+    if (organizationId) {
+      localStorage.setItem('organization_id', organizationId);
+    } else {
+      localStorage.removeItem('organization_id');
+    }
   }
-}
 
 
   private async request<T>(
@@ -38,7 +38,7 @@ class ApiClient {
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
-    
+
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...(options.headers && !(options.headers instanceof Headers) ? options.headers as Record<string, string> : {}),
@@ -60,10 +60,10 @@ class ApiClient {
 
     try {
       const response = await fetch(url, config);
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-throw errorData;
+        throw errorData;
       }
 
       return await response.json();
@@ -127,7 +127,7 @@ throw errorData;
         }
       });
     }
-    
+
     const query = searchParams.toString();
     return this.request<any>(`/properties${query ? `?${query}` : ''}`);
   }
@@ -170,7 +170,7 @@ throw errorData;
         }
       });
     }
-    
+
     const query = searchParams.toString();
     return this.request<any>(`/units${query ? `?${query}` : ''}`);
   }
@@ -254,7 +254,7 @@ throw errorData;
         }
       });
     }
-    
+
     const query = searchParams.toString();
     return this.request<any>(`/contracts${query ? `?${query}` : ''}`);
   }
@@ -305,7 +305,7 @@ throw errorData;
       body: JSON.stringify(data),
     });
   }
-  
+
   async getPayments(params?: {
     contractId?: string;
     status?: string;
@@ -320,7 +320,7 @@ throw errorData;
         }
       });
     }
-    
+
     const query = searchParams.toString();
     return this.request<any>(`/payments${query ? `?${query}` : ''}`);
   }
@@ -339,7 +339,7 @@ throw errorData;
   async updatePaymentStatus(id: string, status: 'CANCELLED' | 'REFUNDED') {
     return this.request<any>(`/payments/${id}`, {
       method: 'PATCH',
-      body: JSON.stringify({status}),
+      body: JSON.stringify({ status }),
     });
   }
 
@@ -358,7 +358,7 @@ throw errorData;
         }
       });
     }
-    
+
     const query = searchParams.toString();
     return this.request<any>(`/maintenance${query ? `?${query}` : ''}`);
   }
@@ -377,14 +377,14 @@ throw errorData;
     });
   }
 
-  async asignMaintenanceTechinician(id: string, assignedTo: any){
+  async asignMaintenanceTechinician(id: string, assignedTo: any) {
     return this.request<any>(`/maintenance/${id}/assign`, {
       method: 'PATCH',
       body: JSON.stringify(assignedTo),
     });
   }
 
-    async markMaintenanceAsComplete(id: string, data:any){
+  async markMaintenanceAsComplete(id: string, data: any) {
     return this.request<any>(`/maintenance/${id}/complete`, {
       method: 'PATCH',
       body: JSON.stringify(data),
@@ -418,7 +418,7 @@ throw errorData;
         }
       });
     }
-    
+
     const query = searchParams.toString();
     return this.request<any>(`/activity-log${query ? `?${query}` : ''}`);
   }
@@ -428,8 +428,8 @@ throw errorData;
     limit?: number;
     status?: string;
     search?: string;
-  }):Promise<GetOrganizationsResponse> {
-        const searchParams = new URLSearchParams();
+  }): Promise<GetOrganizationsResponse> {
+    const searchParams = new URLSearchParams();
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
         if (value !== undefined) {
@@ -437,10 +437,29 @@ throw errorData;
         }
       });
     }
-    
+
     const query = searchParams.toString();
     return this.request<any>(`/super-admin/organizations${query ? `?${query}` : ''}`);
   }
+
+  async getSuperAdminPlans() {
+    return this.request<any>('/super-admin/plans');
+  }
+
+  async updateSuperAdminPlans(plans: Plan[]) {
+    return this.request<any>('/super-admin/plans', {
+      method: 'PATCH',
+      body: JSON.stringify(plans),
+    });
+  }
+
+    async createSuperAdminPlan(planData: Omit<Plan, 'id' | 'isActive' | 'currency' | 'features'>) {
+    return this.request<any>('/super-admin/plans', {
+      method: 'POST',
+      body: JSON.stringify(planData),
+    });
+  }
+
 }
 
 

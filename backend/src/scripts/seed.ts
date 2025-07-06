@@ -15,35 +15,53 @@ async function main() {
   // Create super admin user
   const superAdminPassword = await bcrypt.hash(process.env.SUPER_ADMIN_PASSWORD || 'superadmin123', 12);
 
-  // Create platform organization for super admin
-  const platformOrg = await prisma.organization.upsert({
-    where: { slug: 'rentflow-platform' },
-    update: {},
-    create: {
-      name: 'RentFlow Platform',
-      slug: 'rentflow-platform',
-      planId: 'platform',
-      settings: {
-        currency: 'COP',
-        timezone: 'UTC',
-        dateFormat: 'DD/MM/YYYY',
-        language: 'en',
-        features: {
-          multipleProperties: true,
-          advancedReports: true,
-          apiAccess: true,
-          customBranding: true,
-          prioritySupport: true
+  const plansData = [
+        {
+            id: 'plan-basic',
+            name: 'Básico',
+            price: 29000, // Guarda los precios en centavos
+            features: ['Hasta 10 propiedades', 'Hasta 20 inquilinos', '2 usuarios'],
+            limits: { properties: 10, tenants: 20, users: 2 },
+            createdAt: new Date()
         },
-        limits: {
-          maxProperties: 999999,
-          maxTenants: 999999,
-          maxUsers: 999999,
-          storageGB: 999999
+        {
+            id: 'plan-professional',
+            name: 'Profesional',
+            price: 79900,
+            features: ['Hasta 30 propiedades', 'Hasta 200 inquilinos', '5 usuarios'],
+            limits: { properties: 30, tenants: 60, users: 5 },
+             createdAt: new Date()
+        },
+        {
+            id: 'plan-enterprise',
+            name: 'Empresarial',
+            price: 159900,
+            features: ['Propiedades ilimitadas', 'Inquilinos ilimitados', 'Usuarios ilimitados'],
+            limits: { properties: -1, tenants: -1, users: -1 },
+             createdAt: new Date()
         }
-      }
+    ];
+
+    for (const plan of plansData) {
+        await prisma.plan.upsert({
+            where: { id: plan.id },
+            update: plan,
+            create: plan
+        });
     }
-  });
+    logger.info('✅ Subscription plans created/updated.');
+
+  // Create platform organization for super admin
+   const platformOrg = await prisma.organization.upsert({
+        where: { slug: 'rentflow-platform' },
+        update: {},
+        create: {
+            name: 'RentFlow Platform',
+            slug: 'rentflow-platform',
+            planId: 'plan-enterprise', // O un plan especial 'platform'
+        }
+    });
+
 
   // Create super admin user
   const superAdmin = await prisma.user.upsert({
@@ -100,23 +118,25 @@ async function main() {
   const trialEnd = toMidnightUTC(new Date());
   trialEnd.setDate(trialEnd.getDate() + 14);
 
-  const existingSubscription = await prisma.subscription.findFirst({
-    where: { organizationId: demoOrg.id }
-  });
+  // const existingSubscription = await prisma.subscription.findFirst({
+  //   where: { organizationId: demoOrg.id }
+  // });
 
     const farFutureDate = toMidnightUTC(new Date());
   farFutureDate.setFullYear(farFutureDate.getFullYear() + 100);
 
   await prisma.subscription.upsert({
-    where: { id: existingSubscription?.id ?? '' },
-    update: {},
+    where: { id: demoOrg.id },
+    update: {
+      planId: 'plan-basic',
+      status: 'DEMO'
+    },
     create: {
       organizationId: demoOrg.id,
       planId: 'plan-basic',
       status: 'DEMO',
       currentPeriodStart: toMidnightUTC(new Date()),
       currentPeriodEnd: farFutureDate,
-      trialEnd: null
     }
   });
 

@@ -61,7 +61,7 @@ model User {
 
 model Subscription {
   id                   String             @id @default(uuid())
-  organizationId       String             @map("organization_id")
+  organizationId       String             @map("organization_id") @unique
   planId               String             @map("plan_id")
   status               SubscriptionStatus
   currentPeriodStart   DateTime           @map("current_period_start")
@@ -75,6 +75,7 @@ model Subscription {
 
   // Relations
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  plan         Plan         @relation(fields: [planId], references: [id])
 
   @@map("subscriptions")
 }
@@ -251,6 +252,24 @@ model ActivityLog {
   @@map("activity_logs")
 }
 
+model Plan {
+  id          String   @id // Ej: "plan-basic", "plan-professional"
+  name        String // Ej: "Básico", "Profesional"
+  description String?
+  price       Int // Precio en centavos para mayor precisión
+  currency    String   @default("usd")
+  isActive    Boolean  @default(true) @map("is_active")
+  features    String[] @default([]) // Lista de características para mostrar en la UI
+  limits      Json // Objeto JSON con los límites: { "properties": 10, "tenants": 50 }
+  createdAt      DateTime   @default(now()) @map("created_at")
+
+
+  // Relación: Un plan puede tener muchas suscripciones
+  subscriptions Subscription[]
+
+  @@map("plans")
+}
+
 // Enums
 
 enum EntityType {
@@ -261,6 +280,7 @@ enum EntityType {
   PAYMENT
   MAINTENANCE
   USER
+  PLAN
 }
 
 enum ActionType {

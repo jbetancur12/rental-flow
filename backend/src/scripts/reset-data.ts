@@ -36,6 +36,12 @@ await prisma.user.deleteMany({});
 logger.info('Borrando organizaciones...');
 await prisma.organization.deleteMany({});
 
+logger.info('Borrando Logs');
+await prisma.activityLog.deleteMany();
+
+logger.info('Borrando Plans');
+await prisma.plan.deleteMany();
+
   logger.info('✅ Proceso completado. Todas las tablas especificadas están vacías.');
 }
 

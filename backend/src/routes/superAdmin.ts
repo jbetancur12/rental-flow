@@ -96,6 +96,7 @@ router.get('/organizations',
           status: status,
           users: org.users.length,
           properties: org.properties.length,
+          tenants: org.tenants.length,
           mrr: mrr,
           createdAt: org.createdAt,
           lastActivity: org.updatedAt

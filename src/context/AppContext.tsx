@@ -1,5 +1,5 @@
 import { createContext, useReducer, ReactNode, useEffect, useCallback, useMemo } from 'react';
-import { Property, Tenant, Contract, Payment, MaintenanceRequest, Building, Unit } from '../types';
+import { Property, Tenant, Contract, Payment, MaintenanceRequest, Building, Unit, Plan } from '../types';
 
 import { useAuth } from './AuthContext';
 import { apiClient } from '../config/api';
@@ -176,6 +176,9 @@ export const AppContext = createContext<{
   asignMaintenanceTechinician: (id: string, asignTo: any) => Promise<void>;
   markMaintenanceAsComplete: (id: string, data: any) => Promise<void>;
   updateOrganization: (orgId: string, data: any) => Promise<void>;
+  getPlans: () => Promise<Plan[]>;
+  updatePlans: (plans: Plan[]) => Promise<void>;
+  createPlan: (planData: Omit<Plan, 'id' | 'isActive' | 'currency' | 'features'>) => Promise<Plan>;
 } | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -219,7 +222,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
-  },[authState.isAuthenticated, toast]);
+  }, [authState.isAuthenticated, toast]);
 
   // Load units from backend
   const loadUnits = useCallback(async () => {
@@ -280,7 +283,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to create property');
       throw error;
     }
-  },[toast]);
+  }, [toast]);
 
   // Update property
   const updateProperty = useCallback(async (id: string, data: any) => {
@@ -309,7 +312,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to update property');
       throw error;
     }
-  },[toast]);
+  }, [toast]);
 
   // Delete property
   const deleteProperty = useCallback(async (id: string) => {
@@ -321,7 +324,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to delete property');
       throw error;
     }
-  },[toast]);
+  }, [toast]);
 
   // Create unit
   const createUnit = useCallback(async (data: any) => {
@@ -348,7 +351,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to create unit');
       throw error;
     }
-  },[toast]);
+  }, [toast]);
 
   // Update unit
   const updateUnit = useCallback(async (id: string, data: any) => {
@@ -387,7 +390,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to delete unit');
       throw error;
     }
-  },[toast]);
+  }, [toast]);
 
   // Get tenants
   const getTenants = useCallback(async () => {
@@ -414,7 +417,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to create tenant');
       throw error;
     }
-  },[toast])
+  }, [toast])
 
   const deleteTenant = useCallback(async (id: string) => {
     try {
@@ -425,7 +428,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to delete tenant');
       throw error;
     }
-  },[toast])
+  }, [toast])
 
   const updateContract = useCallback(async (id: string, data: any) => {
     try {
@@ -436,7 +439,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to update contract');
       throw error;
     }
-  },[toast])
+  }, [toast])
 
   const updateTenant = useCallback(async (id: string, data: any) => {
     try {
@@ -447,7 +450,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to update tenant');
       throw error;
     }
-  },[toast])
+  }, [toast])
 
   const loadContracts = useCallback(async () => {
     if (!authState.isAuthenticated || !authState.organization) return;
@@ -473,7 +476,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to create contract');
       throw error;
     }
-  },[toast])
+  }, [toast])
 
   const deleteContract = useCallback(async (id: string) => {
     try {
@@ -484,7 +487,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to delete contract');
       throw error;
     }
-  },[toast])
+  }, [toast])
 
   const loadPayments = useCallback(async () => {
     if (!authState.isAuthenticated || !authState.organization) return;
@@ -497,7 +500,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         type: payment.type.toUpperCase(),
         status: payment.status,
         dueDate: payment.dueDate,
-        paidDate: payment.paidDate ,
+        paidDate: payment.paidDate,
       }));
 
       dispatch({ type: 'LOAD_INITIAL_DATA', payload: { payments } });
@@ -515,7 +518,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to create payment');
       throw error;
     }
-  },[toast])
+  }, [toast])
 
   const updatePayment = useCallback(async (id: string, data: any) => {
     try {
@@ -526,7 +529,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to update payment');
       throw error;
     }
-  },[toast]);
+  }, [toast]);
 
   const updatePaymentStatus = useCallback(async (id: string, status: 'CANCELLED' | 'REFUNDED') => {
     try {
@@ -543,7 +546,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to update payment status');
       throw error;
     }
-  },[toast]);
+  }, [toast]);
 
   const loadMaintenanceRequests = useCallback(async () => {
     if (!authState.isAuthenticated || !authState.organization) return;
@@ -576,7 +579,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to create maintenance request');
       throw error;
     }
-  },[toast]);
+  }, [toast]);
 
   const updateMaintenanceRequest = useCallback(async (id: string, data: any) => {
     try {
@@ -587,114 +590,145 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast.error('Error', error.message || 'Failed to update maintenance request');
       throw error;
     }
-  },[toast]);
+  }, [toast]);
 
-    const asignMaintenanceTechinician = useCallback(async (id: string, asignTo: any) => {
-      try {
-        const response = await apiClient.asignMaintenanceTechinician(id, asignTo);
-        dispatch({ type: 'UPDATE_MAINTENANCE_REQUEST', payload: response.maintenanceRequest });
-        toast.success('Solicitud de Mantenimiento Actualizada', 'La solicitud de mantenimiento ha sido actualizada exitosamente.');
-      } catch (error: any) {
-        toast.error('Error', error.message || 'Failed to update maintenance request');
-        throw error;
-      }
-    },[toast]);
-
-     const markMaintenanceAsComplete = useCallback(async (id: string, data: any) => {
-      try {
-        const response = await apiClient.markMaintenanceAsComplete(id, data);
-        dispatch({ type: 'UPDATE_MAINTENANCE_REQUEST', payload: response.maintenanceRequest });
-        toast.success('Solicitud de Mantenimiento Actualizada', 'La solicitud de mantenimiento ha sido actualizada exitosamente.');
-      } catch (error: any) {
-        if (error.code === 'VALIDATION_ERROR' && error.details && error.details.length > 0) {
-            const firstError = error.details[0];
-            const fieldName = firstError.field;
-            const message = firstError.message;
-
-            const fieldTranslations: { [key: string]: string } = {
-                actualCost: 'Costo Real',
-                completedDate: 'Fecha de Completado',
-                notes: 'Notas'
-            };
-
-            const friendlyFieldName = fieldTranslations[fieldName] || fieldName;
-            toast.error(`Error en el campo: ${friendlyFieldName}`, `Detalle: ${message}`);
-
-        } else {
-            // El mensaje de error ahora vendrá de la propiedad .error del objeto
-            toast.error('Error Inesperado', error.error || 'No se pudo completar la solicitud.');
-        }
-
-        throw error;
+  const asignMaintenanceTechinician = useCallback(async (id: string, asignTo: any) => {
+    try {
+      const response = await apiClient.asignMaintenanceTechinician(id, asignTo);
+      dispatch({ type: 'UPDATE_MAINTENANCE_REQUEST', payload: response.maintenanceRequest });
+      toast.success('Solicitud de Mantenimiento Actualizada', 'La solicitud de mantenimiento ha sido actualizada exitosamente.');
+    } catch (error: any) {
+      toast.error('Error', error.message || 'Failed to update maintenance request');
+      throw error;
     }
-      
-    },[toast]);
-  
-    const updateOrganization = useCallback(async (orgId: string, data: any) => {
-      try {
-        const response = await apiClient.updateOrganization(orgId, data);
-  
-        // Actualiza el estado global con la organización actualizada
-        dispatch({ type: 'UPDATE_ORGANIZATION', payload: response.organization });
-  
-        toast.success('¡Éxito!', 'La información de la organización ha sido guardada.');
-      } catch (error: any) {
-        toast.error('Error', error.message || 'No se pudo guardar la información.');
-        throw error;
-      }
-    },[toast]);
-  
-    // Load initial data when authenticated
-    useEffect(() => {
-      if (authState.isAuthenticated && authState.organization) {
-        loadUnits();
-        loadProperties();
-        getTenants();
-        loadContracts();
-        loadPayments();
-        loadMaintenanceRequests();
-      }
-    }, [authState.isAuthenticated, authState.organization, loadUnits, loadProperties, getTenants, loadContracts, loadPayments, loadMaintenanceRequests]);
-  
-    // Enhanced dispatch with notifications for local operations
-    const enhancedDispatch = useCallback((action: AppAction) => {
-      dispatch(action);
-  
-      // Add success notifications for local CRUD operations
-      switch (action.type) {
-        case 'ADD_TENANT':
-          toast.success('Inquilino Agregado', 'El nuevo inquilino ha sido agregado exitosamente al sistema.');
-          break;
-        case 'UPDATE_TENANT':
-          toast.success('Inquilino Actualizado', 'La información del inquilino ha sido actualizada exitosamente.');
-          break;
-        case 'ADD_CONTRACT':
-          toast.success('Contrato Creado', 'El nuevo contrato de alquiler ha sido creado exitosamente.');
-          break;
-        case 'UPDATE_CONTRACT':
-          toast.success('Contrato Actualizado', 'El contrato ha sido actualizado exitosamente.');
-          break;
-        case 'ADD_PAYMENT':
-          toast.success('Pago Registrado', 'El pago ha sido registrado exitosamente en el sistema.');
-          break;
-        case 'UPDATE_PAYMENT':
-          toast.success('Pago Actualizado', 'La información del pago ha sido actualizada exitosamente.');
-          break;
-        case 'ADD_MAINTENANCE_REQUEST':
-          toast.success('Solicitud de Mantenimiento Creada', 'La nueva solicitud de mantenimiento ha sido enviada.');
-          break;
-        case 'UPDATE_MAINTENANCE_REQUEST':
-          toast.success('Solicitud de Mantenimiento Actualizada', 'La solicitud de mantenimiento ha sido actualizada exitosamente.');
-          break;
-        case 'UPDATE_ORGANIZATION':
-          toast.success('¡Éxito!', 'La información de la organización ha sido guardada.');
-          break;
-      }
-    }, [toast, dispatch]);
+  }, [toast]);
 
-    const contextValue = useMemo(() => ({
+  const markMaintenanceAsComplete = useCallback(async (id: string, data: any) => {
+    try {
+      const response = await apiClient.markMaintenanceAsComplete(id, data);
+      dispatch({ type: 'UPDATE_MAINTENANCE_REQUEST', payload: response.maintenanceRequest });
+      toast.success('Solicitud de Mantenimiento Actualizada', 'La solicitud de mantenimiento ha sido actualizada exitosamente.');
+    } catch (error: any) {
+      if (error.code === 'VALIDATION_ERROR' && error.details && error.details.length > 0) {
+        const firstError = error.details[0];
+        const fieldName = firstError.field;
+        const message = firstError.message;
+
+        const fieldTranslations: { [key: string]: string } = {
+          actualCost: 'Costo Real',
+          completedDate: 'Fecha de Completado',
+          notes: 'Notas'
+        };
+
+        const friendlyFieldName = fieldTranslations[fieldName] || fieldName;
+        toast.error(`Error en el campo: ${friendlyFieldName}`, `Detalle: ${message}`);
+
+      } else {
+        // El mensaje de error ahora vendrá de la propiedad .error del objeto
+        toast.error('Error Inesperado', error.error || 'No se pudo completar la solicitud.');
+      }
+
+      throw error;
+    }
+
+  }, [toast]);
+
+  const updateOrganization = useCallback(async (orgId: string, data: any) => {
+    try {
+      const response = await apiClient.updateOrganization(orgId, data);
+
+      // Actualiza el estado global con la organización actualizada
+      dispatch({ type: 'UPDATE_ORGANIZATION', payload: response.organization });
+
+      toast.success('¡Éxito!', 'La información de la organización ha sido guardada.');
+    } catch (error: any) {
+      toast.error('Error', error.message || 'No se pudo guardar la información.');
+      throw error;
+    }
+  }, [toast]);
+
+  const getPlans = useCallback(async () => {
+    try {
+      const response = await apiClient.getSuperAdminPlans();
+      return response.data; // La API devuelve { data: [...] }
+    } catch (error: any) {
+      toast.error('Error', error.message || 'No se pudieron cargar los planes.');
+      throw error;
+    }
+  }, [toast]);
+
+  const updatePlans = useCallback(async (plans: Plan[]) => {
+    try {
+      await apiClient.updateSuperAdminPlans(plans);
+      toast.success('Guardado', 'Los planes han sido actualizados exitosamente.');
+    } catch (error: any) {
+      toast.error('Error', error.message || 'No se pudieron guardar los planes.');
+      throw error;
+    }
+  }, [toast]);
+
+    const createPlan = useCallback(async (planData: Omit<Plan, 'id' | 'isActive' | 'currency' | 'features'>) => {
+    try {
+      const response = await apiClient.createSuperAdminPlan(planData);
+      toast.success('Plan Creado', `El plan "${response.data.name}" ha sido creado exitosamente.`);
+      return response.data; // Devuelve el plan recién creado
+    } catch (error: any) {
+      toast.error('Error', error.message || 'No se pudo crear el plan.');
+      throw error;
+    }
+  }, [toast]);
+
+  // Load initial data when authenticated
+  useEffect(() => {
+    if (authState.isAuthenticated && authState.organization) {
+      loadUnits();
+      loadProperties();
+      getTenants();
+      loadContracts();
+      loadPayments();
+      loadMaintenanceRequests();
+    }
+  }, [authState.isAuthenticated, authState.organization, loadUnits, loadProperties, getTenants, loadContracts, loadPayments, loadMaintenanceRequests]);
+
+  // Enhanced dispatch with notifications for local operations
+  const enhancedDispatch = useCallback((action: AppAction) => {
+    dispatch(action);
+
+    // Add success notifications for local CRUD operations
+    switch (action.type) {
+      case 'ADD_TENANT':
+        toast.success('Inquilino Agregado', 'El nuevo inquilino ha sido agregado exitosamente al sistema.');
+        break;
+      case 'UPDATE_TENANT':
+        toast.success('Inquilino Actualizado', 'La información del inquilino ha sido actualizada exitosamente.');
+        break;
+      case 'ADD_CONTRACT':
+        toast.success('Contrato Creado', 'El nuevo contrato de alquiler ha sido creado exitosamente.');
+        break;
+      case 'UPDATE_CONTRACT':
+        toast.success('Contrato Actualizado', 'El contrato ha sido actualizado exitosamente.');
+        break;
+      case 'ADD_PAYMENT':
+        toast.success('Pago Registrado', 'El pago ha sido registrado exitosamente en el sistema.');
+        break;
+      case 'UPDATE_PAYMENT':
+        toast.success('Pago Actualizado', 'La información del pago ha sido actualizada exitosamente.');
+        break;
+      case 'ADD_MAINTENANCE_REQUEST':
+        toast.success('Solicitud de Mantenimiento Creada', 'La nueva solicitud de mantenimiento ha sido enviada.');
+        break;
+      case 'UPDATE_MAINTENANCE_REQUEST':
+        toast.success('Solicitud de Mantenimiento Actualizada', 'La solicitud de mantenimiento ha sido actualizada exitosamente.');
+        break;
+      case 'UPDATE_ORGANIZATION':
+        toast.success('¡Éxito!', 'La información de la organización ha sido guardada.');
+        break;
+    }
+  }, [toast, dispatch]);
+
+  const contextValue = useMemo(() => ({
     state,
-    dispatch:enhancedDispatch,
+    dispatch: enhancedDispatch,
     toast,
     loadProperties,
     loadUnits,
@@ -722,7 +756,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     asignMaintenanceTechinician,
     markMaintenanceAsComplete,
     updateOrganization,
-    
+    getPlans,
+    updatePlans,
+    createPlan
+
   }), [
     state, toast, enhancedDispatch,
     loadProperties, loadUnits, createProperty, updateProperty, deleteProperty,
@@ -730,13 +767,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     deleteTenant, loadContracts, createContract, updateContract, deleteContract,
     loadPayments, createPayment, updatePayment, updatePaymentStatus,
     loadMaintenanceRequests, createMaintenanceRequest, updateMaintenanceRequest,
-    asignMaintenanceTechinician, markMaintenanceAsComplete, updateOrganization
+    asignMaintenanceTechinician, markMaintenanceAsComplete, updateOrganization, getPlans,
+    updatePlans,createPlan
   ]);
-  
-    return (
-      <AppContext.Provider value={contextValue}>
-        {children}
-      </AppContext.Provider>
-    );
-  }
-  
+
+  return (
+    <AppContext.Provider value={contextValue}>
+      {children}
+    </AppContext.Provider>
+  );
+}
+

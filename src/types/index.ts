@@ -196,3 +196,21 @@ export interface GetOrganizationsResponse {
   pagination: PaginationInfo;
 }
 
+export interface PlanLimits {
+  properties: number;
+  tenants: number;
+  users: number;
+}
+
+// Define la interfaz principal para un Plan
+export interface Plan {
+  id: string;
+  name: string;
+  description?: string | null;
+  price: number;
+  currency: string;
+  isActive: boolean;
+  features: string[];
+  limits: PlanLimits;
+  createdAt?: Date;
+}

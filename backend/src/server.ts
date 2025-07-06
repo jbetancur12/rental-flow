@@ -28,7 +28,8 @@ import reportRoutes from './routes/reports';
 import subscriptionRoutes from './routes/subscriptions';
 import webhookRoutes from './routes/webhooks';
 import superAdminRoutes from './routes/superAdmin';
-import activityLogRoutes from './routes/activityLog'
+import activityLogRoutes from './routes/activityLog';
+import planRoutes from './routes/plans';
 import { generatePendingPayments, startPaymentGeneratorCron } from './cron/paymentGenerator';
 import { expireContracts, startContractStatusCron } from './cron/contractStatusUpdater';
 
@@ -136,7 +137,8 @@ app.use(`${API_PREFIX}/maintenance`, maintenanceRoutes);
 app.use(`${API_PREFIX}/reports`, reportRoutes);
 app.use(`${API_PREFIX}/subscriptions`, subscriptionRoutes);
 app.use(`${API_PREFIX}/super-admin`, superAdminRoutes);
-app.use(`${API_PREFIX}/activity-log`, activityLogRoutes)
+app.use(`${API_PREFIX}/activity-log`, activityLogRoutes);
+app.use(`${API_PREFIX}/super-admin/plans`, planRoutes);
 app.use('/webhooks', webhookRoutes);
 
 // Socket.IO for real-time features
