@@ -1,69 +1,97 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { 
-  Building2, 
-  Users, 
-  CreditCard, 
-  BarChart3, 
+import {
+  Building2,
+  Users,
+  CreditCard,
+  BarChart3,
   Settings,
   AlertTriangle,
   TrendingUp,
   DollarSign,
   Crown,
   Search,
-  
+
   Download,
   Eye,
   Ban,
   CheckCircle,
   LogOut
 } from 'lucide-react';
+import apiClient from '../config/api';
+import { useToast } from '../hooks/useToast';
+import { OrganizationSummary, PaginationInfo } from '../types';
 
 // Mock data for organizations
-const mockOrganizations = [
-  {
-    id: 'org-1',
-    name: 'Inmobiliaria Demo',
-    email: 'admin@inmobiliaria-demo.com',
-    plan: 'Profesional',
-    status: 'active',
-    users: 3,
-    properties: 45,
-    mrr: 79,
-    createdAt: new Date('2024-01-15'),
-    lastActivity: new Date('2024-01-28')
-  },
-  {
-    id: 'org-2',
-    name: 'Propiedades García',
-    email: 'info@propiedadesgarcia.com',
-    plan: 'Básico',
-    status: 'trialing',
-    users: 1,
-    properties: 8,
-    mrr: 0,
-    createdAt: new Date('2024-01-20'),
-    lastActivity: new Date('2024-01-27')
-  },
-  {
-    id: 'org-3',
-    name: 'Mega Inmobiliaria',
-    email: 'contacto@megainmobiliaria.com',
-    plan: 'Empresarial',
-    status: 'active',
-    users: 12,
-    properties: 250,
-    mrr: 199,
-    createdAt: new Date('2023-12-01'),
-    lastActivity: new Date('2024-01-28')
-  }
-];
+
+type StatusKey = 'ACTIVE' | 'TRIALING' | 'DEMO'  | 'INACTIVE';
+
+const statusConfig: Record<StatusKey, { text: string; color: string }> = {
+  ACTIVE: { text: 'Activo', color: 'bg-emerald-100 text-emerald-800' },
+  TRIALING: { text: 'Prueba', color: 'bg-orange-100 text-orange-800' },
+  DEMO: { text: 'Demo', color: 'bg-purple-100 text-purple-800' },
+  // PLATFORM: { text: 'Plataforma', color: 'bg-slate-100 text-slate-800' },
+  INACTIVE: { text: 'Inactivo', color: 'bg-red-100 text-red-800' },
+  // Añade otros estados si los necesitas
+};
 
 export function SuperAdmin() {
   const { state, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState('overview');
+  const toast = useToast();
+
+  const [organizations, setOrganizations] = useState<OrganizationSummary[]>([]);
+    const [pagination, setPagination] = useState<PaginationInfo | null>(null);
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('organizations');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+      const [currentPage, setCurrentPage] = useState(1);
+
+
+ useEffect(() => {
+        const fetchOrganizations = async () => {
+            setIsLoading(true);
+            try {
+                const params = {
+                    page: currentPage,
+                    limit: 10,
+                    status: statusFilter === 'all' ? undefined : statusFilter.toUpperCase(),
+                    search: searchTerm || undefined,
+                };
+                const response = await apiClient.getSuperAdminOrganizations(params);
+                setOrganizations(response.data);
+                setPagination(response.pagination);
+            } catch (error: any) {
+                toast.error('Error', error.message || 'No se pudieron cargar las organizaciones.');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        if (state.user?.role === 'SUPER_ADMIN') {
+            fetchOrganizations();
+        }
+    }, [state.user?.role, currentPage, searchTerm, statusFilter, toast]);
+
+    // Función para manejar el cambio en los inputs de filtro
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchTerm(e.target.value);
+        setCurrentPage(1); // Resetea a la primera página al buscar
+    };
+
+    const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setStatusFilter(e.target.value);
+        setCurrentPage(1); // Resetea a la primera página al filtrar
+    };
+
+ const totalMRR = useMemo(() => organizations.reduce((sum, org) => sum + org.mrr, 0), [organizations]);
+    const activeOrganizations = useMemo(() => organizations.filter(org => org.status === 'ACTIVE').length, [organizations]);
+    const trialingOrganizations = useMemo(() => organizations.filter(org => org.status === 'TRIALING').length, [organizations]);
+
+    // El total de organizaciones ahora viene de la paginación para ser preciso
+    const totalOrganizations = pagination?.total || 0;
+    
 
   // Check if user is super admin
   if (state.user?.role !== 'SUPER_ADMIN') {
@@ -78,17 +106,17 @@ export function SuperAdmin() {
     );
   }
 
-  const filteredOrganizations = mockOrganizations.filter(org => {
+
+
+  const filteredOrganizations = organizations.filter(org => {
     const matchesSearch = org.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         org.email.toLowerCase().includes(searchTerm.toLowerCase());
+      (org.email ?? '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || org.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  const totalMRR = mockOrganizations.reduce((sum, org) => sum + org.mrr, 0);
-  const totalOrganizations = mockOrganizations.length;
-  const activeOrganizations = mockOrganizations.filter(org => org.status === 'active').length;
-  const trialingOrganizations = mockOrganizations.filter(org => org.status === 'trialing').length;
+
+
 
   const tabs = [
     { id: 'overview', label: 'Resumen', icon: BarChart3 },
@@ -97,6 +125,8 @@ export function SuperAdmin() {
     { id: 'billing', label: 'Facturación', icon: CreditCard },
     { id: 'settings', label: 'Configuración', icon: Settings }
   ];
+
+
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -133,11 +163,10 @@ export function SuperAdmin() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
-                }`}
+                className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                  }`}
               >
                 <tab.icon className="w-5 h-5 mr-2" />
                 {tab.label}
@@ -180,7 +209,7 @@ export function SuperAdmin() {
                   <div>
                     <p className="text-sm text-slate-600">Clientes Activos</p>
                     <p className="text-2xl font-bold text-purple-600">{activeOrganizations}</p>
-                    <p className="text-xs text-purple-600 mt-1">{Math.round((activeOrganizations/totalOrganizations)*100)}% conversión</p>
+                    <p className="text-xs text-purple-600 mt-1">{Math.round((activeOrganizations / totalOrganizations) * 100)}% conversión</p>
                   </div>
                   <CheckCircle className="w-8 h-8 text-purple-600" />
                 </div>
@@ -203,7 +232,7 @@ export function SuperAdmin() {
               <div className="bg-white rounded-xl border border-slate-200 p-6">
                 <h3 className="text-lg font-semibold text-slate-900 mb-4">Organizaciones Recientes</h3>
                 <div className="space-y-4">
-                  {mockOrganizations.slice(0, 5).map((org) => (
+                  {organizations.slice(0, 5).map((org) => (
                     <div key={org.id} className="flex items-center justify-between">
                       <div className="flex items-center">
                         <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
@@ -216,8 +245,8 @@ export function SuperAdmin() {
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-medium text-slate-900">{org.plan}</p>
-                        <p className={`text-xs ${org.status === 'active' ? 'text-emerald-600' : 'text-orange-600'}`}>
-                          {org.status === 'active' ? 'Activo' : 'Prueba'}
+                        <p className={`text-xs ${org.status === 'ACTIVE' ? 'text-emerald-600' : 'text-orange-600'}`}>
+                          {org.status === 'ACTIVE' ? 'Activo' : 'Prueba'}
                         </p>
                       </div>
                     </div>
@@ -270,20 +299,21 @@ export function SuperAdmin() {
                     type="text"
                     placeholder="Buscar organizaciones..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={handleSearchChange}
                     className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <select
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
+                  onChange={handleStatusChange}
                   className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="all">Todos los Estados</option>
-                  <option value="active">Activos</option>
-                  <option value="trialing">En Prueba</option>
-                  <option value="past_due">Vencidos</option>
-                  <option value="canceled">Cancelados</option>
+                  {Object.keys(statusConfig).map(statusKey => (
+                    <option key={statusKey} value={statusKey}>
+                      {statusConfig[statusKey as keyof typeof statusConfig].text}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -299,66 +329,66 @@ export function SuperAdmin() {
                       <th className="text-left py-3 px-6 text-sm font-medium text-slate-600">Estado</th>
                       <th className="text-left py-3 px-6 text-sm font-medium text-slate-600">Usuarios</th>
                       <th className="text-left py-3 px-6 text-sm font-medium text-slate-600">Propiedades</th>
-                      <th className="text-left py-3 px-6 text-sm font-medium text-slate-600">MRR</th>
+                      <th className="text-left py-3 px-6 text-sm font-medium text-slate-600">Inquilinos</th>
                       <th className="text-left py-3 px-6 text-sm font-medium text-slate-600">Última Actividad</th>
                       <th className="text-left py-3 px-6 text-sm font-medium text-slate-600">Acciones</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200">
-                    {filteredOrganizations.map((org) => (
-                      <tr key={org.id} className="hover:bg-slate-50">
-                        <td className="py-4 px-6">
-                          <div className="flex items-center">
-                            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                              <Building2 className="w-5 h-5 text-blue-600" />
+                    {isLoading ? (
+                    <tr><td colSpan={8} className="text-center py-8">Cargando...</td></tr>
+                    ) : (filteredOrganizations.map((org) => {
+                      const currentStatusConfig = statusConfig[org.status as StatusKey] || { text: org.status, color: 'bg-slate-100 text-slate-800' };
+                      return (
+                        <tr key={org.id} className="hover:bg-slate-50">
+                          <td className="py-4 px-6">
+                            <div className="flex items-center">
+                              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                <Building2 className="w-5 h-5 text-blue-600" />
+                              </div>
+                              <div>
+                                <p className="font-medium text-slate-900">{org.name}</p>
+                                <p className="text-sm text-slate-500">{org.email}</p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="font-medium text-slate-900">{org.name}</p>
-                              <p className="text-sm text-slate-500">{org.email}</p>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                              {org.plan}
+                            </span>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${currentStatusConfig.color}`}>
+                              {currentStatusConfig.text}
+                            </span>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className="text-slate-900">{org.users}</span>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className="text-slate-900">{org.properties}</span>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className="text-slate-900">{org.tenants}</span>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className="text-sm text-slate-600">
+                              {new Date(org.lastActivity).toLocaleString()}
+                            </span>
+                          </td>
+                          <td className="py-4 px-6">
+                            <div className="flex space-x-2">
+                              <button className="text-blue-600 hover:text-blue-800">
+                                <Eye className="w-4 h-4" />
+                              </button>
+                              <button className="text-red-600 hover:text-red-800">
+                                <Ban className="w-4 h-4" />
+                              </button>
                             </div>
-                          </div>
-                        </td>
-                        <td className="py-4 px-6">
-                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-                            {org.plan}
-                          </span>
-                        </td>
-                        <td className="py-4 px-6">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            org.status === 'active' ? 'bg-emerald-100 text-emerald-800' :
-                            org.status === 'trialing' ? 'bg-orange-100 text-orange-800' :
-                            'bg-red-100 text-red-800'
-                          }`}>
-                            {org.status === 'active' ? 'Activo' :
-                             org.status === 'trialing' ? 'Prueba' : 'Inactivo'}
-                          </span>
-                        </td>
-                        <td className="py-4 px-6">
-                          <span className="text-slate-900">{org.users}</span>
-                        </td>
-                        <td className="py-4 px-6">
-                          <span className="text-slate-900">{org.properties}</span>
-                        </td>
-                        <td className="py-4 px-6">
-                          <span className="font-medium text-slate-900">${org.mrr}</span>
-                        </td>
-                        <td className="py-4 px-6">
-                          <span className="text-sm text-slate-600">
-                            {org.lastActivity.toLocaleDateString()}
-                          </span>
-                        </td>
-                        <td className="py-4 px-6">
-                          <div className="flex space-x-2">
-                            <button className="text-blue-600 hover:text-blue-800">
-                              <Eye className="w-4 h-4" />
-                            </button>
-                            <button className="text-red-600 hover:text-red-800">
-                              <Ban className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                        </tr>
+                      )
+                    }))}
                   </tbody>
                 </table>
               </div>
@@ -371,7 +401,7 @@ export function SuperAdmin() {
           <div className="space-y-6">
             <div className="bg-white rounded-xl border border-slate-200 p-6">
               <h3 className="text-lg font-semibold text-slate-900 mb-6">Resumen de Facturación</h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="text-center">
                   <p className="text-3xl font-bold text-emerald-600">${totalMRR.toLocaleString()}</p>
@@ -392,15 +422,15 @@ export function SuperAdmin() {
               <h3 className="text-lg font-semibold text-slate-900 mb-4">Distribución por Plan</h3>
               <div className="space-y-4">
                 {['Básico', 'Profesional', 'Empresarial'].map((plan) => {
-                  const count = mockOrganizations.filter(org => org.plan === plan).length;
+                  const count = organizations.filter(org => org.plan === plan).length;
                   const percentage = Math.round((count / totalOrganizations) * 100);
                   return (
                     <div key={plan} className="flex items-center justify-between">
                       <span className="text-slate-700">{plan}</span>
                       <div className="flex items-center space-x-3">
                         <div className="w-32 bg-slate-200 rounded-full h-2">
-                          <div 
-                            className="bg-blue-600 h-2 rounded-full" 
+                          <div
+                            className="bg-blue-600 h-2 rounded-full"
                             style={{ width: `${percentage}%` }}
                           ></div>
                         </div>
@@ -419,7 +449,7 @@ export function SuperAdmin() {
           <div className="space-y-6">
             <div className="bg-white rounded-xl border border-slate-200 p-6">
               <h3 className="text-lg font-semibold text-slate-900 mb-6">Configuración de la Plataforma</h3>
-              
+
               <div className="space-y-6">
                 <div>
                   <h4 className="font-medium text-slate-900 mb-3">Planes de Suscripción</h4>
@@ -467,15 +497,15 @@ export function SuperAdmin() {
                         <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                       </label>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium text-slate-900">Prueba Gratuita</p>
                         <p className="text-sm text-slate-600">Duración de la prueba gratuita (días)</p>
                       </div>
-                      <input 
-                        type="number" 
-                        defaultValue={14} 
+                      <input
+                        type="number"
+                        defaultValue={14}
                         className="w-20 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                       />
                     </div>

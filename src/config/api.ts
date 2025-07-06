@@ -1,3 +1,5 @@
+import { GetOrganizationsResponse } from "../types";
+
 // API Configuration
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/v1';
 
@@ -419,6 +421,25 @@ throw errorData;
     
     const query = searchParams.toString();
     return this.request<any>(`/activity-log${query ? `?${query}` : ''}`);
+  }
+
+  async getSuperAdminOrganizations(params?: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    search?: string;
+  }):Promise<GetOrganizationsResponse> {
+        const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString());
+        }
+      });
+    }
+    
+    const query = searchParams.toString();
+    return this.request<any>(`/super-admin/organizations${query ? `?${query}` : ''}`);
   }
 }
 

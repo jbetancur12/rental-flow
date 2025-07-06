@@ -168,3 +168,31 @@ export interface Notification {
   read: boolean;
 }
 
+export interface OrganizationSummary {
+  id: string;
+  name: string;
+  email: string | null;
+  plan: string;
+  status: string; // Puedes usar tu enum SubscriptionStatus si coincide
+  users: number;
+  properties: number;
+  tenants: number;
+  mrr: number;
+  createdAt: string; // Se reciben como string desde la API
+  lastActivity: string;
+}
+
+// Interfaz para la información de paginación
+export interface PaginationInfo {
+  total: number;
+  page: number;
+  pages: number;
+  limit: number;
+}
+
+// Interfaz para la respuesta completa de la API
+export interface GetOrganizationsResponse {
+  data: OrganizationSummary[];
+  pagination: PaginationInfo;
+}
+
