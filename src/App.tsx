@@ -9,9 +9,9 @@ import { SubscriptionGuard } from './components/Auth/SubscriptionGuard';
 import { Suspense, lazy } from 'react';
 
 // Importar los skeletons
-import { PropertiesSkeleton } from './pages/Properties';
-import { TenantsSkeleton } from './pages/Tenants';
-import { SettingsSkeleton } from './pages/Settings';
+import { PropertiesSkeleton } from './pages/PropertiesSkeleton';
+import { TenantsSkeleton } from './pages/TenantsSkeleton';
+import { SettingsSkeleton } from './pages/SettingsSkeleton';
 
 // Code splitting para páginas principales
 const Auth = lazy(() => import('./pages/Auth').then(m => ({ default: m.Auth })));

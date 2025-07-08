@@ -40,8 +40,6 @@ function SettingsSkeleton() {
   );
 }
 
-export { SettingsSkeleton };
-
 export function Settings() {
 
   const { state: authState, updateUserProfile, changePassword } = useAuth();
