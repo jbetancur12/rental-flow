@@ -49,7 +49,10 @@ export function ContractDetails({ contract, property, tenant, isOpen, onClose, o
                 Contrato #{contract.id.slice(-6).toUpperCase()}
               </h2>
               <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 ${getStatusColor(contract.status)}`}>
-                {contract.status.charAt(0).toUpperCase() + contract.status.slice(1)}
+                {contract.status === 'DRAFT' && 'Borrador'}
+                {contract.status === 'ACTIVE' && 'Activo'}
+                {contract.status === 'EXPIRED' && 'Expirado'}
+                {contract.status === 'TERMINATED' && 'Terminado'}
               </span>
             </div>
           </div>
@@ -131,7 +134,12 @@ export function ContractDetails({ contract, property, tenant, isOpen, onClose, o
                       <span>{property.size} m²</span>
                       <span>{property.rooms} hab</span>
                       <span>{property.bathrooms} baños</span>
-                      <span className="capitalize">{property.type}</span>
+                      <span className="capitalize">
+                        {property.type === 'APARTMENT' && 'Apartamento'}
+                        {property.type === 'HOUSE' && 'Casa'}
+                        {property.type === 'COMMERCIAL' && 'Comercial'}
+                        {property.type === 'BUILDING' && 'Edificio'}
+                      </span>
                     </div>
                   </div>
                 </div>

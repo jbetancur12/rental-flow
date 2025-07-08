@@ -201,13 +201,13 @@ export function Contracts() {
                     onClick={() => handleViewContract(contract)}
                     className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
                   >
-                    View Details
+                    Ver Detalles
                   </button>
                   <button 
                     onClick={() => handleDownloadContract(contract)}
                     className="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors text-sm"
                   >
-                    Download PDF
+                    Descargar PDF
                   </button>
                 </div>
               </div>

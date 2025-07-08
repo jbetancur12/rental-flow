@@ -19,6 +19,7 @@ import { ToastProvider } from './hooks/useToast';
 import { Subscribe } from './pages/Subscribe';
 import { SubscriptionGuard } from './components/Auth/SubscriptionGuard';
 import { NotFound } from './pages/NotFound';
+import Help from './pages/Help';
 
 
 function AppRoutes() {
@@ -38,6 +39,7 @@ function AppRoutes() {
         <Route path="maintenance" element={<Maintenance />} />
         <Route path="reports" element={<Reports />} />
         <Route path="settings" element={<Settings />} />
+        <Route path="help" element={<Help />} />
       </Route>
 
       {/* Ruta específica para el Super Admin, protegida individualmente */}

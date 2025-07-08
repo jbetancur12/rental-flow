@@ -135,7 +135,12 @@ export function PropertyCard({
             <span className="text-xl font-bold">{property.rent.toLocaleString()}</span>
             <span className="text-slate-600 ml-1">/mes</span>
           </div>
-          <span className="text-sm text-slate-500 capitalize">{property.type}</span>
+          <span className="text-sm text-slate-500 capitalize">
+            {property.type === 'APARTMENT' && 'Apartamento'}
+            {property.type === 'HOUSE' && 'Casa'}
+            {property.type === 'COMMERCIAL' && 'Comercial'}
+            {property.type === 'BUILDING' && 'Edificio'}
+          </span>
         </div>
 
         {/* Current Tenant Info for Rented Properties */}

@@ -130,7 +130,7 @@ export function Properties() {
     const confirmed = await confirm({
       title: 'Delete Unit',
       message: `¿Está seguro de que desea eliminar esta propiedad?`,
-      confirmText: 'Delete',
+      confirmText: 'Eliminar',
       type: 'danger'
     });
 

@@ -107,7 +107,11 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
                   <div>
                     <p className="text-sm text-slate-500">Tipo</p>
                     <p className="font-medium text-slate-900 capitalize">
-                      {payment.type.toLowerCase()}
+                      {payment.type === 'RENT' && 'Renta'}
+                      {payment.type === 'DEPOSIT' && 'Depósito'}
+                      {payment.type === 'LATE_FEE' && 'Recargo'}
+                      {payment.type === 'UTILITY' && 'Servicio'}
+                      {payment.type === 'MAINTENANCE' && 'Mantenimiento'}
                     </p>
                   </div>
                 </div>
@@ -116,7 +120,14 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
                 <div className="flex justify-end">
                   <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${statusStyle.badge}`}>
                     {statusStyle.icon}
-                    <span className="ml-2">{payment.status}</span>
+                    <span className="ml-2">
+                      {payment.status === 'PAID' && 'Pagado'}
+                      {payment.status === 'PENDING' && 'Pendiente'}
+                      {payment.status === 'OVERDUE' && 'Vencido'}
+                      {payment.status === 'PARTIAL' && 'Parcial'}
+                      {payment.status === 'CANCELLED' && 'Cancelado'}
+                      {payment.status === 'REFUNDED' && 'Reembolsado'}
+                    </span>
                   </span>
                 </div>
               </div>

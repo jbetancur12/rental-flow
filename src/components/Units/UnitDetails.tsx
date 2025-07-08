@@ -191,7 +191,7 @@ export function UnitDetails({ unit, properties, isOpen, onClose, onEdit }: UnitD
                     </div>
                     <div className="text-sm text-slate-600 space-y-1">
                       {property.unitNumber && <p>Unidad: {property.unitNumber} • Piso {property.floor}</p>}
-                      <p>Tipo: {property.type}</p>
+                      <p>Tipo: {property.type === 'APARTMENT' && 'Apartamento'}{property.type === 'HOUSE' && 'Casa'}{property.type === 'COMMERCIAL' && 'Comercial'}{property.type === 'BUILDING' && 'Edificio'}</p>
                       <p>Tamaño: {property.size} m²</p>
                       <p>Habitaciones: {property.rooms} • Baños: {property.bathrooms}</p>
                       <p className="font-medium text-slate-900">Renta: ${property.rent.toLocaleString()}/mes</p>
