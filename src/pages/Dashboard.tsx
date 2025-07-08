@@ -1,9 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/Layout/Header';
 import { StatsCard } from '../components/Dashboard/StatsCard';
 import { RecentActivity } from '../components/Dashboard/RecentActivity';
-import { FinancialChart } from '../components/Dashboard/FinancialChart';
 import { 
     Building2, 
     Users, 
@@ -16,6 +15,41 @@ import {
 import { useApp } from '../context/useApp';
 import { es } from 'date-fns/locale';
 import { formatInTimeZone } from 'date-fns-tz';
+
+const FinancialChart = lazy(() => import('../components/Dashboard/FinancialChart').then(m => ({ default: m.FinancialChart })));
+
+// Skeleton loader para Dashboard
+function DashboardSkeleton() {
+  return (
+    <div className="p-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="bg-white rounded-xl border border-slate-200 p-6 animate-pulse">
+            <div className="h-6 w-16 bg-slate-200 rounded mb-4" />
+            <div className="h-8 w-24 bg-slate-300 rounded mb-2" />
+            <div className="h-4 w-12 bg-slate-100 rounded" />
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <div className="bg-white rounded-xl border border-slate-200 p-6 animate-pulse h-80" />
+        </div>
+        <div>
+          <div className="bg-white rounded-xl border border-slate-200 p-6 animate-pulse h-80" />
+        </div>
+      </div>
+      <div className="mt-8">
+        <div className="h-6 w-32 bg-slate-200 rounded mb-4" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="p-4 bg-white border border-slate-200 rounded-lg animate-pulse h-28" />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function Dashboard() {
     const { state } = useApp();
@@ -185,7 +219,9 @@ export function Dashboard() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2">
-                        <FinancialChart data={chartData} />
+                        <Suspense fallback={<DashboardSkeleton />}>
+                            <FinancialChart data={chartData} />
+                        </Suspense>
                     </div>
                     
                     <div>

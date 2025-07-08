@@ -1,7 +1,6 @@
 
 import { Contract, Property, Tenant } from '../../types';
 import { X, FileText, Download, Edit, Calendar, DollarSign, User, Home } from 'lucide-react';
-import { generateContractPDF } from '../../utils/reportGenerator';
 import { formatInTimeZone } from 'date-fns-tz';
 import { subDays } from 'date-fns';
 
@@ -28,8 +27,9 @@ export function ContractDetails({ contract, property, tenant, isOpen, onClose, o
   };
 
   // FIX: Download funcionando
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (property && tenant) {
+      const { generateContractPDF } = await import('../../utils/reportGenerator');
       generateContractPDF(contract, property, tenant);
     } else {
       alert('Property or tenant information is missing');

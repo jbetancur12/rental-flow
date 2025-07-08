@@ -2,6 +2,7 @@
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { SubscriptionBanner } from './SubscriptionBanner';
+import { Suspense } from 'react';
 
 export function Layout() {
   return (
@@ -9,7 +10,9 @@ export function Layout() {
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <SubscriptionBanner />
-        <Outlet />
+        <Suspense fallback={<div className="flex-1 flex items-center justify-center text-slate-400">Cargando...</div>}>
+          <Outlet />
+        </Suspense>
       </div>
     </div>
   );
