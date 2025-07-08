@@ -65,7 +65,7 @@ export function SubscriptionBanner() {
   const config = bannerConfig[bannerState];
 
   return (
-    <div className={`px-6 py-3 border-b ${config.bgColor}`}>
+    <div className={`px-6 py-3 border-b ${config.bgColor} fixed top-0 left-0 w-full z-50`} style={{minHeight: 56}}>
       <div className="flex items-center justify-between max-w-7xl mx-auto">
         <div className="flex items-center">
           {config.icon}

@@ -30,15 +30,7 @@ import { SecurityTab } from '../components/Settings/SecurityTab';
 import { DataTab } from '../components/Settings/DataTab';
 
 // Skeleton loader para Settings
-function SettingsSkeleton() {
-  return (
-    <div className="p-6">
-      <div className="h-8 w-48 bg-slate-200 rounded animate-pulse mb-6" />
-      <div className="bg-white rounded-xl border border-slate-200 p-6 animate-pulse h-96 mb-6" />
-      <div className="bg-white rounded-xl border border-slate-200 p-6 animate-pulse h-32" />
-    </div>
-  );
-}
+  
 
 export function Settings() {
 
