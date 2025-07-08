@@ -83,7 +83,7 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
       <div className="bg-white rounded-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-slate-200">
           <h2 className="text-xl font-semibold text-slate-900">
-            {tenant ? 'Edit Tenant' : 'Add New Tenant'}
+            {tenant ? 'Editar Inquilino' : 'Agregar Nuevo Inquilino'}
           </h2>
           <button
             onClick={onClose}
@@ -96,11 +96,11 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Personal Information */}
           <div>
-            <h3 className="text-lg font-medium text-slate-900 mb-4">Personal Information</h3>
+            <h3 className="text-lg font-medium text-slate-900 mb-4">Información Personal</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  First Name
+                  Nombre
                 </label>
                 <input
                   type="text"
@@ -113,7 +113,7 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Last Name
+                  Apellido
                 </label>
                 <input
                   type="text"
@@ -139,7 +139,7 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Phone
+                  Teléfono
                 </label>
                 <input
                   type="tel"
@@ -152,7 +152,7 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Credit Score
+                  Puntaje de Crédito
                 </label>
                 <input
                   type="number"
@@ -166,18 +166,18 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Status
+                  Estado
                 </label>
                 <select
                   value={formData.status}
                   onChange={(e) => setFormData({ ...formData, status: e.target.value as Tenant['status'] })}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="PENDING">Pending</option>
-                  <option value="APPROVED">Approved</option>
-                  <option value="ACTIVE">Active</option>
-                  <option value="FORMER">Former</option>
-                  <option value="REJECTED">Rejected</option>
+                  <option value="PENDING">Pendiente</option>
+                  <option value="APPROVED">Aprobado</option>
+                  <option value="ACTIVE">Activo</option>
+                  <option value="FORMER">Anterior</option>
+                  <option value="REJECTED">Rechazado</option>
                 </select>
               </div>
             </div>
@@ -185,11 +185,11 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
 
           {/* Employment Information */}
           <div>
-            <h3 className="text-lg font-medium text-slate-900 mb-4">Employment Information</h3>
+            <h3 className="text-lg font-medium text-slate-900 mb-4">Información de Empleo</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Employer
+                  Empleado por
                 </label>
                 <input
                   type="text"
@@ -205,7 +205,7 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Position
+                  Puesto
                 </label>
                 <input
                   type="text"
@@ -221,7 +221,7 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Annual Income ($)
+                  Ingreso Anual ($)
                 </label>
                 <input
                   type="number"
@@ -239,11 +239,11 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
 
           {/* Emergency Contact */}
           <div>
-            <h3 className="text-lg font-medium text-slate-900 mb-4">Emergency Contact</h3>
+            <h3 className="text-lg font-medium text-slate-900 mb-4">Contacto de Emergencia</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Name
+                  Nombre
                 </label>
                 <input
                   type="text"
@@ -259,7 +259,7 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Phone
+                  Teléfono
                 </label>
                 <input
                   type="tel"
@@ -275,7 +275,7 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Relationship
+                  Parentesco
                 </label>
                 <input
                   type="text"
@@ -297,13 +297,13 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
               onClick={onClose}
               className="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors"
             >
-              Cancel
+              Cancelar
             </button>
             <button
               type="submit"
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
-              {tenant ? 'Update Tenant' : 'Create Tenant'}
+              {tenant ? 'Actualizar Inquilino' : 'Crear Inquilino'}
             </button>
           </div>
         </form>

@@ -298,7 +298,7 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
-                    {formData.type === 'COMMERCIAL' ? 'Habitaciones/Espacios' : 'Dormitorios'}
+                    Habitaciones
                   </label>
                   <input
                     type="number"
@@ -327,7 +327,7 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Alquiler Mensual ($)
+                    Renta Mensual ($)
                   </label>
                   <input
                     type="number"
@@ -359,7 +359,7 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Comodidades
+                  Amenidades
                 </label>
                 <div className="flex space-x-2 mb-3">
                   <input

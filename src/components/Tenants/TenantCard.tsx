@@ -56,12 +56,16 @@ export function TenantCard({ tenant, onEdit, onView, onDelete, onCollectPayment 
             </h3>
             <div className="flex items-center space-x-2 mt-1">
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(tenant.status)}`}>
-                {tenant.status.charAt(0).toUpperCase() + tenant.status.slice(1)}
+                {tenant.status === 'PENDING' && 'Pendiente'}
+                {tenant.status === 'APPROVED' && 'Aprobado'}
+                {tenant.status === 'ACTIVE' && 'Activo'}
+                {tenant.status === 'FORMER' && 'Anterior'}
+                {tenant.status === 'REJECTED' && 'Rechazado'}
               </span>
               {overduePayments.length > 0 && (
                 <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 flex items-center">
                   <AlertTriangle className="w-3 h-3 mr-1" />
-                  {overduePayments.length} Overdue
+                  {overduePayments.length} Vencido(s)
                 </span>
               )}
             </div>
@@ -96,7 +100,7 @@ export function TenantCard({ tenant, onEdit, onView, onDelete, onCollectPayment 
             <div className="flex items-center">
               <CreditCard className="w-4 h-4 text-red-600 mr-2" />
               <span className="text-sm font-medium text-red-800">
-                Overdue Payment Alert
+                Alerta de Pago Vencido
               </span>
             </div>
             <span className="text-sm font-bold text-red-800">
@@ -104,7 +108,7 @@ export function TenantCard({ tenant, onEdit, onView, onDelete, onCollectPayment 
             </span>
           </div>
           <p className="text-xs text-red-700 mt-1">
-            {overduePayments.length} payment{overduePayments.length > 1 ? 's' : ''} overdue
+            {overduePayments.length} pago{overduePayments.length > 1 ? 's' : ''} vencido
           </p>
         </div>
       )}
@@ -121,18 +125,18 @@ export function TenantCard({ tenant, onEdit, onView, onDelete, onCollectPayment 
         </div>
         <div className="flex items-center text-slate-600">
           <DollarSign className="w-4 h-4 mr-3" />
-          <span className="text-sm">Income: ${tenant.employment.income.toLocaleString()}/year</span>
+          <span className="text-sm">Ingreso: ${tenant.employment.income.toLocaleString()}/año</span>
         </div>
         <div className="flex items-center text-slate-600">
           <Calendar className="w-4 h-4 mr-3" />
-          <span className="text-sm">Applied: {formatInTimeZone(tenant.applicationDate, 'UTC', 'MMM d, yyyy')}</span>
+          <span className="text-sm">Aplicó: {formatInTimeZone(tenant.applicationDate, 'UTC', 'd MMM yyyy')}</span>
         </div>
       </div>
 
       {/* Current Property (if active) */}
       {property && tenant.status === 'ACTIVE' && (
         <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-          <p className="text-sm font-medium text-blue-900">Current Property</p>
+          <p className="text-sm font-medium text-blue-900">Propiedad Actual</p>
           <p className="text-sm text-blue-800">{property.name}</p>
           <p className="text-xs text-blue-700">{property.address}</p>
         </div>
@@ -142,11 +146,11 @@ export function TenantCard({ tenant, onEdit, onView, onDelete, onCollectPayment 
       <div className="border-t border-slate-100 pt-4">
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <span className="text-slate-500">Employer:</span>
+            <span className="text-slate-500">Empleador:</span>
             <p className="font-medium text-slate-900">{tenant.employment.employer}</p>
           </div>
           <div>
-            <span className="text-slate-500">Position:</span>
+            <span className="text-slate-500">Puesto:</span>
             <p className="font-medium text-slate-900">{tenant.employment.position}</p>
           </div>
         </div>
@@ -156,7 +160,7 @@ export function TenantCard({ tenant, onEdit, onView, onDelete, onCollectPayment 
       {tenant.creditScore && (
         <div className="mt-4 p-3 bg-slate-50 rounded-lg">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-slate-600">Credit Score</span>
+            <span className="text-sm text-slate-600">Puntaje de Crédito</span>
             <span className={`text-sm font-medium ${
               tenant.creditScore >= 750 ? 'text-emerald-600' :
               tenant.creditScore >= 650 ? 'text-yellow-600' : 'text-red-600'
@@ -174,18 +178,18 @@ export function TenantCard({ tenant, onEdit, onView, onDelete, onCollectPayment 
             onClick={() => onCollectPayment && onCollectPayment(tenant)}
             className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
           >
-            Collect Payment
+            Cobrar Pago
           </button>
         ) : (
           <button 
             onClick={() => onView(tenant)}
             className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
           >
-            View Details
+            Ver Detalles
           </button>
         )}
         <button className="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors text-sm">
-          Contact
+          Contactar
         </button>
       </div>
     </div>

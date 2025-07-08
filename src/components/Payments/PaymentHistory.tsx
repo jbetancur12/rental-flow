@@ -61,9 +61,9 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
   if (!payments || payments.length === 0) {
     return (
       <div>
-        <h3 className="text-lg font-semibold text-slate-900 mb-4">Payment History</h3>
+        <h3 className="text-lg font-semibold text-slate-900 mb-4">Historial de Pagos</h3>
         <div className="text-center py-8 px-4 bg-slate-50 rounded-lg">
-          <p className="text-slate-500">No payment history available for this tenant.</p>
+          <p className="text-slate-500">No hay historial de pagos disponible para este inquilino.</p>
         </div>
       </div>
     );
@@ -71,7 +71,7 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
 
   return (
     <div>
-      <h3 className="text-lg font-semibold text-slate-900 mb-4">Payment History</h3>
+      <h3 className="text-lg font-semibold text-slate-900 mb-4">Historial de Pagos</h3>
       <div className="space-y-3">
         {payments.map((payment) => {
           const statusStyle = getPaymentStatusStyle(payment.status);
@@ -82,7 +82,7 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
                 <div className="flex items-center">
                   <DollarSign className="w-5 h-5 text-slate-400 mr-3" />
                   <div>
-                    <p className="text-sm text-slate-500">Amount</p>
+                    <p className="text-sm text-slate-500">Monto</p>
                     <p className="font-bold text-slate-900 text-lg">
                       ${payment.amount.toLocaleString()}
                     </p>
@@ -93,7 +93,7 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
                 <div className="flex items-center">
                   <Calendar className="w-5 h-5 text-slate-400 mr-3" />
                   <div>
-                    <p className="text-sm text-slate-500">Paid Date</p>
+                    <p className="text-sm text-slate-500">Fecha de Pago</p>
                     <p className="font-medium text-slate-900">
                       {payment.paidDate ? formatDateInOrgTimezone(payment.paidDate, orgTimezone) : '-'}
 
@@ -105,7 +105,7 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
                 <div className="flex items-center">
                   <Tag className="w-5 h-5 text-slate-400 mr-3" />
                   <div>
-                    <p className="text-sm text-slate-500">Type</p>
+                    <p className="text-sm text-slate-500">Tipo</p>
                     <p className="font-medium text-slate-900 capitalize">
                       {payment.type.toLowerCase()}
                     </p>

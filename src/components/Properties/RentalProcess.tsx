@@ -293,7 +293,7 @@ export function RentalProcess({ property, isOpen, onClose }: RentalProcessProps)
             onClick={() => currentStep > 1 ? setCurrentStep(currentStep - 1) : onClose()}
             className="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors"
           >
-            {currentStep === 1 ? 'Cancel' : 'Previous'}
+            {currentStep === 1 ? 'Cancelar' : 'Anterior'}
           </button>
           
           <div className="flex space-x-2">
@@ -301,11 +301,11 @@ export function RentalProcess({ property, isOpen, onClose }: RentalProcessProps)
               <button
                 onClick={() => {
                   if (currentStep === 1 && !selectedTenant) {
-                    alert('Please select a tenant');
+                    alert('Por favor selecciona un inquilino');
                     return;
                   }
                   if (currentStep === 2 && (!contractData.startDate || !contractData.endDate)) {
-                    alert('Please fill in all contract details');
+                    alert('Por favor completa todos los detalles del contrato');
                     return;
                   }
                   setCurrentStep(currentStep + 1);
@@ -313,14 +313,14 @@ export function RentalProcess({ property, isOpen, onClose }: RentalProcessProps)
                 className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 disabled={currentStep === 1 && availableTenants.length === 0}
               >
-                Next
+                Siguiente
               </button>
             ) : (
               <button
                 onClick={handleRentProperty}
                 className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
               >
-                Complete Rental
+                Completar Renta
               </button>
             )}
           </div>

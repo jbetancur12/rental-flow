@@ -29,6 +29,7 @@ export function SuperAdmin() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [plansLoaded, setPlansLoaded] = useState(false);
 
   // Fetch functions
   const fetchOrganizations = useCallback(async () => {
@@ -50,17 +51,19 @@ export function SuperAdmin() {
     }
   }, [currentPage, searchTerm, statusFilter, toast]);
 
-  const fetchPlans = useCallback(async () => {
+  const fetchPlans = useCallback(async (force = false) => {
+    if (plansLoaded && !force) return;
     setIsLoading(true);
     try {
       const loadedPlans = await getPlans();
       setPlans(loadedPlans);
+      setPlansLoaded(true);
     } catch {
       toast.error('Error', 'No se pudieron cargar los planes.');
     } finally {
       setIsLoading(false);
     }
-  }, [getPlans, toast]);
+  }, [getPlans, toast, plansLoaded]);
 
   // Effects
   useEffect(() => {
@@ -91,7 +94,7 @@ export function SuperAdmin() {
       } else {
         await createPlan(planData);
       }
-      await fetchPlans();
+      await fetchPlans(true); // Forzar recarga después de guardar
     } catch (error) {
       console.error("Failed to save plan", error);
     }
@@ -106,7 +109,12 @@ export function SuperAdmin() {
     <div className="min-h-screen bg-slate-50">
       <SuperAdminHeader user={state.user} onLogout={logout} />
       
-      <SuperAdminTabs activeTab={activeTab} onTabChange={setActiveTab} />
+      <SuperAdminTabs activeTab={activeTab} onTabChange={(tab) => {
+        setActiveTab(tab);
+        if (tab === 'settings' && !plansLoaded) {
+          setPlansLoaded(false); // Permitir recarga si nunca se cargó
+        }
+      }} />
 
       <div className="p-6">
         {activeTab === 'overview' && (

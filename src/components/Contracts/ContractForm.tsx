@@ -175,7 +175,7 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
       <div className="bg-white rounded-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-slate-200">
           <h2 className="text-xl font-semibold text-slate-900">
-            {contract ? 'Edit Contract' : 'Create New Contract'}
+            {contract ? 'Editar Contrato' : 'Crear Nuevo Contrato'}
           </h2>
           <button
             onClick={onClose}
@@ -189,7 +189,7 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
-                Property {!contract && <span className="text-xs text-slate-500">(Available only)</span>}
+                Propiedad {!contract && <span className="text-xs text-slate-500">(Solo disponibles)</span>}
               </label>
               <select
                 required
@@ -197,7 +197,7 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
                 onChange={handlePropertyChange}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="">Select a property</option>
+                <option value="">Selecciona una propiedad</option>
                 {availableProperties.map((property) => (
                   <option key={property.id} value={property.id}>
                     {property.name} - {property.address} {property.status === 'AVAILABLE' ? '✅' : ''}
@@ -205,7 +205,7 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
                 ))}
               </select>
               {!contract && availableProperties.length === 0 && (
-                <p className="text-sm text-red-600 mt-1">No AVAILABLE properties found</p>
+                <p className="text-sm text-red-600 mt-1">No se encontraron propiedades DISPONIBLES</p>
               )}
             </div>
 
@@ -380,13 +380,13 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
               onClick={onClose}
               className="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors"
             >
-              Cancel
+              Cancelar
             </button>
             <button
               type="submit"
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
-              {contract ? 'Update Contract' : 'Create Contract'}
+              {contract ? 'Actualizar Contrato' : 'Crear Contrato'}
             </button>
           </div>
         </form>

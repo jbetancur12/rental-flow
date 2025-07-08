@@ -53,7 +53,9 @@ export function UnitDetails({ unit, properties, isOpen, onClose, onEdit }: UnitD
             <div>
               <h2 className="text-2xl font-semibold text-slate-900">{unit.name}</h2>
               <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium mt-1 ${getUnitTypeColor()}`}>
-                {unit.type.charAt(0).toUpperCase() + unit.type.slice(1)}
+                {unit.type === 'BUILDING' && 'Edificio'}
+                {unit.type === 'HOUSE' && 'Casa'}
+                {unit.type === 'COMMERCIAL' && 'Comercial'}
               </span>
             </div>
           </div>
@@ -63,7 +65,7 @@ export function UnitDetails({ unit, properties, isOpen, onClose, onEdit }: UnitD
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <Edit className="w-4 h-4 mr-2" />
-              Edit Unit
+              Editar Unidad
             </button>
             <button
               onClick={onClose}
@@ -77,25 +79,25 @@ export function UnitDetails({ unit, properties, isOpen, onClose, onEdit }: UnitD
         <div className="p-6 space-y-8">
           {/* Basic Information */}
           <div>
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">Basic Information</h3>
+            <h3 className="text-lg font-semibold text-slate-900 mb-4">Información Básica</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex items-center">
                 <MapPin className="w-5 h-5 text-slate-400 mr-3" />
                 <div>
-                  <p className="text-sm text-slate-500">Address</p>
+                  <p className="text-sm text-slate-500">Dirección</p>
                   <p className="font-medium text-slate-900">{unit.address}</p>
                 </div>
               </div>
               {unit.manager && (
                 <div>
-                  <p className="text-sm text-slate-500">Manager</p>
+                  <p className="text-sm text-slate-500">Encargado</p>
                   <p className="font-medium text-slate-900">{unit.manager}</p>
                 </div>
               )}
             </div>
             {unit.description && (
               <div className="mt-4">
-                <p className="text-sm text-slate-500">Description</p>
+                <p className="text-sm text-slate-500">Descripción</p>
                 <p className="text-slate-700 mt-1">{unit.description}</p>
               </div>
             )}
@@ -104,27 +106,27 @@ export function UnitDetails({ unit, properties, isOpen, onClose, onEdit }: UnitD
           {/* Type-Specific Details */}
           <div>
             <h3 className="text-lg font-semibold text-slate-900 mb-4">
-              {unit.type === 'BUILDING' && 'Building Details'}
-              {unit.type === 'HOUSE' && 'House Details'}
-              {unit.type === 'COMMERCIAL' && 'Commercial Details'}
+              {unit.type === 'BUILDING' && 'Detalles del Edificio'}
+              {unit.type === 'HOUSE' && 'Detalles de la Casa'}
+              {unit.type === 'COMMERCIAL' && 'Detalles Comerciales'}
             </h3>
             
             {unit.type === 'BUILDING' && (
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div>
-                  <p className="text-sm text-slate-500">Total Floors</p>
+                  <p className="text-sm text-slate-500">Total de Pisos</p>
                   <p className="text-2xl font-bold text-slate-900">{unit.totalFloors || 'N/A'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-slate-500">Total Properties</p>
+                  <p className="text-sm text-slate-500">Total de Propiedades</p>
                   <p className="text-2xl font-bold text-slate-900">{properties.length}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-slate-500">Available</p>
+                  <p className="text-sm text-slate-500">Disponibles</p>
                   <p className="text-2xl font-bold text-emerald-600">{availableProperties}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-slate-500">Rented</p>
+                  <p className="text-sm text-slate-500">Rentadas</p>
                   <p className="text-2xl font-bold text-blue-600">{rentedProperties}</p>
                 </div>
               </div>
@@ -133,13 +135,13 @@ export function UnitDetails({ unit, properties, isOpen, onClose, onEdit }: UnitD
             {unit.type === 'HOUSE' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <p className="text-sm text-slate-500">Number of Floors</p>
+                  <p className="text-sm text-slate-500">Número de Pisos</p>
                   <p className="text-2xl font-bold text-slate-900">{unit.floors || 1}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-slate-500">Property Type</p>
+                  <p className="text-sm text-slate-500">Tipo de Propiedad</p>
                   <p className="text-lg font-medium text-slate-900">
-                    {unit.floors === 1 ? 'Single Floor House' : `${unit.floors}-Floor House`}
+                    {unit.floors === 1 ? 'Casa de un piso' : `Casa de ${unit.floors} pisos`}
                   </p>
                 </div>
               </div>
@@ -148,14 +150,14 @@ export function UnitDetails({ unit, properties, isOpen, onClose, onEdit }: UnitD
             {unit.type === 'COMMERCIAL' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <p className="text-sm text-slate-500">Size</p>
+                  <p className="text-sm text-slate-500">Tamaño</p>
                   <p className="text-2xl font-bold text-slate-900">
-                    {unit.size ? `${unit.size.toLocaleString()} sq ft` : 'N/A'}
+                    {unit.size ? `${unit.size.toLocaleString()} m²` : 'N/D'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-slate-500">Type</p>
-                  <p className="text-lg font-medium text-slate-900">Standalone Commercial Space</p>
+                  <p className="text-sm text-slate-500">Tipo</p>
+                  <p className="text-lg font-medium text-slate-900">Espacio Comercial Independiente</p>
                 </div>
               </div>
             )}
@@ -165,7 +167,7 @@ export function UnitDetails({ unit, properties, isOpen, onClose, onEdit }: UnitD
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-slate-900">
-                {unit.type === 'BUILDING' ? 'Properties in Building' : 'Property Details'}
+                {unit.type === 'BUILDING' ? 'Propiedades en el Edificio' : 'Detalles de la Propiedad'}
               </h3>
             </div>
 
@@ -181,15 +183,18 @@ export function UnitDetails({ unit, properties, isOpen, onClose, onEdit }: UnitD
                         property.status === 'RESERVED' ? 'bg-yellow-100 text-yellow-800' :
                         'bg-red-100 text-red-800'
                       }`}>
-                        {property.status}
+                        {property.status === 'AVAILABLE' && 'Disponible'}
+                        {property.status === 'RENTED' && 'Rentada'}
+                        {property.status === 'RESERVED' && 'Reservada'}
+                        {property.status === 'MAINTENANCE' && 'Mantenimiento'}
                       </span>
                     </div>
                     <div className="text-sm text-slate-600 space-y-1">
-                      {property.unitNumber && <p>Unit: {property.unitNumber} • Floor {property.floor}</p>}
-                      <p>Type: {property.type}</p>
-                      <p>Size: {property.size} sq ft</p>
-                      <p>Rooms: {property.rooms} • Baths: {property.bathrooms}</p>
-                      <p className="font-medium text-slate-900">Rent: ${property.rent.toLocaleString()}/month</p>
+                      {property.unitNumber && <p>Unidad: {property.unitNumber} • Piso {property.floor}</p>}
+                      <p>Tipo: {property.type}</p>
+                      <p>Tamaño: {property.size} m²</p>
+                      <p>Habitaciones: {property.rooms} • Baños: {property.bathrooms}</p>
+                      <p className="font-medium text-slate-900">Renta: ${property.rent.toLocaleString()}/mes</p>
                     </div>
                   </div>
                 ))}
@@ -197,8 +202,8 @@ export function UnitDetails({ unit, properties, isOpen, onClose, onEdit }: UnitD
             ) : (
               <div className="text-center py-8 bg-slate-50 rounded-lg">
                 <Building2 className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-                <p className="text-slate-600 mb-4">No properties added yet</p>
-                <p className="text-sm text-slate-500">Add properties in the Properties section</p>
+                <p className="text-slate-600 mb-4">Aún no se han agregado propiedades</p>
+                <p className="text-sm text-slate-500">Agrega propiedades en la sección de Propiedades</p>
               </div>
             )}
           </div>
@@ -206,7 +211,7 @@ export function UnitDetails({ unit, properties, isOpen, onClose, onEdit }: UnitD
           {/* Amenities */}
           {unit.amenities.length > 0 && (
             <div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">Amenities</h3>
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">Amenidades</h3>
               <div className="flex flex-wrap gap-2">
                 {unit.amenities.map((amenity, index) => (
                   <span
@@ -223,13 +228,13 @@ export function UnitDetails({ unit, properties, isOpen, onClose, onEdit }: UnitD
           {/* Photos */}
           {unit.photos.length > 0 && (
             <div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">Photos</h3>
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">Fotos</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {unit.photos.map((photo, index) => (
                   <div key={index} className="aspect-square bg-slate-200 rounded-lg overflow-hidden">
                     <img
                       src={photo}
-                      alt={`${unit.name} photo ${index + 1}`}
+                      alt={`${unit.name} foto ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
                   </div>

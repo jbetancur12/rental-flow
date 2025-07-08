@@ -81,9 +81,9 @@ export function Tenants() {
 
   const handleDeleteTenant = async (id: string) => {
     const confirmed = await confirm({
-      title: 'Delete Tenant',
-      message: 'Are you sure you want to delete this tenant?',
-      confirmText: 'Delete',
+      title: 'Eliminar Inquilino',
+      message: '¿Estás seguro de que deseas eliminar este inquilino?',
+      confirmText: 'Eliminar',
       type: 'danger'
     });
     if (confirmed) {
@@ -129,9 +129,9 @@ export function Tenants() {
   return (
     <div className="flex-1 overflow-auto">
       <Header
-        title="Tenants"
+        title="Inquilinos"
         onNewItem={handleNewTenant}
-        newItemLabel="Add Tenant"
+        newItemLabel="Agregar Inquilino"
         isNewItemDisabled={limitReached}
       />
 
@@ -147,7 +147,7 @@ export function Tenants() {
           <div className="bg-white rounded-xl border border-slate-200 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Total Tenants</p>
+                <p className="text-sm text-slate-600">Total Inquilinos</p>
                 <p className="text-2xl font-bold text-slate-900">{state.tenants.length}</p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -159,7 +159,7 @@ export function Tenants() {
           <div className="bg-white rounded-xl border border-slate-200 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Active</p>
+                <p className="text-sm text-slate-600">Activos</p>
                 <p className="text-2xl font-bold text-emerald-600">
                   {state.tenants.filter(t => t.status === 'ACTIVE').length}
                 </p>
@@ -173,7 +173,7 @@ export function Tenants() {
           <div className="bg-white rounded-xl border border-slate-200 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Pending</p>
+                <p className="text-sm text-slate-600">Pendientes</p>
                 <p className="text-2xl font-bold text-yellow-600">
                   {state.tenants.filter(t => t.status === 'PENDING').length}
                 </p>
@@ -187,7 +187,7 @@ export function Tenants() {
           <div className="bg-white rounded-xl border border-slate-200 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Approved</p>
+                <p className="text-sm text-slate-600">Aprobados</p>
                 <p className="text-2xl font-bold text-blue-600">
                   {state.tenants.filter(t => t.status === 'APPROVED').length}
                 </p>
@@ -201,7 +201,7 @@ export function Tenants() {
           <div className="bg-white rounded-xl border border-slate-200 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Overdue</p>
+                <p className="text-sm text-slate-600">Vencidos</p>
                 <p className="text-2xl font-bold text-red-600">
                   {tenantsWithOverdue.length}
                 </p>
@@ -220,14 +220,14 @@ export function Tenants() {
               <div className="flex items-center">
                 <AlertTriangle className="w-5 h-5 text-red-600 mr-2" />
                 <span className="font-medium text-red-800">
-                  {tenantsWithOverdue.length} tenant{tenantsWithOverdue.length > 1 ? 's have' : ' has'} OVERDUE payments
+                  {tenantsWithOverdue.length} inquilino{tenantsWithOverdue.length > 1 ? 's tienen' : ' tiene'} pagos VENCIDOS
                 </span>
               </div>
               <button
                 onClick={() => setFilter('OVERDUE')}
                 className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
               >
-                View Overdue
+                Ver Vencidos
               </button>
             </div>
           </div>
@@ -245,7 +245,12 @@ export function Tenants() {
                   : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
                   }`}
               >
-                {status.charAt(0).toUpperCase() + status.slice(1)}
+                {status === 'all' && 'Todos'}
+                {status === 'PENDING' && 'Pendientes'}
+                {status === 'APPROVED' && 'Aprobados'}
+                {status === 'ACTIVE' && 'Activos'}
+                {status === 'FORMER' && 'Anteriores'}
+                {status === 'OVERDUE' && 'Vencidos'}
                 <span className="ml-2 text-xs">
                   ({status === 'OVERDUE' ? tenantsWithOverdue.length :
                     status === 'all' ? state.tenants.length :
@@ -260,7 +265,7 @@ export function Tenants() {
             className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
           >
             <Download className="w-4 h-4 mr-2" />
-            Export Report
+            Exportar Reporte
           </button>
         </div>
 
@@ -283,13 +288,15 @@ export function Tenants() {
             <div className="text-slate-400 mb-4">
               <User className="w-12 h-12 mx-auto" />
             </div>
-            <h3 className="text-lg font-medium text-slate-900 mb-2">No tenants found</h3>
+            <h3 className="text-lg font-medium text-slate-900 mb-2">No se encontraron inquilinos</h3>
             <p className="text-slate-600 mb-4">
               {filter === 'all'
-                ? "You haven't added any tenants yet."
+                ? "Aún no has agregado ningún inquilino."
                 : filter === 'OVERDUE'
-                  ? "No tenants have OVERDUE payments."
-                  : `No tenants with status "${filter}" found.`
+                  ? "Ningún inquilino tiene pagos VENCIDOS."
+                  : `No se encontraron inquilinos con estado "${
+                      statusToSpanish(filter)
+                    }".`
               }
             </p>
             {filter === 'all' && (
@@ -297,7 +304,7 @@ export function Tenants() {
                 onClick={handleNewTenant}
                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-                Add Your First Tenant
+                Agrega tu Primer Inquilino
               </button>
             )}
           </div>
@@ -361,4 +368,16 @@ export function Tenants() {
       />
     </div>
   );
+}
+
+// Agregar función para traducir el estado a español
+function statusToSpanish(status: string) {
+  switch (status) {
+    case 'PENDING': return 'Pendiente';
+    case 'APPROVED': return 'Aprobado';
+    case 'ACTIVE': return 'Activo';
+    case 'FORMER': return 'Anterior';
+    case 'OVERDUE': return 'Vencido';
+    default: return status;
+  }
 }

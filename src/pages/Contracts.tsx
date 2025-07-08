@@ -73,7 +73,7 @@ export function Contracts() {
   };
 
   const handleDeleteContract = async (id: string) => {
-    if (confirm('Are you sure you want to delete this contract?')) {
+    if (confirm('¿Estás seguro de que deseas eliminar este contrato?')) {
       await deleteContract(id);
       await fetchContracts(); // <-- Recarga contratos después de eliminar
     }
@@ -92,9 +92,9 @@ export function Contracts() {
   return (
     <div className="flex-1 overflow-auto">
       <Header 
-        title="Contracts" 
+        title="Contratos" 
         onNewItem={handleNewContract}
-        newItemLabel="New Contract"
+        newItemLabel="Nuevo Contrato"
       />
       
       <div className="p-6">
@@ -108,7 +108,7 @@ export function Contracts() {
                       <FileText className="w-5 h-5 text-blue-600" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-slate-900">Contract #{contract.id.slice(-6).toUpperCase()}</h3>
+                      <h3 className="font-medium text-slate-900">Contrato #{contract.id.slice(-6).toUpperCase()}</h3>
                       <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 ${getStatusColor(contract.status)}`}>
                         {contract.status.charAt(0).toUpperCase() + contract.status.slice(1)}
                       </span>
@@ -154,13 +154,12 @@ export function Contracts() {
                   </div>
                   <div className="flex items-center text-slate-600">
                     <DollarSign className="w-4 h-4 mr-3" />
-                    <span className="text-sm">${contract.monthlyRent.toLocaleString()}/month</span>
+                    <span className="text-sm">${contract.monthlyRent.toLocaleString()}/mes</span>
                   </div>
                   <div className="flex items-center text-slate-600">
                     <Calendar className="w-4 h-4 mr-3" />
                     <span className="text-sm">
-                      {formatInTimeZone(contract.startDate, 'UTC', 'MMM d, yyyy')} - {formatInTimeZone(new Date(contract.endDate), 'UTC', 'MMM d, yyyy')}
-
+                      {formatInTimeZone(contract.startDate, 'UTC', 'd MMM yyyy')} - {formatInTimeZone(new Date(contract.endDate), 'UTC', 'd MMM yyyy')}
                     </span>
                   </div>
                 </div>
@@ -168,13 +167,13 @@ export function Contracts() {
                 <div className="border-t border-slate-100 pt-4">
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="text-slate-500">Security Deposit</span>
+                      <span className="text-slate-500">Depósito de Seguridad</span>
                       <p className="font-medium text-slate-900">${contract.securityDeposit.toLocaleString()}</p>
                     </div>
                     <div>
-                      <span className="text-slate-500">Duration</span>
+                      <span className="text-slate-500">Duración</span>
                       <p className="font-medium text-slate-900">
-                        {Math.round((new Date(contract.endDate).getTime() - new Date(contract.startDate).getTime()) / (1000 * 60 * 60 * 24 * 30))} months
+                        {Math.round((new Date(contract.endDate).getTime() - new Date(contract.startDate).getTime()) / (1000 * 60 * 60 * 24 * 30))} meses
                       </p>
                     </div>
                   </div>
@@ -182,7 +181,7 @@ export function Contracts() {
 
                 {contract.terms.length > 0 && (
                   <div className="mt-4 pt-4 border-t border-slate-100">
-                    <p className="text-sm text-slate-500 mb-2">Key Terms:</p>
+                    <p className="text-sm text-slate-500 mb-2">Términos Clave:</p>
                     <ul className="text-sm text-slate-600 space-y-1">
                       {contract.terms.slice(0, 2).map((term, index) => (
                         <li key={index} className="flex items-start">
@@ -191,7 +190,7 @@ export function Contracts() {
                         </li>
                       ))}
                       {contract.terms.length > 2 && (
-                        <li className="text-slate-400">+{contract.terms.length - 2} more terms</li>
+                        <li className="text-slate-400">+{contract.terms.length - 2} términos más</li>
                       )}
                     </ul>
                   </div>

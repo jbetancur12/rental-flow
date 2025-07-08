@@ -103,7 +103,7 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
       <div className="bg-white rounded-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-slate-200">
           <h2 className="text-xl font-semibold text-slate-900">
-            {unit ? 'Edit Unit' : 'Create New Unit'}
+            {unit ? 'Editar Unidad' : 'Crear Nueva Unidad'}
           </h2>
           <button
             onClick={onClose}
@@ -117,11 +117,11 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Basic Information */}
           <div>
-            <h3 className="text-lg font-medium text-slate-900 mb-4">Basic Information</h3>
+            <h3 className="text-lg font-medium text-slate-900 mb-4">Información Básica</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Unit Name
+                  Nombre de la Unidad
                 </label>
                 <input
                   type="text"
@@ -129,14 +129,14 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="e.g., Sunset Apartments, Oak House, Downtown Office"
+                  placeholder="ej., Apartamentos Sunset, Casa Oak, Oficina Centro"
                   disabled={isSubmitting}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Unit Type
+                  Tipo de Unidad
                 </label>
                 <select
                   value={formData.type}
@@ -144,16 +144,16 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   disabled={isSubmitting}
                 >
-                  <option value="BUILDING">Building (Contains apartments/COMMERCIAL spaces)</option>
-                  <option value="HOUSE">House (Single or multiple floors)</option>
-                  <option value="COMMERCIAL">Commercial (Standalone local/office)</option>
+                  <option value="BUILDING">Edificio (Contiene apartamentos/espacios comerciales)</option>
+                  <option value="HOUSE">Casa (Uno o varios pisos)</option>
+                  <option value="COMMERCIAL">Comercial (Local/oficina independiente)</option>
                 </select>
               </div>
             </div>
 
             <div className="mt-4">
               <label className="block text-sm font-medium text-slate-700 mb-2">
-                Address
+                Dirección
               </label>
               <input
                 type="text"
@@ -161,21 +161,21 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Full address of the unit"
+                placeholder="Dirección completa de la unidad"
                 disabled={isSubmitting}
               />
             </div>
 
             <div className="mt-4">
               <label className="block text-sm font-medium text-slate-700 mb-2">
-                Description (Optional)
+                Descripción (Opcional)
               </label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows={3}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Brief description of the unit"
+                placeholder="Breve descripción de la unidad"
                 disabled={isSubmitting}
               />
             </div>
@@ -184,16 +184,16 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
           {/* Type-Specific Fields */}
           <div>
             <h3 className="text-lg font-medium text-slate-900 mb-4">
-              {formData.type === 'BUILDING' && 'Building Details'}
-              {formData.type === 'HOUSE' && 'House Details'}
-              {formData.type === 'COMMERCIAL' && 'Commercial Details'}
+              {formData.type === 'BUILDING' && 'Detalles del Edificio'}
+              {formData.type === 'HOUSE' && 'Detalles de la Casa'}
+              {formData.type === 'COMMERCIAL' && 'Detalles Comerciales'}
             </h3>
 
             {formData.type === 'BUILDING' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Total Floors
+                    Total de Pisos
                   </label>
                   <input
                     type="number"
@@ -207,14 +207,14 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Building Manager (Optional)
+                    Gerente del Edificio (Opcional)
                   </label>
                   <input
                     type="text"
                     value={formData.manager}
                     onChange={(e) => setFormData({ ...formData, manager: e.target.value })}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Manager name"
+                    placeholder="Nombre del gerente"
                     disabled={isSubmitting}
                   />
                 </div>
@@ -225,7 +225,7 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Number of Floors
+                    Número de Pisos
                   </label>
                   <select
                     value={formData.floors}
@@ -233,23 +233,23 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     disabled={isSubmitting}
                   >
-                    <option value={1}>1 Floor</option>
-                    <option value={2}>2 Floors</option>
-                    <option value={3}>3 Floors</option>
-                    <option value={4}>4 Floors</option>
-                    <option value={5}>5+ Floors</option>
+                    <option value={1}>1 Piso</option>
+                    <option value={2}>2 Pisos</option>
+                    <option value={3}>3 Pisos</option>
+                    <option value={4}>4 Pisos</option>
+                    <option value={5}>5+ Pisos</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Property Manager (Optional)
+                    Gerente de la Propiedad (Opcional)
                   </label>
                   <input
                     type="text"
                     value={formData.manager}
                     onChange={(e) => setFormData({ ...formData, manager: e.target.value })}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Manager name"
+                    placeholder="Nombre del gerente"
                     disabled={isSubmitting}
                   />
                 </div>
@@ -260,7 +260,7 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Size (sq ft)
+                    Tamaño (sq ft)
                   </label>
                   <input
                     type="number"
@@ -273,14 +273,14 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Property Manager (Optional)
+                    Gerente de la Propiedad (Opcional)
                   </label>
                   <input
                     type="text"
                     value={formData.manager}
                     onChange={(e) => setFormData({ ...formData, manager: e.target.value })}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Manager name"
+                    placeholder="Nombre del gerente"
                     disabled={isSubmitting}
                   />
                 </div>
@@ -335,12 +335,12 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
           {/* Photos */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
-              Photos
+              Fotos
             </label>
             <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-slate-400 transition-colors">
               <Upload className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-              <p className="text-slate-600">Click to upload photos or drag and drop</p>
-              <p className="text-sm text-slate-500 mt-1">PNG, JPG up to 10MB each</p>
+              <p className="text-slate-600">Haz clic para subir fotos o arrastra y suelta</p>
+              <p className="text-sm text-slate-500 mt-1">PNG, JPG hasta 10MB cada una</p>
             </div>
           </div>
 
@@ -352,7 +352,7 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
               className="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors"
               disabled={isSubmitting}
             >
-              Cancel
+              Cancelar
             </button>
             <button
               type="submit"
@@ -362,10 +362,10 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
               {isSubmitting ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                  Saving...
+                  Guardando...
                 </>
               ) : (
-                unit ? 'Update Unit' : 'Create Unit'
+                unit ? 'Actualizar Unidad' : 'Crear Unidad'
               )}
             </button>
           </div>

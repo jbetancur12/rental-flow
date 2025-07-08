@@ -17,14 +17,13 @@ import {
   Ban,
   CheckCircle,
   LogOut,
-  Save,
+  
   PlusCircle
 } from 'lucide-react';
 import apiClient from '../config/api';
 import { useToast } from '../hooks/useToast';
 import { OrganizationSummary, PaginationInfo, Plan } from '../types';
 import { useApp } from '../context/useApp';
-import { PlanEditor } from '../components/SuperAdmin/PlanEditor';
 import { PlanEditorModal } from '../components/SuperAdmin/PlanEditorModal';
 import { PlanCard } from '../components/SuperAdmin/PlanCard';
 
@@ -112,65 +111,7 @@ const fetchOrganizations = useCallback(async () => {
     setCurrentPage(1); // Resetea a la primera página al filtrar
   };
 
-  const handleAddNewPlan = () => {
-    const newPlanTemplate: Plan = {
-      id: '',
-      name: 'Nuevo Plan',
-      price: 0,
-      limits: { properties: 0, tenants: 0, users: 0 },
-      features: [],
-      isActive: true,
-      currency: 'usd',
-    };
-    setPlans(prevPlans => [...prevPlans, newPlanTemplate]);
-  };
 
-  const handlePlanChange = (index: number, field: keyof Plan, value: any) => {
-    const updatedPlans = [...plans];
-    updatedPlans[index] = { ...updatedPlans[index], [field]: value };
-    setPlans(updatedPlans);
-  };
-
-  const handlePlanLimitChange = (index: number, limitField: keyof Plan['limits'], value: number) => {
-    const updatedPlans = [...plans];
-    updatedPlans[index].limits[limitField] = value;
-    setPlans(updatedPlans);
-  };
-
-  const handleSaveChanges = async () => {
-    try {
-      // Separamos los planes que ya existen de los que son nuevos
-      const plansToUpdate = plans.filter(p => p.createdAt); // Un plan existente tiene 'createdAt'
-      const plansToCreate = plans.filter(p => !p.createdAt);
-
-      // Creamos un array de promesas para ejecutar todo en paralelo
-      const promises = [];
-
-      if (plansToUpdate.length > 0) {
-        promises.push(updatePlans(plansToUpdate));
-      }
-
-      if (plansToCreate.length > 0) {
-        plansToCreate.forEach(plan => {
-          if (!plan.id) { // Validación básica
-            toast.error('Error', `El plan "${plan.name}" necesita un ID.`);
-            throw new Error('Plan ID is missing');
-          }
-          promises.push(createPlan(plan));
-        });
-      }
-
-      await Promise.all(promises);
-
-      // Volvemos a cargar los planes para tener los datos frescos de la BD
-      const loadedPlans = await getPlans();
-      setPlans(loadedPlans);
-
-    } catch (error) {
-      // Los toasts de error ya se manejan en el contexto
-      console.error("Failed to save plans", error);
-    }
-  };
 
    const handleOpenNewPlanModal = () => {
     setEditingPlan({ // Plantilla para un nuevo plan

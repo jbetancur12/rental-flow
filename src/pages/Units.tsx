@@ -58,9 +58,9 @@ export function Units() {
     const propertiesInUnit = state.properties.filter(p => p.unitId === id);
     
     const confirmed = await confirm({
-      title: 'Delete Unit',
-      message: `Are you sure you want to delete "${unit?.name}"? This will also delete ${propertiesInUnit.length} properties within it.`,
-      confirmText: 'Delete',
+      title: 'Eliminar Unidad',
+      message: `¿Estás seguro de que quieres eliminar "${unit?.name}"? Esto también eliminará ${propertiesInUnit.length} propiedades dentro de ella.`,
+      confirmText: 'Eliminar',
       type: 'danger'
     });
 
@@ -101,9 +101,9 @@ export function Units() {
   return (
     <div className="flex-1 overflow-auto">
       <Header 
-        title="Units Management" 
+        title="Gestión de Unidades" 
         onNewItem={handleNewUnit}
-        newItemLabel="Add Unit"
+        newItemLabel="Agregar Unidad"
       />
       
       <div className="p-6">
@@ -112,7 +112,7 @@ export function Units() {
           <div className="bg-white rounded-xl border border-slate-200 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Total Units</p>
+                <p className="text-sm text-slate-600">Total Unidades</p>
                 <p className="text-2xl font-bold text-slate-900">{state.units.length}</p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -124,7 +124,7 @@ export function Units() {
           <div className="bg-white rounded-xl border border-slate-200 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Buildings</p>
+                <p className="text-sm text-slate-600">Edificios</p>
                 <p className="text-2xl font-bold text-blue-600">
                   {state.units.filter(u => u.type === 'BUILDING').length}
                 </p>
@@ -136,7 +136,7 @@ export function Units() {
           <div className="bg-white rounded-xl border border-slate-200 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Houses</p>
+                <p className="text-sm text-slate-600">Casas</p>
                 <p className="text-2xl font-bold text-emerald-600">
                   {state.units.filter(u => u.type === 'HOUSE').length}
                 </p>
@@ -148,7 +148,7 @@ export function Units() {
           <div className="bg-white rounded-xl border border-slate-200 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Commercial</p>
+                <p className="text-sm text-slate-600">Comercial</p>
                 <p className="text-2xl font-bold text-orange-600">
                   {state.units.filter(u => u.type === 'COMMERCIAL').length}
                 </p>
@@ -171,7 +171,10 @@ export function Units() {
                     : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
                 }`}
               >
-                {type.charAt(0).toUpperCase() + type.slice(1)}
+                {type === 'all' && 'Todas'}
+                {type === 'BUILDING' && 'Edificios'}
+                {type === 'HOUSE' && 'Casas'}
+                {type === 'COMMERCIAL' && 'Comercial'}
                 {type !== 'all' && (
                   <span className="ml-2 text-xs">
                     ({state.units.filter(u => u.type === type).length})
@@ -204,11 +207,11 @@ export function Units() {
             <div className="text-slate-400 mb-4">
               <Building2 className="w-12 h-12 mx-auto" />
             </div>
-            <h3 className="text-lg font-medium text-slate-900 mb-2">No units found</h3>
+            <h3 className="text-lg font-medium text-slate-900 mb-2">No unidades encontradas</h3>
             <p className="text-slate-600 mb-4">
               {filter === 'all' 
-                ? "You haven't added any units yet."
-                : `No ${filter} units found.`
+                ? "Aún no has agregado ninguna unidad."
+                : `No se encontraron unidades de tipo ${filter}.`
               }
             </p>
             {filter === 'all' && (
@@ -216,7 +219,7 @@ export function Units() {
                 onClick={handleNewUnit}
                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-                Add Your First Unit
+                Agregar tu primera unidad
               </button>
             )}
           </div>

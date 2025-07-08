@@ -58,7 +58,9 @@ export function UnitCard({
             <div>
               <h3 className="text-lg font-semibold text-slate-900">{unit.name}</h3>
               <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getUnitTypeColor()}`}>
-                {unit.type.charAt(0).toUpperCase() + unit.type.slice(1)}
+                {unit.type === 'BUILDING' && 'Edificio'}
+                {unit.type === 'HOUSE' && 'Casa'}
+                {unit.type === 'COMMERCIAL' && 'Comercial'}
               </span>
             </div>
           </div>
@@ -100,19 +102,19 @@ export function UnitCard({
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-slate-500">Total Floors:</span>
+                <span className="text-slate-500">Total de Pisos:</span>
                 <p className="font-medium text-slate-900">{unit.totalFloors || 'N/A'}</p>
               </div>
               <div>
-                <span className="text-slate-500">Properties:</span>
+                <span className="text-slate-500">Propiedades:</span>
                 <p className="font-medium text-slate-900">{properties.length}</p>
               </div>
               <div>
-                <span className="text-slate-500">Available:</span>
+                <span className="text-slate-500">Disponibles:</span>
                 <p className="font-medium text-emerald-600">{availableProperties}</p>
               </div>
               <div>
-                <span className="text-slate-500">Rented:</span>
+                <span className="text-slate-500">Rentadas:</span>
                 <p className="font-medium text-blue-600">{rentedProperties}</p>
               </div>
             </div>
@@ -121,7 +123,7 @@ export function UnitCard({
             {properties.length > 0 && (
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-medium text-slate-900">Properties</h4>
+                  <h4 className="font-medium text-slate-900">Propiedades</h4>
                 </div>
                 <div className="space-y-2 max-h-32 overflow-y-auto">
                   {properties.slice(0, 3).map((property) => (
@@ -131,7 +133,7 @@ export function UnitCard({
                     >
                       <div>
                         <span className="font-medium">{property.unitNumber || property.name}</span>
-                        <span className="text-slate-500 ml-2">Floor {property.floor}</span>
+                        <span className="text-slate-500 ml-2">Piso {property.floor}</span>
                       </div>
                       <div className="flex items-center space-x-1">
                         <span className={`px-1 py-0.5 rounded text-xs ${
@@ -139,7 +141,10 @@ export function UnitCard({
                           property.status === 'RENTED' ? 'bg-blue-100 text-blue-700' :
                           'bg-yellow-100 text-yellow-700'
                         }`}>
-                          {property.status}
+                          {property.status === 'AVAILABLE' && 'Disponible'}
+                          {property.status === 'RENTED' && 'Rentada'}
+                          {property.status === 'RESERVED' && 'Reservada'}
+                          {property.status === 'MAINTENANCE' && 'Mantenimiento'}
                         </span>
                         <span className="text-slate-600">${property.rent}</span>
                       </div>
@@ -147,7 +152,7 @@ export function UnitCard({
                   ))}
                   {properties.length > 3 && (
                     <p className="text-xs text-slate-500 text-center">
-                      +{properties.length - 3} more properties
+                      +{properties.length - 3} más propiedades
                     </p>
                   )}
                 </div>
@@ -156,8 +161,8 @@ export function UnitCard({
 
             {properties.length === 0 && (
               <div className="text-center py-4 border-2 border-dashed border-slate-300 rounded-lg">
-                <p className="text-sm text-slate-500">No properties added yet</p>
-                <p className="text-xs text-slate-400">Add properties in the Properties section</p>
+                <p className="text-sm text-slate-500">Aún no se han agregado propiedades</p>
+                <p className="text-xs text-slate-400">Agrega propiedades en la sección de Propiedades</p>
               </div>
             )}
           </div>
@@ -167,12 +172,12 @@ export function UnitCard({
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-slate-500">Floors:</span>
+                <span className="text-slate-500">Pisos:</span>
                 <p className="font-medium text-slate-900">{unit.floors || 1}</p>
               </div>
               <div>
-                <span className="text-slate-500">Manager:</span>
-                <p className="font-medium text-slate-900">{unit.manager || 'Unassigned'}</p>
+                <span className="text-slate-500">Encargado:</span>
+                <p className="font-medium text-slate-900">{unit.manager || 'Sin asignar'}</p>
               </div>
             </div>
             
@@ -182,14 +187,17 @@ export function UnitCard({
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium text-slate-900">{properties[0].name}</p>
-                    <p className="text-sm text-slate-600">{properties[0].size} sq ft • ${properties[0].rent}/month</p>
+                    <p className="text-sm text-slate-600">{properties[0].size} m² • ${properties[0].rent}/mes</p>
                   </div>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                     properties[0].status === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-800' :
                     properties[0].status === 'RENTED' ? 'bg-blue-100 text-blue-800' :
                     'bg-yellow-100 text-yellow-800'
                   }`}>
-                    {properties[0].status}
+                    {properties[0].status === 'AVAILABLE' && 'Disponible'}
+                    {properties[0].status === 'RENTED' && 'Rentada'}
+                    {properties[0].status === 'RESERVED' && 'Reservada'}
+                    {properties[0].status === 'MAINTENANCE' && 'Mantenimiento'}
                   </span>
                 </div>
               </div>
@@ -201,12 +209,12 @@ export function UnitCard({
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-slate-500">Size:</span>
-                <p className="font-medium text-slate-900">{unit.size ? `${unit.size} sq ft` : 'N/A'}</p>
+                <span className="text-slate-500">Tamaño:</span>
+                <p className="font-medium text-slate-900">{unit.size ? `${unit.size} m²` : 'N/A'}</p>
               </div>
               <div>
-                <span className="text-slate-500">Manager:</span>
-                <p className="font-medium text-slate-900">{unit.manager || 'Unassigned'}</p>
+                <span className="text-slate-500">Encargado:</span>
+                <p className="font-medium text-slate-900">{unit.manager || 'Sin asignar'}</p>
               </div>
             </div>
             
@@ -216,14 +224,17 @@ export function UnitCard({
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium text-slate-900">{properties[0].name}</p>
-                    <p className="text-sm text-slate-600">{properties[0].size} sq ft • ${properties[0].rent}/month</p>
+                    <p className="text-sm text-slate-600">{properties[0].size} m² • ${properties[0].rent}/mes</p>
                   </div>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                     properties[0].status === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-800' :
                     properties[0].status === 'RENTED' ? 'bg-blue-100 text-blue-800' :
                     'bg-yellow-100 text-yellow-800'
                   }`}>
-                    {properties[0].status}
+                    {properties[0].status === 'AVAILABLE' && 'Disponible'}
+                    {properties[0].status === 'RENTED' && 'Rentada'}
+                    {properties[0].status === 'RESERVED' && 'Reservada'}
+                    {properties[0].status === 'MAINTENANCE' && 'Mantenimiento'}
                   </span>
                 </div>
               </div>
@@ -234,7 +245,7 @@ export function UnitCard({
         {/* Amenities */}
         {unit.amenities.length > 0 && (
           <div className="mt-4 pt-4 border-t border-slate-100">
-            <h4 className="text-sm font-medium text-slate-900 mb-2">Amenities</h4>
+            <h4 className="text-sm font-medium text-slate-900 mb-2">Amenidades</h4>
             <div className="flex flex-wrap gap-1">
               {unit.amenities.slice(0, 3).map((amenity, index) => (
                 <span
@@ -246,7 +257,7 @@ export function UnitCard({
               ))}
               {unit.amenities.length > 3 && (
                 <span className="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded-full">
-                  +{unit.amenities.length - 3} more
+                  +{unit.amenities.length - 3} más
                 </span>
               )}
             </div>
@@ -259,7 +270,7 @@ export function UnitCard({
             onClick={() => onView(unit)}
             className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
           >
-            View Details
+            Ver Detalles
           </button>
         </div>
       </div>
