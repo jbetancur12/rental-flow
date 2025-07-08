@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Contract, Property, Tenant } from '../../types';
 import { X } from 'lucide-react';
+import { useToast } from '../../hooks/useToast';
 
 interface ContractFormProps {
   contract?: Contract;
@@ -12,6 +13,7 @@ interface ContractFormProps {
 }
 
 export function ContractForm({ contract, properties, tenants, isOpen, onClose, onSave }: ContractFormProps) {
+  const toast = useToast();
   const [formData, setFormData] = useState({
     propertyId: '',
     tenantId: '',
@@ -126,15 +128,28 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
-      ...formData,
-      startDate: new Date(formData.startDate),
-      endDate: new Date(formData.endDate),
-      signedDate: formData.signedDate ? new Date(formData.signedDate) : undefined
-    });
-    onClose();
+    try {
+      await onSave({
+        ...formData,
+        startDate: new Date(formData.startDate),
+        endDate: new Date(formData.endDate),
+        signedDate: formData.signedDate ? new Date(formData.signedDate) : undefined
+      });
+      toast.success(
+        contract ? 'Contrato actualizado' : 'Contrato creado',
+        contract ? 'El contrato se actualizó correctamente.' : 'El contrato se creó correctamente.'
+      );
+      onClose();
+    } catch (error: any) {
+      let msg = error?.error || error?.message || 'No se pudo guardar el contrato.';
+      if (error?.details && Array.isArray(error.details)) {
+        msg = error.details.map((d: any) => `${d.field ? d.field + ': ' : ''}${d.message}`).join(' | ');
+      }
+      toast.error('Error al guardar contrato', msg);
+      console.error('Error saving contract:', error);
+    }
   };
 
   const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -5,14 +5,14 @@ import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 export function RecentActivity() {
-  // 1. Obtenemos el estado completo de la aplicación
-  const { state } = useApp();
+  // 1. Obtenemos el estado global de la aplicación desde Zustand
+  const { payments, tenants, maintenanceRequests, properties, contracts } = useApp();
 
   // 2. Usamos useMemo para calcular la lista de actividades solo cuando los datos cambien
   const recentActivities = useMemo(() => {
     // 3. Transformamos los pagos en un formato de "actividad"
-    const paymentActivities = state.payments.filter(p => p.status === 'PAID').map(payment => {
-      const tenant = state.tenants.find(t => t.id === payment.tenantId);
+    const paymentActivities = payments.filter(p => p.status === 'PAID').map(payment => {
+      const tenant = tenants.find(t => t.id === payment.tenantId);
       return {
         id: `payment-${payment.id}`,
         type: 'payment',
@@ -24,8 +24,8 @@ export function RecentActivity() {
     });
 
     // 4. Transformamos las solicitudes de mantenimiento en "actividades"
-    const maintenanceActivities = state.maintenanceRequests.map(request => {
-      const property = state.properties.find(p => p.id === request.propertyId);
+    const maintenanceActivities = maintenanceRequests.map(request => {
+      const property = properties.find(p => p.id === request.propertyId);
       return {
         id: `maint-${request.id}`,
         type: 'maintenance',
@@ -37,7 +37,7 @@ export function RecentActivity() {
     });
 
     // Puedes añadir más tipos de actividades aquí (nuevos inquilinos, contratos, etc.)
-    const tenantActivities = state.tenants.map(tenant => ({
+    const tenantActivities = tenants.map(tenant => ({
         id: `tenant-${tenant.id}`,
         type: 'tenant',
         description: `Nuevo inquilino registrado: ${tenant.firstName} ${tenant.lastName}`,
@@ -46,7 +46,7 @@ export function RecentActivity() {
         iconColor: 'text-blue-600'
     }))
 
-    const contractActivities = state.contracts.map(contract => ({
+    const contractActivities = contracts.map(contract => ({
         id: `contract-${contract.id}`,
         type: 'contract',
         description: `Nuevo contrato registrado: ${contract.id}`,
@@ -63,7 +63,7 @@ export function RecentActivity() {
     
     return allActivities.slice(0, 5);
 
-  }, [state.payments, state.maintenanceRequests, state.tenants, state.properties, state.contracts]);
+  }, [payments, maintenanceRequests, tenants, properties, contracts]);
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-6">

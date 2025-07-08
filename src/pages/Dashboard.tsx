@@ -52,7 +52,7 @@ function DashboardSkeleton() {
 }
 
 export function Dashboard() {
-    const { state } = useApp();
+    const { payments, tenants, properties, maintenanceRequests } = useApp();
     const navigate = useNavigate();
 
     // --- CÁLCULO DE DATOS PARA EL GRÁFICO (BLOQUE AÑADIDO) ---
@@ -66,7 +66,7 @@ export function Dashboard() {
             const targetMonth = targetDate.getMonth();
             const targetYear = targetDate.getFullYear();
 
-            const monthlyRevenue = state.payments
+            const monthlyRevenue = payments
                 .filter(p => {
                     const paymentDate = p.paidDate ? new Date(p.paidDate) : null;
                     return (
@@ -78,7 +78,7 @@ export function Dashboard() {
                 })
                 .reduce((sum, p) => sum + p.amount, 0);
 
-            const monthlyExpenses = state.maintenanceRequests
+            const monthlyExpenses = maintenanceRequests
                 .filter(req => {
                     const completionDate = req.completedDate ? new Date(req.completedDate) : null;
                     return (
@@ -97,7 +97,7 @@ export function Dashboard() {
             });
         }
         return dataPoints;
-    }, [state.payments, state.maintenanceRequests]);
+    }, [payments, maintenanceRequests]);
 
     // Calcular ingresos del mes actual y anterior
     const today = new Date();
@@ -107,7 +107,7 @@ export function Dashboard() {
     const lastMonth = lastMonthDate.getMonth();
     const lastMonthYear = lastMonthDate.getFullYear();
 
-    const currentMonthRevenue = state.payments
+    const currentMonthRevenue = payments
         .filter(p => {
             if (p.status !== 'PAID' || p.type !== 'RENT') return false;
             const paidDate = p.paidDate ? new Date(p.paidDate) : null;
@@ -115,7 +115,7 @@ export function Dashboard() {
         })
         .reduce((sum, p) => sum + p.amount, 0);
 
-    const lastMonthRevenue = state.payments
+    const lastMonthRevenue = payments
         .filter(p => {
             if (p.status !== 'PAID' || p.type !== 'RENT') return false;
             const paidDate = p.paidDate ? new Date(p.paidDate) : null;
@@ -131,13 +131,13 @@ export function Dashboard() {
     }
 
     // Calcular inquilinos activos del mes actual y anterior
-    const currentMonthActiveTenants = state.tenants.filter(t => {
+    const currentMonthActiveTenants = tenants.filter(t => {
         if (t.status !== 'ACTIVE') return false;
         const createdAt = t.createdAt ? new Date(t.createdAt) : null;
         return createdAt && createdAt.getMonth() <= currentMonth && createdAt.getFullYear() <= currentYear;
     }).length;
 
-    const lastMonthActiveTenants = state.tenants.filter(t => {
+    const lastMonthActiveTenants = tenants.filter(t => {
         if (t.status !== 'ACTIVE') return false;
         const createdAt = t.createdAt ? new Date(t.createdAt) : null;
         // Debe haber sido creado antes o durante el mes anterior y seguir activo
@@ -156,20 +156,20 @@ export function Dashboard() {
     }
 
     // --- RESTO DE LA LÓGICA DEL COMPONENTE (SIN CAMBIOS) ---
-    const totalProperties = state.properties.length;
-    const occupiedProperties = state.properties.filter(p => p.status === 'RENTED').length;
+    const totalProperties = properties.length;
+    const occupiedProperties = properties.filter(p => p.status === 'RENTED').length;
     const occupancyRate = totalProperties > 0 ? ((occupiedProperties / totalProperties) * 100).toFixed(1) : '0';
     
-    const totalRevenue = state.payments
+    const totalRevenue = payments
         .filter(p => p.status === 'PAID' && p.type === 'RENT')
         .reduce((sum, p) => sum + p.amount, 0);
     
-    const overduePayments = state.payments.filter(p => {
+    const overduePayments = payments.filter(p => {
         if (p.status !== 'PENDING') return false;
         return new Date(p.dueDate) < new Date();
     }).length;
 
-    const pendingMaintenance = state.maintenanceRequests.filter(
+    const pendingMaintenance = maintenanceRequests.filter(
         m => m.status === 'OPEN' || m.status === 'IN_PROGRESS'
     ).length;
 
@@ -193,7 +193,7 @@ export function Dashboard() {
                     />
                     <StatsCard
                         title="Inquilinos Activos"
-                        value={state.tenants.filter(t => t.status === 'ACTIVE').length}
+                        value={tenants.filter(t => t.status === 'ACTIVE').length}
                         change={tenantsChange}
                         changeType={tenantsChangeType}
                         icon={Users}

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { MaintenanceRequest, Property, Tenant } from '../../types';
 import { X } from 'lucide-react';
 import { formatDateToYYYYMMDD } from '../../utils/formatDate';
+import { useToast } from '../../hooks/useToast';
 
 interface MaintenanceFormProps {
   request?: MaintenanceRequest;
@@ -13,6 +14,7 @@ interface MaintenanceFormProps {
 }
 
 export function MaintenanceForm({ request, properties, tenants, isOpen, onClose, onSave }: MaintenanceFormProps) {
+  const toast = useToast();
   const [formData, setFormData] = useState({
     propertyId: '',
     tenantId: '',
@@ -65,17 +67,30 @@ export function MaintenanceForm({ request, properties, tenants, isOpen, onClose,
     }
   }, [request]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
-      ...formData,
-      reportedDate: new Date(`${formData.reportedDate}T00:00:00`),
+    try {
+      await onSave({
+        ...formData,
+        reportedDate: new Date(`${formData.reportedDate}T00:00:00`),
         completedDate: formData.completedDate ? new Date(`${formData.completedDate}T00:00:00`) : undefined,
-      tenantId: formData.tenantId || undefined,
-      estimatedCost: formData.estimatedCost || undefined,
-      actualCost: formData.actualCost || undefined
-    });
-    onClose();
+        tenantId: formData.tenantId || undefined,
+        estimatedCost: formData.estimatedCost || undefined,
+        actualCost: formData.actualCost || undefined
+      });
+      toast.success(
+        request ? 'Mantenimiento actualizado' : 'Mantenimiento creado',
+        request ? 'La solicitud se actualizó correctamente.' : 'La solicitud se creó correctamente.'
+      );
+      onClose();
+    } catch (error: any) {
+      let msg = error?.error || error?.message || 'No se pudo guardar la solicitud.';
+      if (error?.details && Array.isArray(error.details)) {
+        msg = error.details.map((d: any) => `${d.field ? d.field + ': ' : ''}${d.message}`).join(' | ');
+      }
+      toast.error('Error al guardar solicitud', msg);
+      console.error('Error saving maintenance:', error);
+    }
   };
 
   if (!isOpen) return null;

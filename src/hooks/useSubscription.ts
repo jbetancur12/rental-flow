@@ -27,7 +27,7 @@ interface SubscriptionUsage {
 
 export function useSubscription() {
     const { state: authState } = useAuth();
-    const { state: appState } = useApp();
+    const appState = useApp();
 
 
     const { subscription, organization } = authState;

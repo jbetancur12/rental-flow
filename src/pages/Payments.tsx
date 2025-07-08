@@ -10,6 +10,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { useConfirm } from '../hooks/useConfirm';
 import { ConfirmDialog } from '../components/UI/ConfirmDialog';
 import { formatDateInUTC } from '../utils/formatDate';
+import { useToast } from '../hooks/useToast';
 
 const statusDisplayNames = {
   PAID: 'Pagado',
@@ -21,8 +22,9 @@ const statusDisplayNames = {
 };
 
 export function Payments() {
+  const toast = useToast();
   const { isOpen: isConfirmOpen, options: confirmOptions, confirm, handleConfirm, handleCancel } = useConfirm();
-  const { state, updatePayment, loadPayments, createPayment, updatePaymentStatus } = useApp();
+  const { payments, tenants, properties, contracts, units, updatePayment, loadPayments, createPayment, updatePaymentStatus } = useApp();
   const [filter, setFilter] = useState<'all' | 'PENDING' | 'PAID' | 'OVERDUE'>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPayment, setEditingPayment] = useState<Payment | undefined>();
@@ -41,10 +43,10 @@ export function Payments() {
 
 
 useEffect(() => {
-    if (state.payments.length === 0) {
+    if (payments.length === 0) {
         loadPayments();
     }
-}, [state.payments.length, loadPayments]);
+}, [payments.length, loadPayments]);
 
   // NEW: Listen for receipt generation events
   useEffect(() => {
@@ -52,25 +54,23 @@ useEffect(() => {
       const { paymentData, isNewPayment } = event.detail;
 
       if (isNewPayment) {
-        // For new payments, we need to wait for the payment to be created
         setTimeout(async () => {
-          const latestPayment = state.payments[state.payments.length - 1];
+          const latestPayment = payments[payments.length - 1];
           if (latestPayment) {
-            await generateReceiptForPayment(latestPayment.id, state.payments, state.tenants, state.properties, state.contracts);
+            await generateReceiptForPayment(latestPayment.id, payments, tenants, properties, contracts);
           }
         }, 500);
       } else {
-        // For existing payments, generate receipt immediately
-        const payment = state.payments.find(p => p.contractId === paymentData.contractId && p.tenantId === paymentData.tenantId);
+        const payment = payments.find(p => p.contractId === paymentData.contractId && p.tenantId === paymentData.tenantId);
         if (payment) {
-          await generateReceiptForPayment(payment.id, state.payments, state.tenants, state.properties, state.contracts);
+          await generateReceiptForPayment(payment.id, payments, tenants, properties, contracts);
         }
       }
     };
 
     window.addEventListener('generateReceipt', handleGenerateReceipt);
     return () => window.removeEventListener('generateReceipt', handleGenerateReceipt);
-  }, [state.payments, state.tenants, state.properties, state.contracts]);
+  }, [payments, tenants, properties, contracts]);
 
   const getPaymentStatus = (payment: Payment) => {
     if (payment.status === 'PAID') return 'PAID';
@@ -78,7 +78,7 @@ useEffect(() => {
     return payment.status;
   };
 
-  const filteredPayments = state.payments.filter(payment => {
+  const filteredPayments = payments.filter(payment => {
     if (filter === 'all') return true;
     if (filter === 'OVERDUE') return getPaymentStatus(payment) === 'OVERDUE';
     return payment.status === filter;
@@ -86,7 +86,7 @@ useEffect(() => {
 
   // NEW: Filtrar datos para KPIs
   const getFilteredKPIData = () => {
-    let filtered = state.payments;
+    let filtered = payments;
 
     // Filtro por mes/año
     if (kpiFilters.month && kpiFilters.year) {
@@ -99,8 +99,8 @@ useEffect(() => {
 
     // Filtro por unidad
     if (kpiFilters.unitId) {
-      const unitProperties = state.properties.filter(p => p.unitId === kpiFilters.unitId);
-      const unitContracts = state.contracts.filter(c =>
+      const unitProperties = properties.filter(p => p.unitId === kpiFilters.unitId);
+      const unitContracts = contracts.filter(c =>
         unitProperties.some(p => p.id === c.propertyId)
       );
       filtered = filtered.filter(p =>
@@ -110,8 +110,8 @@ useEffect(() => {
 
     // Filtro por tipo de propiedad
     if (kpiFilters.propertyType !== 'all') {
-      const typeProperties = state.properties.filter(p => p.type === kpiFilters.propertyType);
-      const typeContracts = state.contracts.filter(c =>
+      const typeProperties = properties.filter(p => p.type === kpiFilters.propertyType);
+      const typeContracts = contracts.filter(c =>
         typeProperties.some(p => p.id === c.propertyId)
       );
       filtered = filtered.filter(p =>
@@ -141,7 +141,7 @@ useEffect(() => {
   const monthlyTrendData = Array.from({ length: 6 }, (_, i) => {
     const month = new Date();
     month.setMonth(month.getMonth() - (5 - i));
-    const monthPayments = state.payments.filter(p =>
+    const monthPayments = payments.filter(p =>
       new Date(p.dueDate).getMonth() === month.getMonth() &&
       new Date(p.dueDate).getFullYear() === month.getFullYear()
     );
@@ -178,14 +178,14 @@ useEffect(() => {
   };
 
   const getTenantName = (tenantId: string) => {
-    const tenant = state.tenants.find(t => t.id === tenantId);
+    const tenant = tenants.find(t => t.id === tenantId);
     return tenant ? `${tenant.firstName} ${tenant.lastName}` : 'Inquilino Desconocido';
   };
 
   const getPropertyName = (contractId: string) => {
-    const contract = state.contracts.find(c => c.id === contractId);
+    const contract = contracts.find(c => c.id === contractId);
     if (!contract) return 'Propiedad Desconocida';
-    const property = state.properties.find(p => p.id === contract.propertyId);
+    const property = properties.find(p => p.id === contract.propertyId);
     return property?.name || 'Propiedad Desconocida';
   };
 
@@ -205,17 +205,18 @@ useEffect(() => {
       title: 'Anular Pago',
       message: '¿Está seguro? Esta acción es para corregir un pago registrado por error. El pago se marcará como ANULADO.',
       confirmText: 'Sí, Anular',
-      type: 'warning' // Un color de advertencia es más adecuado que 'danger'
+      type: 'warning'
     });
-
     if (confirmed) {
       try {
         await updatePaymentStatus(id, 'CANCELLED');
-      } catch (error) {
-        console.error("Error al anular el pago:", error);
+        toast.success('Pago anulado', 'El pago fue marcado como ANULADO.');
+      } catch (error: any) {
+        const msg = error?.error || error?.message || 'No se pudo anular el pago.';
+        toast.error('Error al anular pago', msg);
       }
     }
-  }
+  };
 
   const handleRefundPayment = async (id: string) => {
     const confirmed = await confirm({
@@ -224,19 +225,20 @@ useEffect(() => {
       confirmText: 'Sí, Reembolsar',
       type: 'danger'
     });
-
     if (confirmed) {
       try {
         await updatePaymentStatus(id, 'REFUNDED');
-      } catch (error) {
-        console.error("Error al registrar el reembolso:", error);
+        toast.success('Pago reembolsado', 'El pago fue marcado como REEMBOLSADO.');
+      } catch (error: any) {
+        const msg = error?.error || error?.message || 'No se pudo reembolsar el pago.';
+        toast.error('Error al reembolsar pago', msg);
       }
     }
   };
 
   // NEW: Generate receipt for existing payment
   const handleGenerateReceipt = async (payment: Payment) => {
-    await generateReceiptForPayment(payment.id, state.payments, state.tenants, state.properties, state.contracts);
+    await generateReceiptForPayment(payment.id, payments, tenants, properties, contracts);
   };
 
   const handleSavePayment = async (paymentData: Omit<Payment, 'id'>) => {
@@ -253,18 +255,18 @@ useEffect(() => {
   };
 
   const handleGenerateReport = () => {
-    generateFinancialReport(filteredPayments, state.contracts, state.tenants, state.properties);
+    generateFinancialReport(filteredPayments, contracts, tenants, properties);
   };
 
   const getCountForStatus = (statusValue: string) => {
     if (statusValue === 'all') {
-      return state.payments.length;
+      return payments.length;
     }
 
     if (statusValue === 'OVERDUE') {
-      return state.payments.filter(p => getPaymentStatus(p) === 'OVERDUE').length;
+      return payments.filter(p => getPaymentStatus(p) === 'OVERDUE').length;
     }
-    return state.payments.filter(p => p.status === statusValue).length;
+    return payments.filter(p => p.status === statusValue).length;
   };
 
   return (
@@ -336,7 +338,7 @@ useEffect(() => {
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Todas las Unidades</option>
-                    {state.units.map(unit => (
+                    {units.map(unit => (
                       <option key={unit.id} value={unit.id}>{unit.name}</option>
                     ))}
                   </select>
@@ -458,7 +460,7 @@ useEffect(() => {
               <div>
                 <p className="text-sm text-slate-600">Total Recaudado</p>
                 <p className="text-2xl font-bold text-emerald-600">
-                  ${state.payments.filter(p => p.status === 'PAID').reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
+                  ${payments.filter(p => p.status === 'PAID').reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
                 </p>
               </div>
               <CheckCircle className="w-8 h-8 text-emerald-600" />
@@ -470,7 +472,7 @@ useEffect(() => {
               <div>
                 <p className="text-sm text-slate-600">Pendiente</p>
                 <p className="text-2xl font-bold text-yellow-600">
-                  ${state.payments.filter(p => p.status === 'PENDING').reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
+                  ${payments.filter(p => p.status === 'PENDING').reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
                 </p>
               </div>
               <Clock className="w-8 h-8 text-yellow-600" />
@@ -494,7 +496,7 @@ useEffect(() => {
               <div>
                 <p className="text-sm text-slate-600">Este Mes</p>
                 <p className="text-2xl font-bold text-blue-600">
-                  ${state.payments.filter(p => new Date(p.dueDate).getMonth() === new Date().getMonth()).reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
+                  ${payments.filter(p => new Date(p.dueDate).getMonth() === new Date().getMonth()).reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
                 </p>
               </div>
               <CreditCard className="w-8 h-8 text-blue-600" />
@@ -673,8 +675,8 @@ useEffect(() => {
 
       <PaymentForm
         payment={editingPayment}
-        contracts={state.contracts}
-        tenants={state.tenants}
+        contracts={contracts}
+        tenants={tenants}
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
         onSave={handleSavePayment}

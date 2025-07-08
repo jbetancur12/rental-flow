@@ -5,6 +5,8 @@ import { SubscriptionBanner } from './SubscriptionBanner';
 import { Suspense } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useMemo } from 'react';
+import { useApp } from '../../context/useApp';
+import { useEffect } from 'react';
 
 function useSubscriptionBannerVisible() {
   const { state } = useAuth();
@@ -20,6 +22,16 @@ function useSubscriptionBannerVisible() {
 }
 
 export function Layout() {
+  const { loadUnits, loadProperties, loadPayments, loadContracts, getTenants, loadMaintenanceRequests } = useApp();
+  useEffect(() => {
+    // Carga global de datos al montar el layout principal
+    loadUnits();
+    loadProperties();
+    loadPayments();
+    loadContracts();
+    getTenants();
+    loadMaintenanceRequests();
+  }, [loadUnits, loadProperties, loadPayments, loadContracts, getTenants, loadMaintenanceRequests]);
   const bannerVisible = useSubscriptionBannerVisible();
   return (
     <div className="flex h-screen bg-slate-50">

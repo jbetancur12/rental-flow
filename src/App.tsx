@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { AppProvider } from './context/AppContext';
 import { AuthGuard } from './components/Auth/AuthGuard';
 import { Layout } from './components/Layout/Layout';
 import { ToastContainer } from './components/UI/ToastContainer';
@@ -73,15 +72,12 @@ function App() {
   return (
     <ToastProvider>
       <AuthProvider>
-        {/* 2. AppProvider se mueve aquí para que su estado sea global y persistente */}
-        <AppProvider>
           <Router>
             <AuthGuard fallback={<Suspense fallback={<div>Cargando...</div>}><Auth /></Suspense>}>
               <AppRoutes />
             </AuthGuard>
             <ToastContainer />
           </Router>
-        </AppProvider>
       </AuthProvider>
     </ToastProvider>
   );

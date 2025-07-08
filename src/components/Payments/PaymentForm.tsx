@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Payment, Contract, Tenant } from '../../types';
 import { X } from 'lucide-react';
+import { useToast } from '../../hooks/useToast';
 
 interface PaymentFormProps {
   payment?: Payment;
@@ -12,6 +13,7 @@ interface PaymentFormProps {
 }
 
 export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSave }: PaymentFormProps) {
+  const toast = useToast();
   const [formData, setFormData] = useState({
     contractId: '',
     tenantId: '',
@@ -71,32 +73,40 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const paymentData = {
       ...formData,
       dueDate: new Date(formData.dueDate),
       paidDate: formData.paidDate ? new Date(formData.paidDate) : undefined
     };
-
-    onSave(paymentData);
-
-    // NEW: Generate receipt if payment is marked as PAID and option is checked
-    if (formData.status === 'PAID' && formData.paidDate && generateReceipt) {
-      // This will be handled in the parent component
-      setTimeout(() => {
-        const event = new CustomEvent('generateReceipt', {
-          detail: {
-            paymentData,
-            isNewPayment: !payment
-          }
-        });
-        window.dispatchEvent(event);
-      }, 100);
+    try {
+      await onSave(paymentData);
+      toast.success(
+        payment ? 'Pago actualizado' : 'Pago registrado',
+        payment ? 'El pago se actualizó correctamente.' : 'El pago se registró correctamente.'
+      );
+      // NEW: Generate receipt if payment is marked as PAID and option is checked
+      if (formData.status === 'PAID' && formData.paidDate && generateReceipt) {
+        setTimeout(() => {
+          const event = new CustomEvent('generateReceipt', {
+            detail: {
+              paymentData,
+              isNewPayment: !payment
+            }
+          });
+          window.dispatchEvent(event);
+        }, 100);
+      }
+      onClose();
+    } catch (error: any) {
+      let msg = error?.error || error?.message || 'No se pudo guardar el pago.';
+      if (error?.details && Array.isArray(error.details)) {
+        msg = error.details.map((d: any) => `${d.field ? d.field + ': ' : ''}${d.message}`).join(' | ');
+      }
+      toast.error('Error al guardar pago', msg);
+      console.error('Error saving payment:', error);
     }
-
-    onClose();
   };
 
   if (!isOpen) return null;

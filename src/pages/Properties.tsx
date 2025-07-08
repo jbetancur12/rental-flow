@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Header } from '../components/Layout/Header';
 import { PropertyCard } from '../components/Properties/PropertyCard';
 import { PropertyForm } from '../components/Properties/PropertyForm';
@@ -9,10 +9,12 @@ import { useApp } from '../context/useApp';
 import { ConfirmDialog } from '../components/UI/ConfirmDialog';
 import { useConfirm } from '../hooks/useConfirm';
 import { useSubscription } from '../hooks/useSubscription';
+import { useToast } from '../hooks/useToast';
 
 export function Properties() {
-  const { state, dispatch, updateProperty, updateTenant, updateContract, deleteProperty } = useApp();
+  const { properties, contracts, tenants, payments, units, updateProperty, updateTenant, updateContract, deleteProperty, createProperty, loadUnits, loadProperties } = useApp();
   const { limits, isLimitExceeded } = useSubscription();
+  const toast = useToast();
 
   const { isOpen: isConfirmOpen, options: confirmOptions, confirm, handleConfirm, handleCancel } = useConfirm();
 
@@ -29,26 +31,29 @@ export function Properties() {
 
  const limitReached = isLimitExceeded('properties');
 
+  // Cargar unidades y propiedades al montar la página
+  useEffect(() => {
+    if (units.length === 0) {
+      loadUnits();
+    }
+    if (properties.length === 0) {
+      loadProperties();
+    }
+  }, [units.length, properties.length, loadUnits, loadProperties]);
 
   const filteredProperties = useMemo(() => {
-    // 1. Empieza con todas las propiedades
-    let properties = state.properties;
-
-    // 2. Aplica el filtro de estado (ej: 'RENTED', 'AVAILABLE')
+    let filtered = properties;
     if (filter !== 'all') {
-      properties = properties.filter(p => p.status === filter);
+      filtered = filtered.filter(p => p.status === filter);
     }
-
-    // 3. Aplica el filtro de búsqueda por texto sobre el resultado anterior
     if (searchQuery) {
-      properties = properties.filter(property =>
+      filtered = filtered.filter(property =>
         property.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         property.unitName?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
-
-    return properties;
-  }, [state.properties, filter, searchQuery]);
+    return filtered;
+  }, [properties, filter, searchQuery]);
 
   const handleNewProperty = () => {
     setEditingProperty(undefined);
@@ -76,7 +81,6 @@ export function Properties() {
   };
 
   const handleTerminateContract = async (property: Property) => {
-
     const confirmed = await confirm({
       title: 'Delete Unit',
       message: `¿Está seguro de que desea terminar el contrato de esta propiedad?`,
@@ -84,119 +88,90 @@ export function Properties() {
       type: 'danger'
     });
     if (confirmed) {
-      // Find active contract
-      const activeContract = state.contracts.find(c =>
+      const activeContract = contracts.find(c =>
         c.propertyId === property.id && c.status === 'ACTIVE'
       );
-
       if (activeContract) {
-        // Update contract status
         const updatedContract = {
           ...activeContract,
           status: 'TERMINATED' as const,
           terminationDate: new Date(),
           actionContext: "TERMINATED"
         };
-
-        // Update property status
         const updatedProperty = {
           ...property,
           status: 'AVAILABLE' as const,
           updatedAt: new Date(),
           actionContext: "MAKE_AVAILABLE"
-
         };
-
-        // Update tenant status
-        const tenant = state.tenants.find(t => t.id === activeContract.tenantId);
-
+        const tenant = tenants.find(t => t.id === activeContract.tenantId);
         if (tenant) {
           const updatedTenant = {
             ...tenant,
             status: 'FORMER' as const
           };
           await updateTenant(updatedTenant.id, updatedTenant);
-
         }
         await updateContract(updatedContract.id, updatedContract);
         await updateProperty(updatedProperty.id, updatedProperty);
-
       }
     }
   };
 
   const handleDeleteProperty = async (id: string) => {
-
     const confirmed = await confirm({
       title: 'Delete Unit',
       message: `¿Está seguro de que desea eliminar esta propiedad?`,
       confirmText: 'Eliminar',
       type: 'danger'
     });
-
     if (confirmed) {
-      await deleteProperty(id);
+      try {
+        await deleteProperty(id);
+        toast.success('Propiedad eliminada', 'La propiedad se eliminó correctamente.');
+      } catch (error: any) {
+        const msg = error?.error || error?.message || 'No se pudo eliminar la propiedad.';
+        toast.error('Error al eliminar propiedad', msg);
+      }
     }
   };
 
-  const handleSaveProperty = (propertyData: Omit<Property, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const handleSaveProperty = async (propertyData: Omit<Property, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (editingProperty) {
-      dispatch({
-        type: 'UPDATE_PROPERTY',
-        payload: {
-          ...propertyData,
-          id: editingProperty.id,
-          createdAt: editingProperty.createdAt,
-          updatedAt: new Date()
-        }
-      });
+      await updateProperty(editingProperty.id, propertyData);
     } else {
-      dispatch({
-        type: 'ADD_PROPERTY',
-        payload: {
-          ...propertyData,
-          id: `prop-${Date.now()}`,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        }
-      });
+      await createProperty(propertyData);
     }
   };
 
   // Calculate overdue properties
-  const overdueProperties = state.properties.filter(property => {
+  const overdueProperties = properties.filter(property => {
     if (property.status !== 'RENTED') return false;
-    const activeContract = state.contracts.find(c =>
+    const activeContract = contracts.find(c =>
       c.propertyId === property.id && c.status === 'ACTIVE'
     );
     if (!activeContract) return false;
-
-    const overduePayments = state.payments.filter(p =>
+    const overduePayments = payments.filter(p =>
       p.contractId === activeContract.id &&
       p.status === 'PENDING' &&
       new Date(p.dueDate) < new Date()
     );
-
     return overduePayments.length > 0;
   });
 
   // Get payment modal data
   const getPaymentModalData = () => {
     if (!paymentProperty) return {};
-
-    const activeContract = state.contracts.find(c =>
+    const activeContract = contracts.find(c =>
       c.propertyId === paymentProperty.id && c.status === 'ACTIVE'
     );
-
     if (!activeContract) return {};
-
-    const tenant = state.tenants.find(t => t.id === activeContract.tenantId);
-    const overduePayments = state.payments.filter(p =>
+    const tenant = tenants.find(t => t.id === activeContract.tenantId);
+    const overduePayments = payments.filter(p =>
       p.contractId === activeContract.id &&
       p.status === 'PENDING' &&
       new Date(p.dueDate) < new Date()
     );
-
     return { tenant, contract: activeContract, overduePayments };
   };
 
@@ -224,7 +199,7 @@ export function Properties() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-600">Total de Propiedades</p>
-                <p className="text-2xl font-bold text-slate-900">{state.properties.length}</p>
+                <p className="text-2xl font-bold text-slate-900">{properties.length}</p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                 <span className="text-2xl">🏢</span>
@@ -237,7 +212,7 @@ export function Properties() {
               <div>
                 <p className="text-sm text-slate-600">Disponibles</p>
                 <p className="text-2xl font-bold text-emerald-600">
-                  {state.properties.filter(p => p.status === 'AVAILABLE').length}
+                  {properties.filter(p => p.status === 'AVAILABLE').length}
                 </p>
               </div>
               <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
@@ -251,7 +226,7 @@ export function Properties() {
               <div>
                 <p className="text-sm text-slate-600">Alquiladas</p>
                 <p className="text-2xl font-bold text-blue-600">
-                  {state.properties.filter(p => p.status === 'RENTED').length}
+                  {properties.filter(p => p.status === 'RENTED').length}
                 </p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -294,11 +269,11 @@ export function Properties() {
                         'Mantenimiento'}
                 {status !== 'all' && (
                   <span className="ml-2 text-xs">
-                    ({state.properties.filter(p => p.status === status).length})
+                    ({properties.filter(p => p.status === status).length})
                   </span>
                 )}
                 {status === 'all' && (
-                  <span className="ml-2 text-xs">({state.properties.length})</span>
+                  <span className="ml-2 text-xs">({properties.length})</span>
                 )}
               </button>
             ))}

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Property } from '../../types';
 import { useApp } from '../../context/useApp';
 import { X, Upload } from 'lucide-react';
+import { useToast } from '../../hooks/useToast';
 
 interface PropertyFormProps {
   property?: Property;
@@ -11,7 +12,8 @@ interface PropertyFormProps {
 }
 
 export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
-  const { state, createProperty, updateProperty } = useApp();
+  const { units, createProperty, updateProperty } = useApp();
+  const toast = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -70,12 +72,10 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
     try {
       // Get unit info to set address
-      const selectedUnit = state.units.find(u => u.id === formData.unitId);
+      const selectedUnit = units.find((u: any) => u.id === formData.unitId);
       let finalAddress = formData.address;
-      
       if (selectedUnit) {
         if (selectedUnit.type === 'BUILDING' && formData.unitNumber) {
           finalAddress = `${selectedUnit.address}, Unidad ${formData.unitNumber}`;
@@ -83,20 +83,24 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
           finalAddress = selectedUnit.address;
         }
       }
-      
       const propertyData = {
         ...formData,
         address: finalAddress
       };
-
       if (property) {
         await updateProperty(property.id, propertyData);
+        toast.success('Propiedad actualizada', 'La propiedad se actualizó correctamente.');
       } else {
         await createProperty(propertyData);
+        toast.success('Propiedad creada', 'La propiedad se agregó correctamente.');
       }
-      
       onClose();
-    } catch (error) {
+    } catch (error: any) {
+      let msg = error?.error || error?.message || 'No se pudo guardar la propiedad.';
+      if (error?.details && Array.isArray(error.details)) {
+        msg = error.details.map((d: any) => `${d.field ? d.field + ': ' : ''}${d.message}`).join(' | ');
+      }
+      toast.error('Error al guardar propiedad', msg);
       console.error('Error saving property:', error);
     } finally {
       setIsSubmitting(false);
@@ -121,7 +125,7 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
   };
 
   const handleUnitChange = (unitId: string) => {
-    const selectedUnit = state.units.find(u => u.id === unitId);
+    const selectedUnit = units.find((u: any) => u.id === unitId);
     if (selectedUnit) {
       // Auto-set property type based on unit type
       let propertyType: Property['type'] = 'APARTMENT';
@@ -150,7 +154,7 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
 
   if (!isOpen) return null;
 
-  const selectedUnit = state.units.find(u => u.id === formData.unitId);
+  const selectedUnit = units.find((u: any) => u.id === formData.unitId);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -174,7 +178,7 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Seleccionar Unidad <span className="text-red-500">*</span>
             </label>
-            {state.units.length === 0 ? (
+            {units.length === 0 ? (
               <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                 <p className="text-yellow-800 text-sm">
                   ⚠️ No hay unidades disponibles. Por favor, cree unidades primero en la sección de Unidades.
@@ -189,7 +193,7 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
                 disabled={isSubmitting}
               >
                 <option value="">Elegir una unidad...</option>
-                {state.units.map((unit) => (
+                {units.map((unit: any) => (
                   <option key={unit.id} value={unit.id}>
                     {unit.name} - {unit.type === 'BUILDING' ? 'Edificio' : 
                                    unit.type === 'HOUSE' ? 'Casa' : 'Comercial'} ({unit.address})

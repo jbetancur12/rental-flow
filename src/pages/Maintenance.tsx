@@ -10,7 +10,7 @@ import { ConfirmDialog } from '../components/UI/ConfirmDialog';
 import { useConfirm } from '../hooks/useConfirm';
 
 export function Maintenance() {
-  const { state, updateMaintenanceRequest, createMaintenanceRequest,markMaintenanceAsComplete, loadMaintenanceRequests, loadProperties, loadUnits, asignMaintenanceTechinician } = useApp();
+  const { maintenanceRequests, units, properties, tenants, updateMaintenanceRequest, createMaintenanceRequest, markMaintenanceAsComplete, loadMaintenanceRequests, loadProperties, loadUnits, asignMaintenanceTechinician } = useApp();
     const { isOpen: isConfirmOpen, options: confirmOptions, confirm, handleConfirm, handleCancel } = useConfirm();
   
   // FIX: Estados para filtros funcionando
@@ -40,13 +40,13 @@ useEffect(() => {
       //    Solo añadimos la promesa si los datos correspondientes no han sido cargados.
       const promisesToFetch = [];
 
-      if (state.units.length === 0) {
+      if (units.length === 0) {
         promisesToFetch.push(loadUnits());
       }
-      if (state.properties.length === 0) {
+      if (properties.length === 0) {
         promisesToFetch.push(loadProperties());
       }
-      if (state.maintenanceRequests.length === 0) {
+      if (maintenanceRequests.length === 0) {
         promisesToFetch.push(loadMaintenanceRequests());
       }
       
@@ -72,7 +72,7 @@ useEffect(() => {
   // FIX: Filtros funcionando correctamente
     const filteredRequests = useMemo(() => {
       
-        return state.maintenanceRequests.filter(request => {
+        return maintenanceRequests.filter(request => {
             if (statusFilter !== 'all' && request.status !== statusFilter) {
                 return false;
             }
@@ -91,7 +91,7 @@ useEffect(() => {
             }
             return true;
         });
-    }, [state.maintenanceRequests, statusFilter, monthFilter, yearFilter]);
+    }, [maintenanceRequests, statusFilter, monthFilter, yearFilter]);
 
   const getPriorityColor = (priority: string) => {
     const colors = {
@@ -126,13 +126,13 @@ useEffect(() => {
   };
 
   const getPropertyName = (propertyId: string) => {
-    const property = state.properties.find(p => p.id === propertyId);
+    const property = properties.find(p => p.id === propertyId);
     return property?.name || 'Propiedad Desconocida';
   };
 
   const getTenantName = (tenantId?: string) => {
     if (!tenantId) return 'Administración de Propiedades';
-    const tenant = state.tenants.find(t => t.id === tenantId);
+    const tenant = tenants.find(t => t.id === tenantId);
     return tenant ? `${tenant.firstName} ${tenant.lastName}` : 'Inquilino Desconocido';
   };
 
@@ -260,13 +260,13 @@ const handleMarkComplete = async (request: MaintenanceRequest) => {
   };
 
   const handleGenerateReport = () => {
-    generateMaintenanceReport(filteredRequests, state.properties);
+    generateMaintenanceReport(filteredRequests, properties);
   };
 
   // Contadores para tabs
   const getStatusCount = (status: string) => {
-    if (status === 'all') return state.maintenanceRequests.length;
-    return state.maintenanceRequests.filter(r => r.status === status).length;
+    if (status === 'all') return maintenanceRequests.length;
+    return maintenanceRequests.filter(r => r.status === status).length;
   };
 
   return (
@@ -285,7 +285,7 @@ const handleMarkComplete = async (request: MaintenanceRequest) => {
               <div>
                 <p className="text-sm text-slate-600">Solicitudes Abiertas</p>
                 <p className="text-2xl font-bold text-red-600">
-                  {state.maintenanceRequests.filter(r => r.status === 'OPEN').length}
+                  {maintenanceRequests.filter(r => r.status === 'OPEN').length}
                 </p>
               </div>
               <AlertTriangle className="w-8 h-8 text-red-600" />
@@ -297,7 +297,7 @@ const handleMarkComplete = async (request: MaintenanceRequest) => {
               <div>
                 <p className="text-sm text-slate-600">En Progreso</p>
                 <p className="text-2xl font-bold text-yellow-600">
-                  {state.maintenanceRequests.filter(r => r.status === 'IN_PROGRESS').length}
+                  {maintenanceRequests.filter(r => r.status === 'IN_PROGRESS').length}
                 </p>
               </div>
               <Clock className="w-8 h-8 text-yellow-600" />
@@ -309,7 +309,7 @@ const handleMarkComplete = async (request: MaintenanceRequest) => {
               <div>
                 <p className="text-sm text-slate-600">Completadas</p>
                 <p className="text-2xl font-bold text-emerald-600">
-                  {state.maintenanceRequests.filter(r => r.status === 'COMPLETED').length}
+                  {maintenanceRequests.filter(r => r.status === 'COMPLETED').length}
                 </p>
               </div>
               <Wrench className="w-8 h-8 text-emerald-600" />
@@ -321,7 +321,7 @@ const handleMarkComplete = async (request: MaintenanceRequest) => {
               <div>
                 <p className="text-sm text-slate-600">Costo Total</p>
                 <p className="text-2xl font-bold text-blue-600">
-                  ${state.maintenanceRequests.reduce((sum, r) => sum + (r.actualCost || r.estimatedCost || 0), 0).toLocaleString()}
+                  ${maintenanceRequests.reduce((sum, r) => sum + (r.actualCost || r.estimatedCost || 0), 0).toLocaleString()}
                 </p>
               </div>
               <DollarSign className="w-8 h-8 text-blue-600" />
@@ -550,8 +550,8 @@ const handleMarkComplete = async (request: MaintenanceRequest) => {
       {/* Maintenance Form Modal */}
       <MaintenanceForm
         request={editingRequest}
-        properties={state.properties}
-        tenants={state.tenants}
+        properties={properties}
+        tenants={tenants}
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
         onSave={handleSaveRequest}

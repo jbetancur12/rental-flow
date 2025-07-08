@@ -6,7 +6,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { DollarSign, TrendingUp, FileText, Download, Filter } from 'lucide-react';
 
 export function Reports() {
-  const { state } = useApp();
+  const { payments, tenants, properties, contracts, units, maintenanceRequests } = useApp();
   
   // NEW: Filtros para KPIs
   const [filters, setFilters] = useState({
@@ -18,9 +18,9 @@ export function Reports() {
 
   // Filtrar datos basado en filtros
   const getFilteredData = () => {
-    let filteredPayments = state.payments;
-    let filteredProperties = state.properties;
-    let filteredContracts = state.contracts;
+    let filteredPayments = payments;
+    let filteredProperties = properties;
+    let filteredContracts = contracts;
 
     // Filtro por mes/año
     if (filters.month && filters.year) {
@@ -62,7 +62,7 @@ export function Reports() {
     filteredProperties.reduce((sum, p) => sum + p.rent, 0) / filteredProperties.length : 0;
   const occupancyRate = filteredProperties.length > 0 ? 
     (filteredProperties.filter(p => p.status === 'RENTED').length / filteredProperties.length) * 100 : 0;
-  const maintenanceCost = state.maintenanceRequests
+  const maintenanceCost = maintenanceRequests
     .filter(m => filteredProperties.some(p => p.id === m.propertyId))
     .reduce((sum, m) => sum + (m.actualCost || m.estimatedCost || 0), 0);
 
@@ -76,14 +76,14 @@ const monthlyRevenueData = useMemo(() => {
       const targetMonth = targetDate.getMonth();
       const targetYear = targetDate.getFullYear();
 
-      const revenue = state.payments
+      const revenue = payments
         .filter(p => {
           const paidDate = p.paidDate ? new Date(p.paidDate) : null;
           return p.status === 'PAID' && paidDate && paidDate.getMonth() === targetMonth && paidDate.getFullYear() === targetYear;
         })
         .reduce((sum, p) => sum + p.amount, 0);
 
-      const expenses = state.maintenanceRequests
+      const expenses = maintenanceRequests
         .filter(req => {
           const completedDate = req.completedDate ? new Date(req.completedDate) : null;
           return req.status === 'COMPLETED' && completedDate && completedDate.getMonth() === targetMonth && completedDate.getFullYear() === targetYear;
@@ -98,7 +98,7 @@ const monthlyRevenueData = useMemo(() => {
       });
     }
     return dataPoints;
-  }, [state.payments, state.maintenanceRequests]);
+  }, [payments, maintenanceRequests]);
 
   const propertyTypeData = [
     { name: 'Apartamentos', value: 60, count: filteredProperties.filter(p => p.type === 'APARTMENT').length },
@@ -114,24 +114,21 @@ const occupancyData = useMemo(() => {
         targetDate.setMonth(today.getMonth() - i);
         const targetMonth = targetDate.getMonth();
         const targetYear = targetDate.getFullYear();
-        
         // Contamos contratos activos en ese mes
-        const activeContractsThisMonth = state.contracts.filter(c => {
+        const activeContractsThisMonth = contracts.filter(c => {
             const startDate = new Date(c.startDate);
             const endDate = new Date(c.endDate);
             return c.status === 'ACTIVE' && startDate <= targetDate && endDate >= targetDate;
         }).length;
-        
-        const totalProperties = state.properties.length > 0 ? state.properties.length : 1;
+        const totalProperties = properties.length > 0 ? properties.length : 1;
         const rate = (activeContractsThisMonth / totalProperties) * 100;
-
         dataPoints.push({
             month: new Date(targetYear, targetMonth).toLocaleString('default', { month: 'short' }),
             rate: parseFloat(rate.toFixed(1)),
         });
     }
     return dataPoints;
-  }, [state.contracts, state.properties]);
+  }, [contracts, properties]);
 
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
 
@@ -140,20 +137,20 @@ const occupancyData = useMemo(() => {
   };
 
   const handleGenerateTenantReport = () => {
-    generateTenantReport(state.tenants);
+    generateTenantReport(tenants);
   };
 
   const handleGenerateFinancialReport = () => {
-    generateFinancialReport(filteredPayments, filteredContracts, state.tenants, state.properties);
+    generateFinancialReport(filteredPayments, filteredContracts, tenants, properties);
   };
 
   const handleGenerateMaintenanceReport = () => {
-    generateMaintenanceReport(state.maintenanceRequests, state.properties);
+    generateMaintenanceReport(maintenanceRequests, properties);
   };
 
   // NEW: Unit Report
   const handleGenerateUnitReport = () => {
-    generateUnitReport(state.units, state.properties);
+    generateUnitReport(units, properties);
   };
 
   return (
@@ -207,7 +204,7 @@ const occupancyData = useMemo(() => {
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Todas las Unidades</option>
-                {state.units.map(unit => (
+                {units.map(unit => (
                   <option key={unit.id} value={unit.id}>{unit.name}</option>
                 ))}
               </select>

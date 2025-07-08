@@ -11,11 +11,13 @@ import { Tenant } from '../types';
 import { useConfirm } from '../hooks/useConfirm';
 import { ConfirmDialog } from '../components/UI/ConfirmDialog';
 import { useSubscription } from '../hooks/useSubscription';
+import { useToast } from '../hooks/useToast';
 
 export function Tenants() {
-  const { state, createTenant, updateTenant, getTenants, deleteTenant } = useApp();
+  const { tenants, contracts, payments, properties, createTenant, updateTenant, getTenants, deleteTenant } = useApp();
   const { isOpen: isConfirmOpen, options: confirmOptions, confirm, handleConfirm, handleCancel } = useConfirm();
   const { limits, isLimitExceeded } = useSubscription();
+  const toast = useToast();
 
   const [filter, setFilter] = useState<'all' | 'PENDING' | 'APPROVED' | 'ACTIVE' | 'FORMER' | 'OVERDUE'>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -38,14 +40,14 @@ export function Tenants() {
   }, [getTenants]);
 
   useEffect(() => {
-    if (state.tenants.length === 0) {
+    if (tenants.length === 0) {
       fetchTenants();
     }
-  }, [state.tenants.length, fetchTenants]);
+  }, [tenants.length, fetchTenants]);
 
   // Get tenants with OVERDUE payments
-  const tenantsWithOverdue = state.tenants.filter(tenant => {
-    const overduePayments = state.payments.filter(p =>
+  const tenantsWithOverdue = tenants.filter(tenant => {
+    const overduePayments = payments.filter(p =>
       p.tenantId === tenant.id &&
       p.status === 'PENDING' &&
       new Date(p.dueDate) < new Date()
@@ -55,8 +57,8 @@ export function Tenants() {
 
   const filteredTenants = (() => {
     if (filter === 'OVERDUE') return tenantsWithOverdue;
-    if (filter === 'all') return state.tenants;
-    return state.tenants.filter(t => t.status === filter);
+    if (filter === 'all') return tenants;
+    return tenants.filter(t => t.status === filter);
   })();
 
   const handleNewTenant = () => {
@@ -87,9 +89,14 @@ export function Tenants() {
       type: 'danger'
     });
     if (confirmed) {
-      await deleteTenant(id);
+      try {
+        await deleteTenant(id);
+        toast.success('Inquilino eliminado', 'El inquilino se eliminó correctamente.');
+      } catch (error: any) {
+        const msg = error?.error || error?.message || 'No se pudo eliminar el inquilino.';
+        toast.error('Error al eliminar inquilino', msg);
+      }
     }
-
   };
 
   const handleSaveTenant = async (tenantData: Omit<Tenant, 'id'>) => {
@@ -111,18 +118,15 @@ export function Tenants() {
   const getPaymentModalData = () => {
     if (!paymentTenant) return {};
 
-    const activeContract = state.contracts.find(c =>
+    const activeContract = contracts.find(c =>
       c.tenantId === paymentTenant.id && c.status === 'ACTIVE'
     );
-
     if (!activeContract) return { tenant: paymentTenant };
-
-    const overduePayments = state.payments.filter(p =>
+    const overduePayments = payments.filter(p =>
       p.contractId === activeContract.id &&
       p.status === 'PENDING' &&
       new Date(p.dueDate) < new Date()
     );
-
     return { tenant: paymentTenant, contract: activeContract, overduePayments };
   };
 
@@ -148,7 +152,7 @@ export function Tenants() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-600">Total Inquilinos</p>
-                <p className="text-2xl font-bold text-slate-900">{state.tenants.length}</p>
+                <p className="text-2xl font-bold text-slate-900">{tenants.length}</p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                 <span className="text-2xl">👥</span>
@@ -161,7 +165,7 @@ export function Tenants() {
               <div>
                 <p className="text-sm text-slate-600">Activos</p>
                 <p className="text-2xl font-bold text-emerald-600">
-                  {state.tenants.filter(t => t.status === 'ACTIVE').length}
+                  {tenants.filter(t => t.status === 'ACTIVE').length}
                 </p>
               </div>
               <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
@@ -175,7 +179,7 @@ export function Tenants() {
               <div>
                 <p className="text-sm text-slate-600">Pendientes</p>
                 <p className="text-2xl font-bold text-yellow-600">
-                  {state.tenants.filter(t => t.status === 'PENDING').length}
+                  {tenants.filter(t => t.status === 'PENDING').length}
                 </p>
               </div>
               <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
@@ -189,7 +193,7 @@ export function Tenants() {
               <div>
                 <p className="text-sm text-slate-600">Aprobados</p>
                 <p className="text-2xl font-bold text-blue-600">
-                  {state.tenants.filter(t => t.status === 'APPROVED').length}
+                  {tenants.filter(t => t.status === 'APPROVED').length}
                 </p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -253,8 +257,8 @@ export function Tenants() {
                 {status === 'OVERDUE' && 'Vencidos'}
                 <span className="ml-2 text-xs">
                   ({status === 'OVERDUE' ? tenantsWithOverdue.length :
-                    status === 'all' ? state.tenants.length :
-                      state.tenants.filter(t => t.status === status).length})
+                    status === 'all' ? tenants.length :
+                      tenants.filter(t => t.status === status).length})
                 </span>
               </button>
             ))}
@@ -321,14 +325,12 @@ export function Tenants() {
       {selectedTenant && (
         (() => {
           // 1. Filtra los pagos para el inquilino seleccionado
-          const paymentsForSelectedTenant = state.payments
+          const paymentsForSelectedTenant = payments
           .filter(p => p.tenantId === selectedTenant.id)
-          .sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime()); // Opcional: ordenar por fecha
-          
-          const contractsForSelectedTenant = state.contracts
+          .sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime());
+          const contractsForSelectedTenant = contracts
           .filter(c => c.tenantId === selectedTenant.id)
-
-          const propertiesForSelectedTenant = state.properties
+          const propertiesForSelectedTenant = properties
             .filter(p => contractsForSelectedTenant.some(c => c.propertyId === p.id))
             
           return (

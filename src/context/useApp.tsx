@@ -1,10 +1,5 @@
-import { useContext } from "react";
-import { AppContext } from "./AppContext"; // Adjust the path as needed
+import { useAppStore } from '../store/useAppStore';
 
-  export function useApp() {
-    const context = useContext(AppContext);
-    if (!context) {
-      throw new Error('useApp must be used within an AppProvider');
-    }
-    return context;
-  }
+export function useApp() {
+  return useAppStore();
+}

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Tenant } from '../../types';
 import { X } from 'lucide-react';
 import { toMidnightUTC } from '../../utils/formatDate';
+import { useToast } from '../../hooks/useToast';
 
 interface TenantFormProps {
   tenant?: Tenant;
@@ -11,6 +12,7 @@ interface TenantFormProps {
 }
 
 export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps) {
+  const toast = useToast();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -70,10 +72,23 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
     }
   }, [tenant]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
-    onClose();
+    try {
+      await onSave(formData);
+      toast.success(
+        tenant ? 'Inquilino actualizado' : 'Inquilino creado',
+        tenant ? 'El inquilino se actualizó correctamente.' : 'El inquilino se creó correctamente.'
+      );
+      onClose();
+    } catch (error: any) {
+      let msg = error?.error || error?.message || 'No se pudo guardar el inquilino.';
+      if (error?.details && Array.isArray(error.details)) {
+        msg = error.details.map((d: any) => `${d.field ? d.field + ': ' : ''}${d.message}`).join(' | ');
+      }
+      toast.error('Error al guardar inquilino', msg);
+      console.error('Error saving tenant:', error);
+    }
   };
 
   if (!isOpen) return null;

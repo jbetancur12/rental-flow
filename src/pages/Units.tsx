@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from '../components/Layout/Header';
 import { UnitCard } from '../components/Units/UnitCard';
 import { UnitForm } from '../components/Units/UnitForm';
@@ -8,10 +8,12 @@ import { useConfirm } from '../hooks/useConfirm';
 import { ConfirmDialog } from '../components/UI/ConfirmDialog';
 import { Building2, Home, Store } from 'lucide-react';
 import { Unit } from '../types';
+import { useToast } from '../hooks/useToast';
 
 export function Units() {
-  const { state, dispatch, loadUnits, deleteUnit } = useApp();
+  const { units, properties, loadUnits, loadProperties, deleteUnit, createUnit, updateUnit } = useApp();
   const { isOpen: isConfirmOpen, options: confirmOptions, confirm, handleConfirm, handleCancel } = useConfirm();
+  const toast = useToast();
   const [filter, setFilter] = useState<'all' | 'BUILDING' | 'HOUSE' | 'COMMERCIAL'>('all');
   const [isUnitFormOpen, setIsUnitFormOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
@@ -20,23 +22,19 @@ export function Units() {
 
 
 
-  const fetchUnits = useCallback(async () => {
-    try {
-      await loadUnits();
-    } catch (error) {
-      console.error('Failed to load units:', error);
-    }
-  }, [loadUnits]);
-
+  // Cargar unidades y propiedades al montar la página
   useEffect(() => {
-    if (state.units.length === 0) {
-      fetchUnits();
+    if (units.length === 0) {
+      loadUnits();
     }
-  }, [state.units.length, fetchUnits]);
+    if (properties.length === 0) {
+      loadProperties();
+    }
+  }, [units.length, properties.length, loadUnits, loadProperties]);
 
   const filteredUnits = filter === 'all' 
-    ? state.units 
-    : state.units.filter(u => u.type === filter);
+    ? units 
+    : units.filter(u => u.type === filter);
 
   const handleNewUnit = () => {
     setEditingUnit(undefined);
@@ -54,48 +52,36 @@ export function Units() {
   };
 
   const handleDeleteUnit = async (id: string) => {
-    const unit = state.units.find(u => u.id === id);
-    const propertiesInUnit = state.properties.filter(p => p.unitId === id);
-    
+    const unit = units.find(u => u.id === id);
+    const propertiesInUnit = properties.filter(p => p.unitId === id);
     const confirmed = await confirm({
       title: 'Eliminar Unidad',
       message: `¿Estás seguro de que quieres eliminar "${unit?.name}"? Esto también eliminará ${propertiesInUnit.length} propiedades dentro de ella.`,
       confirmText: 'Eliminar',
       type: 'danger'
     });
-
     if (confirmed) {
-      await deleteUnit(id);
+      try {
+        await deleteUnit(id);
+        toast.success('Unidad eliminada', 'La unidad y sus propiedades se eliminaron correctamente.');
+      } catch (error: any) {
+        const msg = error?.error || error?.message || 'No se pudo eliminar la unidad.';
+        toast.error('Error al eliminar unidad', msg);
+      }
     }
   };
 
-  const handleSaveUnit = (unitData: Omit<Unit, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const handleSaveUnit = async (unitData: Omit<Unit, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (editingUnit) {
-      dispatch({
-        type: 'UPDATE_UNIT',
-        payload: {
-          ...unitData,
-          id: editingUnit.id,
-          createdAt: editingUnit.createdAt,
-          updatedAt: new Date()
-        }
-      });
+      await updateUnit(editingUnit.id, unitData);
     } else {
-      dispatch({
-        type: 'ADD_UNIT',
-        payload: {
-          ...unitData,
-          id: `unit-${Date.now()}`,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        }
-      });
+      await createUnit(unitData);
     }
   };
 
   // Get properties for each unit
   const getPropertiesForUnit = (unitId: string) => {
-    return state.properties.filter(p => p.unitId === unitId);
+    return properties.filter(p => p.unitId === unitId);
   };
 
   return (
@@ -113,7 +99,7 @@ export function Units() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-600">Total Unidades</p>
-                <p className="text-2xl font-bold text-slate-900">{state.units.length}</p>
+                <p className="text-2xl font-bold text-slate-900">{units.length}</p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                 <span className="text-2xl">🏢</span>
@@ -126,7 +112,7 @@ export function Units() {
               <div>
                 <p className="text-sm text-slate-600">Edificios</p>
                 <p className="text-2xl font-bold text-blue-600">
-                  {state.units.filter(u => u.type === 'BUILDING').length}
+                  {units.filter(u => u.type === 'BUILDING').length}
                 </p>
               </div>
               <Building2 className="w-8 h-8 text-blue-600" />
@@ -138,7 +124,7 @@ export function Units() {
               <div>
                 <p className="text-sm text-slate-600">Casas</p>
                 <p className="text-2xl font-bold text-emerald-600">
-                  {state.units.filter(u => u.type === 'HOUSE').length}
+                  {units.filter(u => u.type === 'HOUSE').length}
                 </p>
               </div>
               <Home className="w-8 h-8 text-emerald-600" />
@@ -150,7 +136,7 @@ export function Units() {
               <div>
                 <p className="text-sm text-slate-600">Comercial</p>
                 <p className="text-2xl font-bold text-orange-600">
-                  {state.units.filter(u => u.type === 'COMMERCIAL').length}
+                  {units.filter(u => u.type === 'COMMERCIAL').length}
                 </p>
               </div>
               <Store className="w-8 h-8 text-orange-600" />
@@ -177,11 +163,11 @@ export function Units() {
                 {type === 'COMMERCIAL' && 'Comercial'}
                 {type !== 'all' && (
                   <span className="ml-2 text-xs">
-                    ({state.units.filter(u => u.type === type).length})
+                    ({units.filter(u => u.type === type).length})
                   </span>
                 )}
                 {type === 'all' && (
-                  <span className="ml-2 text-xs">({state.units.length})</span>
+                  <span className="ml-2 text-xs">({units.length})</span>
                 )}
               </button>
             ))}

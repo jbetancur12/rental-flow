@@ -12,7 +12,7 @@ interface TenantCardProps {
 }
 
 export function TenantCard({ tenant, onEdit, onView, onDelete, onCollectPayment }: TenantCardProps) {
-  const { state } = useApp();
+  const { contracts, payments, properties } = useApp();
 
   const getStatusColor = (status: string) => {
     const colors = {
@@ -26,11 +26,11 @@ export function TenantCard({ tenant, onEdit, onView, onDelete, onCollectPayment 
   };
 
   // Get tenant's active contract and overdue payments
-  const activeContract = state.contracts.find(c => 
+  const activeContract = contracts.find(c => 
     c.tenantId === tenant.id && c.status === 'ACTIVE'
   );
 
-  const overduePayments = state.payments.filter(p => 
+  const overduePayments = payments.filter(p => 
     p.tenantId === tenant.id && 
     p.status === 'PENDING' && 
     new Date(p.dueDate) < new Date()
@@ -40,7 +40,7 @@ export function TenantCard({ tenant, onEdit, onView, onDelete, onCollectPayment 
 
   // Get property name
   const property = activeContract ? 
-    state.properties.find(p => p.id === activeContract.propertyId) : null;
+    properties.find(p => p.id === activeContract.propertyId) : null;
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-shadow">

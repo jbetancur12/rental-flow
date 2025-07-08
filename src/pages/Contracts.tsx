@@ -7,9 +7,11 @@ import { generateContractPDF } from '../utils/reportGenerator';
 import { FileText, Calendar, DollarSign, User, Home, Download, Edit, Eye, Trash2 } from 'lucide-react';
 import { Contract } from '../types';
 import { formatInTimeZone } from 'date-fns-tz';
+import { useToast } from '../hooks/useToast';
 
 export function Contracts() {
-  const { state, updateContract, createContract, loadContracts, deleteContract } = useApp();
+  const toast = useToast();
+  const { contracts, tenants, properties, updateContract, createContract, loadContracts, deleteContract } = useApp();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [editingContract, setEditingContract] = useState<Contract | undefined>();
@@ -20,10 +22,10 @@ export function Contracts() {
   }
 
   useEffect(() => {
-    if (state.contracts.length === 0) {
+    if (contracts.length === 0) {
       fetchContracts();
     }
-  }, []);
+  }, [contracts.length, fetchContracts]);
 
   const getStatusColor = (status: string) => {
     const colors = {
@@ -36,12 +38,12 @@ export function Contracts() {
   };
 
   const getPropertyName = (propertyId: string) => {
-    const property = state.properties.find(p => p.id === propertyId);
+    const property = properties.find(p => p.id === propertyId);
     return property?.name || 'Unknown Property';
   };
 
   const getTenantName = (tenantId: string) => {
-    const tenant = state.tenants.find(t => t.id === tenantId);
+    const tenant = tenants.find(t => t.id === tenantId);
     return tenant ? `${tenant.firstName} ${tenant.lastName}` : 'Unknown Tenant';
   };
 
@@ -74,14 +76,20 @@ export function Contracts() {
 
   const handleDeleteContract = async (id: string) => {
     if (confirm('¿Estás seguro de que deseas eliminar este contrato?')) {
-      await deleteContract(id);
-      await fetchContracts(); // <-- Recarga contratos después de eliminar
+      try {
+        await deleteContract(id);
+        await fetchContracts();
+        toast.success('Contrato eliminado', 'El contrato se eliminó correctamente.');
+      } catch (error: any) {
+        const msg = error?.error || error?.message || 'No se pudo eliminar el contrato.';
+        toast.error('Error al eliminar contrato', msg);
+      }
     }
   };
 
   const handleDownloadContract = (contract: Contract) => {
-    const property = state.properties.find(p => p.id === contract.propertyId);
-    const tenant = state.tenants.find(t => t.id === contract.tenantId);
+    const property = properties.find(p => p.id === contract.propertyId);
+    const tenant = tenants.find(t => t.id === contract.tenantId);
     
     if (property && tenant) {
       generateContractPDF(contract, property, tenant);
@@ -99,7 +107,7 @@ export function Contracts() {
       
       <div className="p-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {state.contracts.map((contract) => (
+          {contracts.map((contract) => (
             <div key={contract.id} className="bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-lg transition-shadow">
               <div className="p-6">
                 <div className="flex items-start justify-between mb-4">
@@ -215,7 +223,7 @@ export function Contracts() {
           ))}
         </div>
 
-        {state.contracts.length === 0 && (
+        {contracts.length === 0 && (
           <div className="text-center py-12">
             <div className="text-slate-400 mb-4">
               <FileText className="w-12 h-12 mx-auto" />
@@ -234,8 +242,8 @@ export function Contracts() {
 
       <ContractForm
         contract={editingContract}
-        properties={state.properties}
-        tenants={state.tenants}
+        properties={properties}
+        tenants={tenants}
         isOpen={isFormOpen}
         onClose={() => {setIsFormOpen(false); setEditingContract(undefined);}}
         onSave={handleSaveContract}
@@ -244,8 +252,8 @@ export function Contracts() {
       {selectedContract && (
         <ContractDetails
           contract={selectedContract}
-          property={state.properties.find(p => p.id === selectedContract.propertyId)}
-          tenant={state.tenants.find(t => t.id === selectedContract.tenantId)}
+          property={properties.find(p => p.id === selectedContract.propertyId)}
+          tenant={tenants.find(t => t.id === selectedContract.tenantId)}
           isOpen={isDetailsOpen}
           onClose={() => setIsDetailsOpen(false)}
           onEdit={() => {

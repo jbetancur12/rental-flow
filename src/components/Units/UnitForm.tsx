@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Unit } from '../../types';
 import { useApp } from '../../context/useApp';
 import { X, Upload } from 'lucide-react';
+import { useToast } from '../../hooks/useToast';
 
 interface UnitFormProps {
   unit?: Unit;
@@ -12,6 +13,7 @@ interface UnitFormProps {
 
 export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
   const { createUnit, updateUnit } = useApp();
+  const toast = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -64,15 +66,21 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
     try {
       if (unit) {
         await updateUnit(unit.id, formData);
+        toast.success('Unidad actualizada', 'La unidad se actualizó correctamente.');
       } else {
         await createUnit(formData);
+        toast.success('Unidad creada', 'La unidad se agregó correctamente.');
       }
       onClose();
-    } catch (error) {
+    } catch (error: any) {
+      let msg = error?.error || error?.message || 'No se pudo guardar la unidad.';
+      if (error?.details && Array.isArray(error.details)) {
+        msg = error.details.map((d: any) => `${d.field ? d.field + ': ' : ''}${d.message}`).join(' | ');
+      }
+      toast.error('Error al guardar unidad', msg);
       console.error('Error saving unit:', error);
     } finally {
       setIsSubmitting(false);

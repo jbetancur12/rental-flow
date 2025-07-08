@@ -22,7 +22,7 @@ export function PropertyCard({
   onRecordPayment, 
   onTerminateContract 
 }: PropertyCardProps) {
-  const { state } = useApp();
+  const { contracts, tenants, payments } = useApp();
   
   const statusColors = {
     AVAILABLE: 'bg-emerald-100 text-emerald-800',
@@ -32,19 +32,15 @@ export function PropertyCard({
   };
 
   // Get current tenant and contract info for RENTED properties
-  const activeContract = state.contracts.find(c => 
+  const activeContract = contracts.find(c => 
     c.propertyId === property.id && c.status === 'ACTIVE'
   );
-  
   const currentTenant = activeContract ? 
-  state.tenants.find(t => t.id === activeContract.tenantId) : null;
-
-   const draftContractsCount = state.contracts.filter(c =>
+    tenants.find(t => t.id === activeContract.tenantId) : null;
+  const draftContractsCount = contracts.filter(c =>
     c.propertyId === property.id && c.status === 'DRAFT'
   ).length;
-
-  // Check for overdue payments
-  const overduePayments = state.payments.filter(p => 
+  const overduePayments = payments.filter(p => 
     activeContract && p.contractId === activeContract.id && 
     p.status === 'PENDING' && 
     new Date(p.dueDate) < new Date()
