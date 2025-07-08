@@ -9,15 +9,9 @@ import {
   Database,
 
   Building2,
-  Save,
   Download,
-  Upload,
-  Trash2,
-  Eye,
-  EyeOff,
   CreditCard,
   Users,
-  Crown,
   X
 } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
@@ -25,14 +19,15 @@ import { OrganizationSettings } from '../types/auth';
 import { PlanSelector } from '../components/Subscription/PlanSelector';
 import { plans } from '../components/Auth/RegisterForm';
 import { RecentActivity } from '../components/Settings/RecentActivity';
-
-const statusDetails = {
-  ACTIVE: { text: 'Activo', color: 'text-emerald-600' },
-  TRIALING: { text: 'Prueba', color: 'text-blue-600' },
-  DEMO: { text: 'Demostración', color: 'text-purple-600' }, // <-- Nuevo estado
-  PAST_DUE: { text: 'Vencido', color: 'text-red-600' },
-  CANCELED: { text: 'Cancelado', color: 'text-slate-600' },
-};
+import { User as UserType } from '../types/auth';
+import apiClient from '../config/api';
+import { ProfileTab } from '../components/Settings/ProfileTab';
+import { OrganizationTab } from '../components/Settings/OrganizationTab';
+import { SubscriptionTab } from '../components/Settings/SubscriptionTab';
+import { TeamTab } from '../components/Settings/TeamTab';
+import { NotificationsTab } from '../components/Settings/NotificationsTab';
+import { SecurityTab } from '../components/Settings/SecurityTab';
+import { DataTab } from '../components/Settings/DataTab';
 
 export function Settings() {
 
@@ -80,12 +75,45 @@ export function Settings() {
 
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [selectedPlanInModal, setSelectedPlanInModal] = useState(authState.subscription?.planId || '');
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [inviteForm, setInviteForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    role: 'USER',
+    password: ''
+  });
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteError, setInviteError] = useState('');
 
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editForm, setEditForm] = useState({
+    id: '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    role: 'USER',
+    isActive: true,
+    password: ''
+  });
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState('');
 
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+
+  const [users, setUsers] = useState<UserType[]>([]);
+  const [usersLoading, setUsersLoading] = useState(true);
+  const [usersError, setUsersError] = useState('');
 
   const activeTab = searchParams.get('tab') || 'profile';
+  const isAdmin = authState.user?.role === 'ADMIN' || authState.user?.role === 'SUPER_ADMIN';
 
   const handleOpenUpgradeModal = () => {
+    if (!isAdmin) {
+      alert('Solo un administrador puede actualizar el plan.');
+      return;
+    }
     setSelectedPlanInModal(authState.subscription?.planId || ''); // Resetea la selección al plan actual
     setIsUpgradeModalOpen(true);
   };
@@ -111,6 +139,10 @@ export function Settings() {
   };
 
   const handleSaveOrganization = async () => {
+    if (!isAdmin) {
+      alert('Solo un administrador puede guardar cambios en la organización.');
+      return;
+    }
     if (authState.organization) {
       const updatedOrganization = {
         ...authState.organization,
@@ -217,6 +249,10 @@ export function Settings() {
   };
 
   const handleDeleteAllData = () => {
+    if (!isAdmin) {
+      alert('Solo un administrador puede eliminar todos los datos.');
+      return;
+    }
     if (confirm('Esto eliminará permanentemente TODOS los datos. Esta acción no se puede deshacer. ¿Está seguro?')) {
       if (confirm('¿Está ABSOLUTAMENTE seguro? Esto eliminará todas las propiedades, inquilinos, contratos y pagos.')) {
         dispatch({ type: 'CLEAR_DATA' });
@@ -255,6 +291,24 @@ export function Settings() {
     }
   }, [authState.user, authState.organization]);
 
+  // Cargar usuarios al montar y tras cambios
+  useEffect(() => {
+    async function fetchUsers() {
+      setUsersLoading(true);
+      setUsersError('');
+      try {
+        const res = await apiClient.getUsers();
+        setUsers(res.users || []);
+      } catch (err: any) {
+        console.error('Error al cargar usuarios', err);
+        setUsersError('Error al cargar usuarios');
+      } finally {
+        setUsersLoading(false);
+      }
+    }
+    fetchUsers();
+  }, []);
+
   const tabs = [
     { id: 'profile', label: 'Perfil', icon: User },
     { id: 'organization', label: 'Organización', icon: Building2 },
@@ -265,6 +319,116 @@ export function Settings() {
     { id: 'data', label: 'Datos', icon: Database },
     { id: 'logs', label: 'Logs', icon: Download }
   ];
+
+  async function handleInviteUser(e: React.FormEvent) {
+    e.preventDefault();
+    setInviteError('');
+    setInviteLoading(true);
+    try {
+      await apiClient.createUser(inviteForm);
+      setIsInviteModalOpen(false);
+      setInviteForm({ firstName: '', lastName: '', email: '', role: 'USER', password: '' });
+      // Refrescar usuarios
+      const res = await apiClient.getUsers();
+      setUsers(res.users || []);
+    } catch (err: any) {
+      setInviteError(err?.error || 'Error al invitar usuario');
+    } finally {
+      setInviteLoading(false);
+    }
+  }
+
+  function openEditModal(user: UserType) {
+    setEditForm({
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      role: user.role,
+      isActive: user.isActive,
+      password: ''
+    });
+    setEditError('');
+    setIsEditModalOpen(true);
+  }
+
+  async function handleEditUser(e: React.FormEvent) {
+    e.preventDefault();
+    setEditError('');
+    setEditLoading(true);
+    try {
+      const body: any = {
+        firstName: editForm.firstName,
+        lastName: editForm.lastName,
+        email: editForm.email,
+        role: editForm.role,
+        isActive: editForm.isActive
+      };
+      if (editForm.password) body.password = editForm.password;
+      await apiClient.updateUser(editForm.id, body);
+      setIsEditModalOpen(false);
+      setEditForm({ id: '', firstName: '', lastName: '', email: '', role: 'USER', isActive: true, password: '' });
+      // Refrescar usuarios
+      const res = await apiClient.getUsers();
+      setUsers(res.users || []);
+    } catch (err: any) {
+      setEditError(err?.error || 'Error al editar usuario');
+    } finally {
+      setEditLoading(false);
+    }
+  }
+
+  async function handleDeleteUser(userId: string, userRole: string) {
+    // Si es ADMIN, verificar que no sea el último ADMIN activo
+    if (userRole === 'ADMIN') {
+      const activeAdmins = users.filter((u: any) => u.role === 'ADMIN' && u.isActive && u.id !== userId);
+      if (activeAdmins.length === 0) {
+        setDeleteError('No puedes eliminar el último administrador activo de la organización.');
+        return;
+      }
+    }
+    if (!window.confirm('¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.')) return;
+    setDeleteLoading(true);
+    setDeleteError('');
+    try {
+      await apiClient.deleteUser(userId);
+      // Refrescar usuarios
+      const res = await apiClient.getUsers();
+      setUsers(res.users || []);
+    } catch (err: any) {
+      setDeleteError(err?.error || 'Error al eliminar usuario');
+    } finally {
+      setDeleteLoading(false);
+    }
+  }
+
+  async function handleToggleActive(user: UserType) {
+    setDeleteLoading(true); // reutilizamos deleteLoading para feedback de acción
+    setDeleteError('');
+    try {
+      if (user.isActive) {
+        // Si es ADMIN, verificar que no sea el último ADMIN activo
+        if (user.role === 'ADMIN') {
+          const activeAdmins = users.filter((u: any) => u.role === 'ADMIN' && u.isActive && u.id !== user.id);
+          if (activeAdmins.length === 0) {
+            setDeleteError('No puedes desactivar el último administrador activo de la organización.');
+            setDeleteLoading(false);
+            return;
+          }
+        }
+        await apiClient.deactivateUser(user.id);
+      } else {
+        await apiClient.activateUser(user.id);
+      }
+      // Refrescar usuarios
+      const res = await apiClient.getUsers();
+      setUsers(res.users || []);
+    } catch (err: any) {
+      setDeleteError(err?.error || 'Error al cambiar el estado del usuario');
+    } finally {
+      setDeleteLoading(false);
+    }
+  }
 
   return (
     <div className="flex-1 overflow-auto">
@@ -293,567 +457,83 @@ export function Settings() {
 
           {/* Profile Tab */}
           {activeTab === 'profile' && (
-            <div className="space-y-6">
-              <div className="bg-white rounded-xl border border-slate-200 p-6">
-                <h3 className="text-lg font-semibold text-slate-900 mb-6">Información Personal</h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Nombre
-                    </label>
-                    <input
-                      type="text"
-                      value={settings.profile.firstName}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        profile: { ...settings.profile, firstName: e.target.value }
-                      })}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Apellido
-                    </label>
-                    <input
-                      type="text"
-                      value={settings.profile.lastName}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        profile: { ...settings.profile, lastName: e.target.value }
-                      })}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Correo Electrónico
-                    </label>
-                    <input
-                      type="email"
-                      value={settings.profile.email}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        profile: { ...settings.profile, email: e.target.value }
-                      })}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Teléfono
-                    </label>
-                    <input
-                      type="tel"
-                      value={settings.profile.phone}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        profile: { ...settings.profile, phone: e.target.value }
-                      })}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Rol
-                    </label>
-                    <select
-                      value={settings.profile.role}
-                      disabled
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500"
-                    >
-                      <option value="admin">Administrador</option>
-                      <option value="manager">Gerente</option>
-                      <option value="user">Usuario</option>
-                    </select>
-                    <p className="text-xs text-slate-500 mt-1">Contacta al administrador para cambiar tu rol</p>
-                  </div>
-                </div>
-
-                <div className="mt-6 flex justify-end">
-                  <button
-                    onClick={handleSaveProfile}
-                    className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                  >
-                    <Save className="w-4 h-4 mr-2" />
-                    Guardar Cambios
-                  </button>
-                </div>
-              </div>
-            </div>
+            <ProfileTab
+              settings={settings}
+              setSettings={setSettings}
+              handleSaveProfile={handleSaveProfile}
+              authState={authState}
+            />
           )}
 
           {/* Organization Tab */}
           {activeTab === 'organization' && (
-            <div className="space-y-6">
-              <div className="bg-white rounded-xl border border-slate-200 p-6">
-                <h3 className="text-lg font-semibold text-slate-900 mb-6">Información de la Organización</h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Nombre de la Organización
-                    </label>
-                    <input
-                      type="text"
-                      value={settings.organization.name}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        organization: { ...settings.organization, name: e.target.value }
-                      })}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Email de Contacto
-                    </label>
-                    <input
-                      type="email"
-                      value={settings.organization.email}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        organization: { ...settings.organization, email: e.target.value }
-                      })}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Teléfono
-                    </label>
-                    <input
-                      type="tel"
-                      value={settings.organization.phone}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        organization: { ...settings.organization, phone: e.target.value }
-                      })}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Dirección
-                    </label>
-                    <input
-                      type="text"
-                      value={settings.organization.address}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        organization: { ...settings.organization, address: e.target.value }
-                      })}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Moneda
-                    </label>
-                    <select
-                      value={settings.organization.currency}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        organization: { ...settings.organization, currency: e.target.value }
-                      })}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="COP">COP - Peso Colombiano</option>
-                      <option value="USD">USD - Dólar Estadounidense</option>
-                      <option value="USD">USD - Dólar Estadounidense</option>
-                      <option value="EUR">EUR - Euro</option>
-                      <option value="MXN">MXN - Peso Mexicano</option>
-                      <option value="CAD">CAD - Dólar Canadiense</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Zona Horaria
-                    </label>
-                  <select
-                    value={settings.organization.timezone}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      organization: { ...settings.organization, timezone: e.target.value }
-                    })}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  >
-                    {/* --- Latinoamérica --- */}
-                    <option value="America/Bogota">Bogotá, Lima, Quito (UTC-5)</option>
-                    <option value="America/Mexico_City">Ciudad de México (UTC-6)</option>
-                    <option value="America/Sao_Paulo">Sao Paulo (UTC-3)</option>
-                    <option value="America/Buenos_Aires">Buenos Aires (UTC-3)</option>
-
-                    {/* --- Norteamérica --- */}
-                    <option value="America/New_York">Hora del Este (NY)</option>
-                    <option value="America/Chicago">Hora Central (Chicago)</option>
-                    <option value="America/Los_Angeles">Hora del Pacífico (LA)</option>
-
-                    {/* --- Europa --- */}
-                    <option value="Europe/Madrid">Madrid, París, Berlín (UTC+2)</option>
-                    <option value="Europe/London">Londres, Lisboa (UTC+1)</option>
-                  </select>
-                  </div>
-                </div>
-
-                <div className="mt-6 flex justify-end">
-                  <button
-                    onClick={handleSaveOrganization}
-                    className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                  >
-                    <Save className="w-4 h-4 mr-2" />
-                    Guardar Cambios
-                  </button>
-                </div>
-              </div>
-            </div>
+            <OrganizationTab
+              settings={settings}
+              setSettings={setSettings}
+              handleSaveOrganization={handleSaveOrganization}
+              isAdmin={isAdmin}
+            />
           )}
 
           {/* Subscription Tab */}
           {activeTab === 'subscription' && authState.subscription && (
-            <div className="space-y-6">
-              <div className="bg-white rounded-xl border border-slate-200 p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-slate-900">Plan de Suscripción</h3>
-                  <div className="flex items-center">
-                    <Crown className="w-5 h-5 text-yellow-500 mr-2" />
-                    <span className="text-sm font-medium text-slate-600">
-                      {(() => {
-                        switch (authState.subscription.status) {
-                          case 'TRIALING':
-                            return 'Prueba Gratuita';
-                          case 'DEMO':
-                            return 'Cuenta de Demostración';
-                          case 'ACTIVE':
-                            return 'Plan Activo';
-                          default:
-                            // Un valor por defecto para otros estados como CANCELED, etc.
-                            return 'Inactivo';
-                        }
-                      })()}                    </span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm text-slate-500">Plan Actual</label>
-                      <p className="text-lg font-semibold text-slate-900">
-                        {authState.subscription.planId === 'plan-basic' ? 'Básico' :
-                          authState.subscription.planId === 'plan-professional' ? 'Profesional' : 'Empresarial'}
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className="text-sm text-slate-500">Estado</label>
-                      {(() => {
-                        const currentStatus = authState.subscription.status;
-                        const details = statusDetails[currentStatus] || { text: 'Desconocido', color: 'text-slate-500' };
-
-                        return (
-                          <p className={`text-lg font-semibold ${details.color}`}>
-                            {details.text}
-                          </p>
-                        );
-                      })()}
-                    </div>
-
-                    <div>
-                      <label className="text-sm text-slate-500">Próxima Facturación</label>
-                      <p className="text-lg font-semibold text-slate-900">
-                        {authState.subscription.currentPeriodEnd.toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm text-slate-500">Límites del Plan</label>
-                      <div className="space-y-2 mt-2">
-                        <div className="flex justify-between text-sm">
-                          <span>Propiedades:</span>
-                          <span>{state.properties.length} / {authState.organization?.settings.limits.maxProperties}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span>Inquilinos:</span>
-                          <span>{state.tenants.length} / {authState.organization?.settings.limits.maxTenants}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span>Usuarios:</span>
-                          <span>1 / {authState.organization?.settings.limits.maxUsers}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {authState.subscription.status !== "DEMO" && (
-                  <div className="mt-6 flex space-x-4">
-                    <button onClick={handleOpenUpgradeModal} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                      Actualizar Plan
-                    </button>
-                    <button className="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg hover:bg-slate-50">
-                      Ver Historial de Facturación
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
+            <SubscriptionTab
+              authState={authState}
+              state={state}
+              isAdmin={isAdmin}
+              handleOpenUpgradeModal={handleOpenUpgradeModal}
+            />
           )}
 
           {/* Team Tab */}
           {activeTab === 'team' && (
-            <div className="space-y-6">
-              <div className="bg-white rounded-xl border border-slate-200 p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-slate-900">Miembros del Equipo</h3>
-                  <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                    Invitar Usuario
-                  </button>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border border-slate-200 rounded-lg">
-                    <div className="flex items-center">
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                        <User className="w-5 h-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-slate-900">
-                          {authState.user?.firstName} {authState.user?.lastName}
-                        </p>
-                        <p className="text-sm text-slate-500">{authState.user?.email}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-                        Administrador
-                      </span>
-                      <span className="text-sm text-slate-500">Tú</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-6 p-4 bg-slate-50 rounded-lg">
-                  <p className="text-sm text-slate-600">
-                    Tu plan actual permite hasta {authState.organization?.settings.limits.maxUsers} usuarios.
-                    <a href="#" className="text-blue-600 hover:text-blue-800 ml-1">Actualiza tu plan</a> para agregar más miembros al equipo.
-                  </p>
-                </div>
-              </div>
-            </div>
+            <TeamTab
+              users={users}
+              usersLoading={usersLoading}
+              usersError={usersError}
+              authState={authState}
+              openEditModal={openEditModal}
+              handleDeleteUser={handleDeleteUser}
+              handleToggleActive={handleToggleActive}
+              deleteLoading={deleteLoading}
+              setIsInviteModalOpen={setIsInviteModalOpen}
+              isInviteModalOpen={isInviteModalOpen}
+              inviteForm={inviteForm}
+              setInviteForm={setInviteForm}
+              handleInviteUser={handleInviteUser}
+              inviteLoading={inviteLoading}
+              inviteError={inviteError}
+            />
           )}
 
           {/* Notifications Tab */}
           {activeTab === 'notifications' && (
-            <div className="space-y-6">
-              <div className="bg-white rounded-xl border border-slate-200 p-6">
-                <h3 className="text-lg font-semibold text-slate-900 mb-6">Preferencias de Notificación</h3>
-
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium text-slate-900">Notificaciones por Email</h4>
-                      <p className="text-sm text-slate-600">Recibir notificaciones por correo electrónico</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={settings.notifications.emailNotifications}
-                        onChange={(e) => setSettings({
-                          ...settings,
-                          notifications: { ...settings.notifications, emailNotifications: e.target.checked }
-                        })}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium text-slate-900">Recordatorios de Pago</h4>
-                      <p className="text-sm text-slate-600">Notificar sobre próximos pagos de alquiler</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={settings.notifications.paymentReminders}
-                        onChange={(e) => setSettings({
-                          ...settings,
-                          notifications: { ...settings.notifications, paymentReminders: e.target.checked }
-                        })}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium text-slate-900">Alertas de Mantenimiento</h4>
-                      <p className="text-sm text-slate-600">Notificar sobre nuevas solicitudes de mantenimiento</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={settings.notifications.maintenanceAlerts}
-                        onChange={(e) => setSettings({
-                          ...settings,
-                          notifications: { ...settings.notifications, maintenanceAlerts: e.target.checked }
-                        })}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
-                  </div>
-                </div>
-
-                <div className="mt-6 flex justify-end">
-                  <button
-                    onClick={handleSaveNotifications}
-                    className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                  >
-                    <Save className="w-4 h-4 mr-2" />
-                    Guardar Preferencias
-                  </button>
-                </div>
-              </div>
-            </div>
+            <NotificationsTab
+              settings={settings}
+              setSettings={setSettings}
+              handleSaveNotifications={handleSaveNotifications}
+            />
           )}
 
           {/* Security Tab */}
           {activeTab === 'security' && (
-            <div className="space-y-6">
-              <div className="bg-white rounded-xl border border-slate-200 p-6">
-                <h3 className="text-lg font-semibold text-slate-900 mb-6">Cambiar Contraseña</h3>
-
-                <div className="space-y-4 max-w-md">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Contraseña Actual
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        value={settings.security.currentPassword}
-                        onChange={(e) => setSettings({
-                          ...settings,
-                          security: { ...settings.security, currentPassword: e.target.value }
-                        })}
-                        className="w-full px-3 py-2 pr-10 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                      >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Nueva Contraseña
-                    </label>
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      value={settings.security.newPassword}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        security: { ...settings.security, newPassword: e.target.value }
-                      })}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Confirmar Nueva Contraseña
-                    </label>
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      value={settings.security.confirmPassword}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        security: { ...settings.security, confirmPassword: e.target.value }
-                      })}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  <button
-                    onClick={handleChangePassword}
-                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                  >
-                    Cambiar Contraseña
-                  </button>
-                </div>
-              </div>
-            </div>
+            <SecurityTab
+              settings={settings}
+              setSettings={setSettings}
+              showPassword={showPassword}
+              setShowPassword={setShowPassword}
+              handleChangePassword={handleChangePassword}
+            />
           )}
 
           {/* Data Tab */}
           {activeTab === 'data' && (
-            <div className="space-y-6">
-              <div className="bg-white rounded-xl border border-slate-200 p-6">
-                <h3 className="text-lg font-semibold text-slate-900 mb-6">Gestión de Datos</h3>
-
-                <div className="space-y-6">
-                  <div>
-                    <h4 className="font-medium text-slate-900 mb-3">Exportar e Importar Datos</h4>
-                    <div className="flex space-x-4">
-                      <button
-                        onClick={handleExportData}
-                        className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        Exportar Datos
-                      </button>
-
-                      <button
-                        onClick={handleImportData}
-                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                      >
-                        <Upload className="w-4 h-4 mr-2" />
-                        Importar Datos
-                      </button>
-                    </div>
-                    <p className="text-sm text-slate-600 mt-2">
-                      Exporta todos tus datos en formato JSON o importa datos desde un archivo de respaldo.
-                    </p>
-                  </div>
-
-                  <div className="border-t border-slate-200 pt-6">
-                    <h4 className="font-medium text-slate-900 mb-3 text-red-600">Zona de Peligro</h4>
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                      <h5 className="font-medium text-red-800 mb-2">Eliminar Todos los Datos</h5>
-                      <p className="text-sm text-red-700 mb-4">
-                        Esta acción eliminará permanentemente todos los datos de tu organización. Esta acción no se puede deshacer.
-                      </p>
-                      <button
-                        onClick={handleDeleteAllData}
-                        className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Eliminar Todos los Datos
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <DataTab
+              handleExportData={handleExportData}
+              handleImportData={handleImportData}
+              handleDeleteAllData={handleDeleteAllData}
+              isAdmin={isAdmin}
+            />
           )}
           {activeTab === 'logs' && <RecentActivity />}
         </div>
@@ -897,6 +577,98 @@ export function Settings() {
           </div>
         </div>
       )}
+
+      {/* Modal de edición */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-md w-full mx-4 p-8 relative">
+            <button
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+              onClick={() => setIsEditModalOpen(false)}
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-xl font-semibold text-slate-900 mb-4">Editar Usuario</h2>
+            <form onSubmit={handleEditUser} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Nombre</label>
+                <input
+                  type="text"
+                  required
+                  value={editForm.firstName}
+                  onChange={e => setEditForm(f => ({ ...f, firstName: e.target.value }))}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Apellido</label>
+                <input
+                  type="text"
+                  required
+                  value={editForm.lastName}
+                  onChange={e => setEditForm(f => ({ ...f, lastName: e.target.value }))}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Correo Electrónico</label>
+                <input
+                  type="email"
+                  required
+                  value={editForm.email}
+                  onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Rol</label>
+                <select
+                  required
+                  value={editForm.role}
+                  onChange={e => setEditForm(f => ({ ...f, role: e.target.value }))}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+                >
+                  <option value="USER">Usuario</option>
+                  <option value="MANAGER">Gerente</option>
+                  <option value="ADMIN">Administrador</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Estado</label>
+                <select
+                  required
+                  value={editForm.isActive ? 'activo' : 'inactivo'}
+                  onChange={e => setEditForm(f => ({ ...f, isActive: e.target.value === 'activo' }))}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+                >
+                  <option value="activo">Activo</option>
+                  <option value="inactivo">Inactivo</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Contraseña (dejar en blanco para no cambiar)</label>
+                <input
+                  type="password"
+                  minLength={8}
+                  value={editForm.password}
+                  onChange={e => setEditForm(f => ({ ...f, password: e.target.value }))}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+                />
+              </div>
+              {editError && <p className="text-red-600 text-sm">{editError}</p>}
+              <button
+                type="submit"
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                disabled={editLoading}
+              >
+                {editLoading ? 'Guardando...' : 'Guardar Cambios'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {deleteError && <p className="text-red-600 text-sm mt-2">{deleteError}</p>}
 
     </div>
   );

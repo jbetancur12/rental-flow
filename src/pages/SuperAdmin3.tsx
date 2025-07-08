@@ -84,6 +84,7 @@ const fetchOrganizations = useCallback(async () => {
             const loadedPlans = await getPlans();
             setPlans(loadedPlans);
         } catch (error) {
+          console.error('Error al cargar los planes', error);
             toast.error('Error', 'No se pudieron cargar los planes.');
         } finally {
             setIsLoading(false);

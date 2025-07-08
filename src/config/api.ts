@@ -460,6 +460,52 @@ class ApiClient {
     });
   }
 
+  // Users endpoints
+  async getUsers(params?: { role?: string; isActive?: boolean; page?: number; limit?: number }) {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString());
+        }
+      });
+    }
+    const query = searchParams.toString();
+    return this.request<any>(`/users${query ? `?${query}` : ''}`);
+  }
+
+  async createUser(data: any) {
+    return this.request<any>('/users', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateUser(id: string, data: any) {
+    return this.request<any>(`/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteUser(id: string) {
+    return this.request<any>(`/users/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async activateUser(id: string) {
+    return this.request<any>(`/users/${id}/activate`, {
+      method: 'PATCH',
+    });
+  }
+
+  async deactivateUser(id: string) {
+    return this.request<any>(`/users/${id}/deactivate`, {
+      method: 'PATCH',
+    });
+  }
+
 }
 
 

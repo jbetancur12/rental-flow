@@ -65,6 +65,62 @@ export function Dashboard() {
         return dataPoints;
     }, [state.payments, state.maintenanceRequests]);
 
+    // Calcular ingresos del mes actual y anterior
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    const lastMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+    const lastMonth = lastMonthDate.getMonth();
+    const lastMonthYear = lastMonthDate.getFullYear();
+
+    const currentMonthRevenue = state.payments
+        .filter(p => {
+            if (p.status !== 'PAID' || p.type !== 'RENT') return false;
+            const paidDate = p.paidDate ? new Date(p.paidDate) : null;
+            return paidDate && paidDate.getMonth() === currentMonth && paidDate.getFullYear() === currentYear;
+        })
+        .reduce((sum, p) => sum + p.amount, 0);
+
+    const lastMonthRevenue = state.payments
+        .filter(p => {
+            if (p.status !== 'PAID' || p.type !== 'RENT') return false;
+            const paidDate = p.paidDate ? new Date(p.paidDate) : null;
+            return paidDate && paidDate.getMonth() === lastMonth && paidDate.getFullYear() === lastMonthYear;
+        })
+        .reduce((sum, p) => sum + p.amount, 0);
+
+    let revenueChange = '0%';
+    if (lastMonthRevenue > 0) {
+        const diff = currentMonthRevenue - lastMonthRevenue;
+        const percent = (diff / lastMonthRevenue) * 100;
+        revenueChange = `${percent > 0 ? '+' : ''}${percent.toFixed(1)}%`;
+    }
+
+    // Calcular inquilinos activos del mes actual y anterior
+    const currentMonthActiveTenants = state.tenants.filter(t => {
+        if (t.status !== 'ACTIVE') return false;
+        const createdAt = t.createdAt ? new Date(t.createdAt) : null;
+        return createdAt && createdAt.getMonth() <= currentMonth && createdAt.getFullYear() <= currentYear;
+    }).length;
+
+    const lastMonthActiveTenants = state.tenants.filter(t => {
+        if (t.status !== 'ACTIVE') return false;
+        const createdAt = t.createdAt ? new Date(t.createdAt) : null;
+        // Debe haber sido creado antes o durante el mes anterior y seguir activo
+        return createdAt && createdAt.getMonth() <= lastMonth && createdAt.getFullYear() <= lastMonthYear;
+    }).length;
+
+    let tenantsChange = '0 este mes';
+    let tenantsChangeType: 'positive' | 'negative' | 'neutral' = 'neutral';
+    const diffTenants = currentMonthActiveTenants - lastMonthActiveTenants;
+    if (diffTenants > 0) {
+        tenantsChange = `+${diffTenants} este mes`;
+        tenantsChangeType = 'positive';
+    } else if (diffTenants < 0) {
+        tenantsChange = `${diffTenants} este mes`;
+        tenantsChangeType = 'negative';
+    }
+
     // --- RESTO DE LA LÓGICA DEL COMPONENTE (SIN CAMBIOS) ---
     const totalProperties = state.properties.length;
     const occupiedProperties = state.properties.filter(p => p.status === 'RENTED').length;
@@ -104,16 +160,16 @@ export function Dashboard() {
                     <StatsCard
                         title="Inquilinos Activos"
                         value={state.tenants.filter(t => t.status === 'ACTIVE').length}
-                        change="+2 este mes"
-                        changeType="positive"
+                        change={tenantsChange}
+                        changeType={tenantsChangeType}
                         icon={Users}
                         iconColor="text-emerald-600"
                     />
                     <StatsCard
                         title="Ingresos Mensuales"
                         value={`$${totalRevenue.toLocaleString()}`}
-                        change="+8.2%"
-                        changeType="positive"
+                        change={revenueChange}
+                        changeType={revenueChange.startsWith('-') ? 'negative' : revenueChange === '0%' ? 'neutral' : 'positive'}
                         icon={DollarSign}
                         iconColor="text-green-600"
                     />
