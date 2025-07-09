@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Property } from '../../types';
 import { useApp } from '../../context/useApp';
-import { X, FileText, Calendar, DollarSign, User } from 'lucide-react';
+import { X, FileText, Calendar, DollarSign, User, AlertTriangle } from 'lucide-react';
 import { formatDateInOrgTimezone } from '../../utils/formatDate';
+import { useToast } from '../../hooks/useToast';
 
 interface QuickRentModalProps {
   property: Property;
@@ -11,13 +12,14 @@ interface QuickRentModalProps {
 }
 
 export function QuickRentModal({ property, isOpen, onClose }: QuickRentModalProps) {
-  const { state, updateProperty, updateContract, updateTenant, createPayment } = useApp();
+  const { contracts, tenants, updateProperty, updateContract, updateTenant, createPayment, organization } = useApp();
+  const toast = useToast();
   const [selectedContract, setSelectedContract] = useState('');
 
-  // Filtrar contratos disponibles (ACTIVE y sin asignar a propiedades)
-  const availableContracts = state.contracts.filter(c =>
+  // Filtrar contratos disponibles (DRAFT y asignados a esta propiedad)
+  const availableContracts = contracts.filter(c =>
     c.status === 'DRAFT' &&
-    c.propertyId === property.id // Contratos que no tienen propiedad asignada
+    c.propertyId === property.id
   );
 
 const handleQuickRent = async () => {
@@ -85,16 +87,21 @@ const handleQuickRent = async () => {
 
         await updateProperty(property.id, { status: 'RENTED' });
         await updateContract(contract.id, contractUpdatePayload);
-        const tenant = state.tenants.find(t => t.id === contract.tenantId);
+        const tenant = tenants.find(t => t.id === contract.tenantId);
         if (tenant && tenant.status !== 'ACTIVE') {
             await updateTenant(tenant.id, { ...tenant, status: 'ACTIVE' });
         }
 
+        toast.success('Propiedad rentada', 'La propiedad fue rentada y el contrato asignado correctamente.');
         onClose();
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error assigning contract to property:', error);
-        alert('Error occurred while renting property');
+        let msg = error?.error || error?.message || 'No se pudo asignar el contrato.';
+        if (error?.details && Array.isArray(error.details)) {
+          msg = error.details.map((d: any) => `${d.field ? d.field + ': ' : ''}${d.message}`).join(' | ');
+        }
+        toast.error('Error al rentar propiedad', msg);
     }
 };
 
@@ -105,7 +112,7 @@ const handleQuickRent = async () => {
       <div className="bg-white rounded-xl max-w-2xl w-full mx-4">
         <div className="flex items-center justify-between p-6 border-b border-slate-200">
           <h2 className="text-xl font-semibold text-slate-900">
-            Assign Contract: {property.name}
+            Asignar Contrato: {property.name}
           </h2>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600">
             <X className="w-5 h-5" />
@@ -115,25 +122,25 @@ const handleQuickRent = async () => {
         <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
           {/* Property Info */}
           <div className="bg-slate-50 rounded-lg p-4">
-            <h4 className="font-medium text-slate-900 mb-2">Property Details</h4>
+            <h4 className="font-medium text-slate-900 mb-2">Detalles de la Propiedad</h4>
             <div className="text-sm text-slate-600 space-y-1">
-              <p><strong>Name:</strong> {property.name}</p>
-              <p><strong>Address:</strong> {property.address}</p>
-              <p><strong>Type:</strong> {property.type}</p>
-              <p><strong>Suggested Rent:</strong> ${property.rent.toLocaleString()}/month</p>
+              <p><strong>Nombre:</strong> {property.name}</p>
+              <p><strong>Dirección:</strong> {property.address}</p>
+              <p><strong>Tipo:</strong> {property.type}</p>
+              <p><strong>Renta sugerida:</strong> ${property.rent.toLocaleString()}/mes</p>
             </div>
           </div>
 
           {/* Contract Selection */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
-              Select Available Contract
+              Selecciona un contrato disponible
             </label>
             {availableContracts.length === 0 ? (
               <div className="text-center py-8 bg-slate-50 rounded-lg">
                 <FileText className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                <p className="text-slate-600">No available contracts found</p>
-                <p className="text-sm text-slate-500 mt-1">Create an active contract first before assigning to property</p>
+                <p className="text-slate-600">No se encontraron contratos disponibles</p>
+                <p className="text-sm text-slate-500 mt-1">Crea un contrato activo antes de asignarlo a la propiedad</p>
               </div>
             ) : (
               <select
@@ -141,12 +148,12 @@ const handleQuickRent = async () => {
                 onChange={(e) => setSelectedContract(e.target.value)}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">Choose a contract...</option>
+                <option value="">Selecciona un contrato...</option>
                 {availableContracts.map((contract) => {
-                  const tenant = state.tenants.find(t => t.id === contract.tenantId);
+                  const tenant = tenants.find(t => t.id === contract.tenantId);
                   return (
                     <option key={contract.id} value={contract.id}>
-                      Contract #{contract.id.slice(-6).toUpperCase()} - {tenant?.firstName} {tenant?.lastName} - ${contract.monthlyRent.toLocaleString()}/month
+                      Contrato #{contract.id.slice(-6).toUpperCase()} - {tenant?.firstName} {tenant?.lastName} - ${contract.monthlyRent.toLocaleString()}/mes
                     </option>
                   );
                 })}
@@ -157,7 +164,7 @@ const handleQuickRent = async () => {
           {/* Contract Details */}
           {selectedContract && (() => {
             const contract = availableContracts.find(c => c.id === selectedContract);
-            const tenant = state.tenants.find(t => t.id === contract?.tenantId);
+            const tenant = tenants.find(t => t.id === contract?.tenantId);
 
             if (!contract || !tenant) return null;
             return (
@@ -166,36 +173,35 @@ const handleQuickRent = async () => {
                 <div className="bg-blue-50 rounded-lg p-4">
                   <h4 className="font-medium text-blue-900 mb-3 flex items-center">
                     <FileText className="w-4 h-4 mr-2" />
-                    Contract Details
+                    Detalles del Contrato
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800">
                     <div>
                       <p className="flex items-center mb-2">
                         <User className="w-4 h-4 mr-2" />
-                        <strong>Tenant:</strong> {tenant.firstName} {tenant.lastName}
+                        <strong>Inquilino:</strong> {tenant.firstName} {tenant.lastName}
                       </p>
                       <p className="flex items-center mb-2">
                         <DollarSign className="w-4 h-4 mr-2" />
-                        <strong>Monthly Rent:</strong> ${contract.monthlyRent.toLocaleString()}
+                        <strong>Renta mensual:</strong> ${contract.monthlyRent.toLocaleString()}
                       </p>
                       <p className="flex items-center">
                         <DollarSign className="w-4 h-4 mr-2" />
-                        <strong>Security Deposit:</strong> ${contract.securityDeposit.toLocaleString()}
+                        <strong>Depósito de seguridad:</strong> ${contract.securityDeposit.toLocaleString()}
                       </p>
                     </div>
                     <div>
                       <p className="flex items-center mb-2">
                         <Calendar className="w-4 h-4 mr-2" />
-                        <strong>Start Date:</strong> {formatDateInOrgTimezone(contract.startDate, state.organization?.settings.timezone)}
-
+                        <strong>Fecha de inicio:</strong> {formatDateInOrgTimezone(contract.startDate, organization?.settings.timezone)}
                       </p>
                       <p className="flex items-center mb-2">
                         <Calendar className="w-4 h-4 mr-2" />
-                        <strong>End Date:</strong> {formatDateInOrgTimezone(contract.endDate, state.organization?.settings.timezone)}
+                        <strong>Fecha de finalización:</strong> {formatDateInOrgTimezone(contract.endDate, organization?.settings.timezone)}
                       </p>
                       <p className="flex items-center">
-                        <Calendar className="w-4 h-4 mr-2" />
-                        <strong>Duration:</strong> {Math.round((new Date(contract.endDate).getTime() - new Date(contract.startDate).getTime()) / (1000 * 60 * 60 * 24 * 30.44))} months
+                        <FileText className="w-4 h-4 mr-2" />
+                        <strong>Duración:</strong> {Math.round((new Date(contract.endDate).getTime() - new Date(contract.startDate).getTime()) / (1000 * 60 * 60 * 24 * 30.44))} meses
                       </p>
                     </div>
                   </div>
@@ -205,13 +211,20 @@ const handleQuickRent = async () => {
                 <div className="bg-emerald-50 rounded-lg p-4">
                   <h4 className="font-medium text-emerald-900 mb-3 flex items-center">
                     <User className="w-4 h-4 mr-2" />
-                    Tenant Information
+                    Información del Inquilino
                   </h4>
-                  <div className="text-sm text-emerald-800 space-y-1">
-                    <p><strong>Email:</strong> {tenant.email}</p>
-                    <p><strong>Phone:</strong> {tenant.phone}</p>
-                    <p><strong>Employment:</strong> {tenant.employment.employer} - ${tenant.employment.income.toLocaleString()}/year</p>
-                    <p><strong>Status:</strong> {tenant.status}</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-emerald-800">
+                    <div>
+                      <p><strong>Email:</strong> {tenant.email}</p>
+                      <p><strong>Teléfono:</strong> {tenant.phone}</p>
+                    </div>
+                    <div>
+                      <p><strong>Empleo:</strong> {tenant.employment && typeof tenant.employment === 'object'
+                        ? `${tenant.employment.employer || ''}${tenant.employment.position ? ' - ' + tenant.employment.position : ''}${tenant.employment.income ? ' - $' + tenant.employment.income.toLocaleString() + '/año' : ''}`
+                        : tenant.employment || ''
+                      }</p>
+                      <p><strong>Estado:</strong> {tenant.status}</p>
+                    </div>
                   </div>
                 </div>
 
@@ -231,15 +244,18 @@ const handleQuickRent = async () => {
                 )}
 
                 {/* Assignment Summary */}
-                <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
-                  <h4 className="font-medium text-yellow-900 mb-2">⚠️ Assignment Summary</h4>
+                <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200 mt-4">
+                  <h4 className="font-medium text-yellow-900 mb-2 flex items-center">
+                    <AlertTriangle className="w-4 h-4 mr-2" />
+                    Resumen de Asignación
+                  </h4>
                   <div className="text-sm text-yellow-800">
-                    <p>This action will:</p>
-                    <ul className="mt-2 space-y-1 ml-4">
-                      <li>• Assign contract #{contract.id.slice(-6).toUpperCase()} to {property.name}</li>
-                      <li>• Change property status to "Rented"</li>
-                      <li>• Set tenant status to "Active" (if not already)</li>
-                      <li>• Create first rent payment if needed</li>
+                    <p>Esta acción realizará:</p>
+                    <ul className="list-disc pl-5 mt-2 space-y-1">
+                      <li>Asignar contrato #{contract.id.slice(-6).toUpperCase()} a {property.name}</li>
+                      <li>Cambiar estado de la propiedad a "Alquilada"</li>
+                      <li>Cambiar estado del inquilino a "Activo" (si no lo está)</li>
+                      <li>Crear el primer pago de renta si es necesario</li>
                     </ul>
                   </div>
                 </div>
@@ -253,14 +269,14 @@ const handleQuickRent = async () => {
             onClick={onClose}
             className="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors"
           >
-            Cancel
+            Cancelar
           </button>
           <button
             onClick={handleQuickRent}
             disabled={!selectedContract || availableContracts.length === 0}
             className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            Assign Contract to Property
+            Asignar Contrato
           </button>
         </div>
       </div>

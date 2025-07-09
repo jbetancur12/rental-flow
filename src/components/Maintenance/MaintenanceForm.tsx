@@ -31,6 +31,8 @@ export function MaintenanceForm({ request, properties, tenants, isOpen, onClose,
     notes: ''
   });
 
+  const isCompleted = request?.status === 'COMPLETED';
+
   useEffect(() => {
     if (request) {
       setFormData({
@@ -130,6 +132,7 @@ export function MaintenanceForm({ request, properties, tenants, isOpen, onClose,
                   value={formData.propertyId}
                   onChange={(e) => setFormData({ ...formData, propertyId: e.target.value })}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={isCompleted}
                 >
                   <option value="">Seleccionar una propiedad</option>
                   {properties.map((property) => (
@@ -149,6 +152,7 @@ export function MaintenanceForm({ request, properties, tenants, isOpen, onClose,
                 value={formData.tenantId}
                 onChange={(e) => setFormData({ ...formData, tenantId: e.target.value })}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isCompleted}
               >
                 <option value="">Seleccionar un inquilino</option>
                 {tenants.map((tenant) => (
@@ -171,6 +175,7 @@ export function MaintenanceForm({ request, properties, tenants, isOpen, onClose,
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Descripción breve del problema"
+              disabled={isCompleted}
             />
           </div>
 
@@ -185,6 +190,7 @@ export function MaintenanceForm({ request, properties, tenants, isOpen, onClose,
               rows={4}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Descripción detallada del problema de mantenimiento"
+              disabled={isCompleted}
             />
           </div>
 
@@ -197,6 +203,7 @@ export function MaintenanceForm({ request, properties, tenants, isOpen, onClose,
                 value={formData.priority}
                 onChange={(e) => setFormData({ ...formData, priority: e.target.value as MaintenanceRequest['priority'] })}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isCompleted}
               >
                 <option value="LOW">Baja</option>
                 <option value="MEDIUM">Media</option>
@@ -213,6 +220,7 @@ export function MaintenanceForm({ request, properties, tenants, isOpen, onClose,
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value as MaintenanceRequest['category'] })}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isCompleted}
               >
                 <option value="PLUMBING">Plomería</option>
                 <option value="ELECTRICAL">Eléctrico</option>
@@ -231,6 +239,7 @@ export function MaintenanceForm({ request, properties, tenants, isOpen, onClose,
                 value={formData.status}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value as MaintenanceRequest['status'] })}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isCompleted}
               >
                 <option value="OPEN">Abierta</option>
                 <option value="IN_PROGRESS">En Progreso</option>
@@ -251,6 +260,7 @@ export function MaintenanceForm({ request, properties, tenants, isOpen, onClose,
                 value={formData.reportedDate}
                 onChange={(e) => setFormData({ ...formData, reportedDate: e.target.value })}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isCompleted}
               />
             </div>
 
@@ -263,6 +273,7 @@ export function MaintenanceForm({ request, properties, tenants, isOpen, onClose,
                 value={formData.completedDate}
                 onChange={(e) => setFormData({ ...formData, completedDate: e.target.value })}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isCompleted}
               />
             </div>
           </div>
@@ -277,6 +288,7 @@ export function MaintenanceForm({ request, properties, tenants, isOpen, onClose,
               onChange={(e) => setFormData({ ...formData, assignedTo: e.target.value })}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Nombre del técnico o contratista"
+              disabled={isCompleted}
             />
           </div>
 
@@ -290,6 +302,7 @@ export function MaintenanceForm({ request, properties, tenants, isOpen, onClose,
                 value={formData.estimatedCost}
                 onChange={(e) => setFormData({ ...formData, estimatedCost: parseFloat(e.target.value) })}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isCompleted}
               />
             </div>
 
@@ -302,6 +315,7 @@ export function MaintenanceForm({ request, properties, tenants, isOpen, onClose,
                 value={formData.actualCost}
                 onChange={(e) => setFormData({ ...formData, actualCost: parseFloat(e.target.value) })}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isCompleted}
               />
             </div>
           </div>
@@ -314,8 +328,9 @@ export function MaintenanceForm({ request, properties, tenants, isOpen, onClose,
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               rows={3}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus-border-transparent"
               placeholder="Notas adicionales o actualizaciones"
+              disabled={false}
             />
           </div>
 
@@ -330,7 +345,7 @@ export function MaintenanceForm({ request, properties, tenants, isOpen, onClose,
             <button
               type="submit"
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              disabled={properties.length === 0}
+              disabled={properties.length === 0 || (isCompleted && formData.notes === (request?.notes || ''))}
             >
               {request ? 'Actualizar Solicitud' : 'Crear Solicitud'}
             </button>

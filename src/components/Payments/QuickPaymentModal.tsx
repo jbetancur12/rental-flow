@@ -3,6 +3,7 @@ import { Payment, Contract, Tenant } from '../../types';
 import { useApp } from '../../context/useApp';
 import { CheckCircle, X } from 'lucide-react';
 import { formatInTimeZone } from 'date-fns-tz';
+import { useToast } from '../../hooks/useToast';
 
 
 interface QuickPaymentModalProps {
@@ -14,6 +15,7 @@ interface QuickPaymentModalProps {
 }
 
 export function QuickPaymentModal({ tenant, overduePayments = [], isOpen, onClose }: QuickPaymentModalProps) {
+  const toast = useToast();
   const { updatePayment } = useApp();
 
   // Guarda los IDs de los pagos seleccionados. Por defecto, todos están seleccionados.
@@ -44,22 +46,28 @@ export function QuickPaymentModal({ tenant, overduePayments = [], isOpen, onClos
 
   const handleRecordPayment = async () => {
     if (selectedPaymentIds.length === 0) {
-      alert('Please select at least one payment to record.');
+      toast.error('Error al registrar pago', 'Selecciona al menos un pago para registrar.');
       return;
     }
-
     const paymentsToUpdate = overduePayments.filter(p => selectedPaymentIds.includes(p.id));
-
-    for (const payment of paymentsToUpdate) {
-      await updatePayment(payment.id, {
-        status: 'PAID',
-        paidDate: new Date(paymentDetails.paidDate),
-        method: paymentDetails.method,
-        notes: paymentDetails.notes,
-      });
+    try {
+      for (const payment of paymentsToUpdate) {
+        await updatePayment(payment.id, {
+          status: 'PAID',
+          paidDate: new Date(paymentDetails.paidDate),
+          method: paymentDetails.method,
+          notes: paymentDetails.notes,
+        });
+      }
+      toast.success('Pago registrado', 'El(los) pago(s) se registraron correctamente.');
+      onClose();
+    } catch (error: any) {
+      let msg = error?.error || error?.message || 'No se pudo registrar el pago.';
+      if (error?.details && Array.isArray(error.details)) {
+        msg = error.details.map((d: any) => `${d.field ? d.field + ': ' : ''}${d.message}`).join(' | ');
+      }
+      toast.error('Error al registrar pago', msg);
     }
-
-    onClose();
   };
 
   if (!isOpen) return null;

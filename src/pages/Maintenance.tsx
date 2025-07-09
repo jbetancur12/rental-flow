@@ -8,10 +8,12 @@ import { MaintenanceRequest } from '../types';
 import { formatInTimeZone } from 'date-fns-tz';
 import { ConfirmDialog } from '../components/UI/ConfirmDialog';
 import { useConfirm } from '../hooks/useConfirm';
+import { useToast } from '../hooks/useToast';
 
 export function Maintenance() {
   const { maintenanceRequests, units, properties, tenants, updateMaintenanceRequest, createMaintenanceRequest, markMaintenanceAsComplete, loadMaintenanceRequests, loadProperties, loadUnits, asignMaintenanceTechinician } = useApp();
     const { isOpen: isConfirmOpen, options: confirmOptions, confirm, handleConfirm, handleCancel } = useConfirm();
+    const toast = useToast();
   
   // FIX: Estados para filtros funcionando
   const [statusFilter, setStatusFilter] = useState<'all' | 'OPEN' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'>('all');
@@ -176,52 +178,65 @@ useEffect(() => {
 
   // NEW: Función para marcar como completada
 const handleMarkComplete = async (request: MaintenanceRequest) => {
-        const confirmed = await confirm({
-            title: 'Completar Solicitud',
-            message: '¿Está seguro de que desea marcar esta solicitud como completada?',
-            confirmText: 'Sí, Completar',
-            type: 'danger'
-        });
+  const confirmed = await confirm({
+    title: 'Completar Solicitud',
+    message: '¿Está seguro de que desea marcar esta solicitud como completada?',
+    confirmText: 'Sí, Completar',
+    type: 'danger'
+  });
 
-        if (confirmed) {
-            // Si el costo ya existe, la completamos directamente.
-            if (request.actualCost && request.actualCost > 0) {
-                await markMaintenanceAsComplete(request.id, { status: 'COMPLETED', completedDate: new Date() });
-            } else {
-                // Si no hay costo, abrimos el nuevo modal para que el usuario lo ingrese.
-                setCompletingRequest(request);
-                setActualCost(request.estimatedCost || 0); // Pre-rellenamos con el costo estimado si existe
-                setIsCostModalOpen(true);
-            }
+  if (confirmed) {
+    // Si el costo ya existe, la completamos directamente.
+    if (request.actualCost && request.actualCost > 0) {
+      try {
+        await markMaintenanceAsComplete(request.id, { status: 'COMPLETED', completedDate: new Date() });
+        toast.success('Solicitud completada', 'La solicitud de mantenimiento fue marcada como completada.');
+      } catch (error: any) {
+        let msg = error?.error || error?.message || 'No se pudo marcar como completada.';
+        if (error?.details && Array.isArray(error.details)) {
+          msg = error.details.map((d: any) => `${d.field ? d.field + ': ' : ''}${d.message}`).join(' | ');
         }
-    };
+        toast.error('Error al completar solicitud', msg);
+      }
+    } else {
+      // Si no hay costo, abrimos el nuevo modal para que el usuario lo ingrese.
+      setCompletingRequest(request);
+      setActualCost(request.estimatedCost || 0); // Pre-rellenamos con el costo estimado si existe
+      setIsCostModalOpen(true);
+    }
+  }
+};
 
     const handleSaveCostAndComplete = async () => {
-        if (!completingRequest) return;
+  if (!completingRequest) return;
 
-        if (actualCost <= 0) {
-            alert('Por favor, ingrese un costo real válido.');
-            return;
-        }
+  if (actualCost <= 0) {
+    toast.error('Error al completar solicitud', 'Por favor, ingrese un costo real válido.');
+    return;
+  }
 
-        const dataToUpdate = {
-            status: 'COMPLETED' as const,
-            completedDate: new Date(),
-            actualCost: actualCost
-        };
+  const dataToUpdate = {
+    status: 'COMPLETED' as const,
+    completedDate: new Date(),
+    actualCost: actualCost
+  };
 
-        try {
-            await markMaintenanceAsComplete(completingRequest.id, dataToUpdate);
-            setIsCostModalOpen(false); // Cierra el modal si todo sale bien
-        } catch (error) {
-            // El error se mostrará con un toast desde el contexto, no es necesario hacer nada más aquí.
-            console.error("Failed to mark as complete with cost", error);
-        }
-    };
+  try {
+    await markMaintenanceAsComplete(completingRequest.id, dataToUpdate);
+    toast.success('Solicitud completada', 'La solicitud de mantenimiento fue marcada como completada.');
+    setIsCostModalOpen(false); // Cierra el modal si todo sale bien
+  } catch (error: any) {
+    let msg = error?.error || error?.message || 'No se pudo marcar como completada.';
+    if (error?.details && Array.isArray(error.details)) {
+      msg = error.details.map((d: any) => `${d.field ? d.field + ': ' : ''}${d.message}`).join(' | ');
+    }
+    toast.error('Error al completar solicitud', msg);
+  }
+};
   // NEW: Guardar asignación de técnico
   const handleSaveAssignment = async () => {
     if (!assigningRequest || !technicianName.trim()) {
-      alert('Por favor ingrese el nombre del técnico');
+      toast.error('Error al asignar técnico', 'Por favor ingrese el nombre del técnico');
       return;
     }
 
@@ -231,14 +246,22 @@ const handleMarkComplete = async (request: MaintenanceRequest) => {
       status: 'IN_PROGRESS' as const
     };
 
-    await  asignMaintenanceTechinician(
-      updatedRequest.id,
-      updatedRequest
-    );
-
-    setIsAssignModalOpen(false);
-    setAssigningRequest(undefined);
-    setTechnicianName('');
+    try {
+      await asignMaintenanceTechinician(
+        updatedRequest.id,
+        updatedRequest
+      );
+      toast.success('Técnico asignado', 'El técnico fue asignado correctamente.');
+      setIsAssignModalOpen(false);
+      setAssigningRequest(undefined);
+      setTechnicianName('');
+    } catch (error: any) {
+      let msg = error?.error || error?.message || 'No se pudo asignar el técnico.';
+      if (error?.details && Array.isArray(error.details)) {
+        msg = error.details.map((d: any) => `${d.field ? d.field + ': ' : ''}${d.message}`).join(' | ');
+      }
+      toast.error('Error al asignar técnico', msg);
+    }
   };
 
   const handleSaveRequest = async (requestData: Omit<MaintenanceRequest, 'id'>) => {
