@@ -57,7 +57,8 @@ export function Settings() {
       currency: authState.organization?.settings.currency || 'COP',
       timezone: authState.organization?.settings.timezone || 'America/Bogota',
       dateFormat: authState.organization?.settings.dateFormat || 'DD/MM/YYYY',
-      language: authState.organization?.settings.language || 'es'
+      language: authState.organization?.settings.language || 'es',
+      accounting: authState.organization?.settings.accounting || {}
     },
     notifications: {
       emailNotifications: true,
@@ -159,10 +160,12 @@ export function Settings() {
           currency: settings.organization.currency,
           timezone: settings.organization.timezone,
           dateFormat: settings.organization.dateFormat,
-          language: settings.organization.language
+          language: settings.organization.language,
+          accounting: settings.organization.accounting || {},
         }
       };
       await updateOrganization(updatedOrganization.id, updatedOrganization);
+      toast.success('Organización actualizada', 'Los cambios se guardaron correctamente.');
     }
   };
 
@@ -288,7 +291,8 @@ export function Settings() {
           currency: orgSettings.currency || 'USD',
           timezone: orgSettings.timezone || 'America/Mexico_City',
           dateFormat: orgSettings.dateFormat || 'DD/MM/YYYY',
-          language: orgSettings.language || 'es'
+          language: orgSettings.language || 'es',
+          accounting: orgSettings.accounting || {}
         }
       }));
     }
