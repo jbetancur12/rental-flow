@@ -506,6 +506,53 @@ class ApiClient {
     });
   }
 
+  // --- Contabilidad ---
+  async getAccountingEntries(params?: any) {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString());
+        }
+      });
+    }
+    const query = searchParams.toString();
+    return this.request<any>(`/accounting${query ? `?${query}` : ''}`);
+  }
+
+  async createAccountingEntry(data: any) {
+    return this.request<any>('/accounting', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateAccountingEntry(id: string, data: any) {
+    return this.request<any>(`/accounting/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteAccountingEntry(id: string) {
+    return this.request<any>(`/accounting/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getAccountingReport(params?: any) {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString());
+        }
+      });
+    }
+    const query = searchParams.toString();
+    return this.request<any>(`/accounting/report${query ? `?${query}` : ''}`);
+  }
+
 }
 
 

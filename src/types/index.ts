@@ -134,6 +134,7 @@ export interface Payment {
 export interface MaintenanceRequest {
   id: string;
   propertyId: string; // Property ID (which belongs to a unit)
+  unitId?: string; // Unidad asociada al mantenimiento
   tenantId?: string;
   title: string;
   description: string;

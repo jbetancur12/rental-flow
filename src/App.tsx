@@ -27,6 +27,7 @@ const Settings = lazy(() => import('./pages/Settings').then(m => ({ default: m.S
 const Subscribe = lazy(() => import('./pages/Subscribe').then(m => ({ default: m.Subscribe })));
 const NotFound = lazy(() => import('./pages/NotFound').then(m => ({ default: m.NotFound })));
 const Help = lazy(() => import('./pages/Help'));
+const Accounting = lazy(() => import('./pages/Accounting'));
 
 
 function AppRoutes() {
@@ -44,6 +45,7 @@ function AppRoutes() {
             <Route path="contracts" element={<Contracts />} />
             <Route path="payments" element={<Payments />} />
             <Route path="maintenance" element={<Maintenance />} />
+            <Route path="accounting" element={<Accounting />} />
             <Route path="reports" element={<Reports />} />
             <Route path="settings" element={<Suspense fallback={<SettingsSkeleton />}><Settings /></Suspense>} />
             <Route path="help" element={<Help />} />

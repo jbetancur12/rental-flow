@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MaintenanceRequest, Property, Tenant } from '../../types';
+import { MaintenanceRequest, Property, Tenant, Unit } from '../../types';
 import { X } from 'lucide-react';
 import { formatDateToYYYYMMDD } from '../../utils/formatDate';
 import { useToast } from '../../hooks/useToast';
@@ -8,14 +8,16 @@ interface MaintenanceFormProps {
   request?: MaintenanceRequest;
   properties: Property[];
   tenants: Tenant[];
+  units: Unit[];
   isOpen: boolean;
   onClose: () => void;
   onSave: (request: Omit<MaintenanceRequest, 'id'>) => void;
 }
 
-export function MaintenanceForm({ request, properties, tenants, isOpen, onClose, onSave }: MaintenanceFormProps) {
+export function MaintenanceForm({ request, properties, tenants, units, isOpen, onClose, onSave }: MaintenanceFormProps) {
   const toast = useToast();
   const [formData, setFormData] = useState({
+    unitId: '',
     propertyId: '',
     tenantId: '',
     title: '',
@@ -30,12 +32,13 @@ export function MaintenanceForm({ request, properties, tenants, isOpen, onClose,
     actualCost: 0,
     notes: ''
   });
-
+  const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
   const isCompleted = request?.status === 'COMPLETED';
 
   useEffect(() => {
     if (request) {
       setFormData({
+        unitId: request.unitId || '',
         propertyId: request.propertyId,
         tenantId: request.tenantId || '',
         title: request.title,
@@ -44,14 +47,15 @@ export function MaintenanceForm({ request, properties, tenants, isOpen, onClose,
         category: request.category,
         status: request.status,
         reportedDate: formatDateToYYYYMMDD(request.reportedDate),
-            completedDate: request.completedDate ? formatDateToYYYYMMDD(request.completedDate) : '',
-            assignedTo: request.assignedTo || '',
+        completedDate: request.completedDate ? formatDateToYYYYMMDD(request.completedDate) : '',
+        assignedTo: request.assignedTo || '',
         estimatedCost: request.estimatedCost || 0,
         actualCost: request.actualCost || 0,
         notes: request.notes || ''
       });
     } else {
       setFormData({
+        unitId: '',
         propertyId: '',
         tenantId: '',
         title: '',
@@ -69,8 +73,23 @@ export function MaintenanceForm({ request, properties, tenants, isOpen, onClose,
     }
   }, [request]);
 
+  // Filtrar propiedades por unidad seleccionada
+  useEffect(() => {
+    if (formData.unitId) {
+      setFilteredProperties(properties.filter(p => p.unitId === formData.unitId));
+      setFormData(f => ({ ...f, propertyId: '' }));
+    } else {
+      setFilteredProperties([]);
+      setFormData(f => ({ ...f, propertyId: '' }));
+    }
+  }, [formData.unitId, properties]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.unitId || !formData.propertyId) {
+      toast.error('Unidad y propiedad requeridas', 'Debes seleccionar una unidad y una propiedad asociada.');
+      return;
+    }
     try {
       await onSave({
         ...formData,
@@ -97,8 +116,6 @@ export function MaintenanceForm({ request, properties, tenants, isOpen, onClose,
 
   if (!isOpen) return null;
 
-  // DEBUG: Log para verificar propiedades disponibles
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
@@ -118,49 +135,47 @@ export function MaintenanceForm({ request, properties, tenants, isOpen, onClose,
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
+                Unidad
+              </label>
+              <select
+                required
+                value={formData.unitId}
+                onChange={e => setFormData({ ...formData, unitId: e.target.value })}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isCompleted}
+              >
+                <option value="">Seleccionar una unidad</option>
+                {units.map(unit => (
+                  <option key={unit.id} value={unit.id}>{unit.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
                 Propiedad
               </label>
-              {properties.length === 0 ? (
+              {filteredProperties.length === 0 ? (
                 <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                   <p className="text-yellow-800 text-sm">
-                    ⚠️ No hay propiedades disponibles. Por favor, cree propiedades primero.
+                    ⚠️ Selecciona una unidad para ver propiedades asociadas.
                   </p>
                 </div>
               ) : (
                 <select
                   required
                   value={formData.propertyId}
-                  onChange={(e) => setFormData({ ...formData, propertyId: e.target.value })}
+                  onChange={e => setFormData({ ...formData, propertyId: e.target.value })}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  disabled={isCompleted}
+                  disabled={isCompleted || !formData.unitId}
                 >
                   <option value="">Seleccionar una propiedad</option>
-                  {properties.map((property) => (
+                  {filteredProperties.map(property => (
                     <option key={property.id} value={property.id}>
                       {property.name} - {property.address}
                     </option>
                   ))}
                 </select>
               )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Inquilino (Opcional)
-              </label>
-              <select
-                value={formData.tenantId}
-                onChange={(e) => setFormData({ ...formData, tenantId: e.target.value })}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                disabled={isCompleted}
-              >
-                <option value="">Seleccionar un inquilino</option>
-                {tenants.map((tenant) => (
-                  <option key={tenant.id} value={tenant.id}>
-                    {tenant.firstName} {tenant.lastName}
-                  </option>
-                ))}
-              </select>
             </div>
           </div>
 

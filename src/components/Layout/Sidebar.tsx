@@ -43,6 +43,7 @@ const navigation = [
   { name: 'Contratos', href: '/contracts', icon: FileText },
   { name: 'Pagos', href: '/payments', icon: CreditCard },
   { name: 'Mantenimiento', href: '/maintenance', icon: Wrench },
+  { name: 'Contabilidad', href: '/accounting', icon: BarChart3 },
   { name: 'Reportes', href: '/reports', icon: BarChart3 },
   { name: 'Configuración', href: '/settings', icon: Settings },
   { name: 'Ayuda', href: '/help', icon: HelpCircle },

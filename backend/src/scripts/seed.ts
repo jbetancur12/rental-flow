@@ -126,7 +126,7 @@ async function main() {
   farFutureDate.setFullYear(farFutureDate.getFullYear() + 100);
 
   await prisma.subscription.upsert({
-    where: { id: demoOrg.id },
+    where: { organizationId: demoOrg.id },
     update: {
       planId: 'plan-basic',
       status: 'DEMO'
@@ -172,10 +172,12 @@ async function main() {
     demoUnit = await prisma.unit.create({
       data: {
         organizationId: demoOrg.id,
-        name: 'Portal de Gudalupe',
+        name: 'Portal de Guadalupe',
         type: 'BUILDING',
         address: 'Calle 34 No 13 - 73',
         totalFloors: 5,
+        amenities: [] as string[],
+        photos: [] as string[]
       }
     });
   }

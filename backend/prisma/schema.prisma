@@ -35,6 +35,7 @@ model Organization {
   maintenance   MaintenanceRequest[]
   units         Unit[]
   activityLogs  ActivityLog[]
+  accountingEntries AccountingEntry[]
 
   @@map("organizations")
 }
@@ -55,6 +56,7 @@ model User {
   // Relations
   organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   activityLogs ActivityLog[]
+  accountingEntriesCreated AccountingEntry[] @relation("AccountingEntryCreatedBy")
 
   @@map("users")
 }
@@ -99,6 +101,8 @@ model Unit {
   // Relations
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   properties   Property[]
+  accountingEntries AccountingEntry[]
+  maintenanceRequests MaintenanceRequest[]
 
   @@map("units")
 }
@@ -127,6 +131,7 @@ model Property {
   unit         Unit?                @relation(fields: [unitId], references: [id], onDelete: SetNull)
   contracts    Contract[]
   maintenance  MaintenanceRequest[]
+  accountingEntries AccountingEntry[]
 
   @@map("properties")
 }
@@ -177,6 +182,7 @@ model Contract {
   property     Property     @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   payments     Payment[]
+  accountingEntries AccountingEntry[]
 
   @@map("contracts")
 }
@@ -210,6 +216,7 @@ model MaintenanceRequest {
   id             String              @id @default(uuid())
   organizationId String              @map("organization_id")
   propertyId     String              @map("property_id")
+  unitId         String?             @map("unit_id") 
   tenantId       String?             @map("tenant_id")
   title          String
   description    String
@@ -230,7 +237,7 @@ model MaintenanceRequest {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   property     Property     @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   tenant       Tenant?      @relation(fields: [tenantId], references: [id], onDelete: SetNull)
-
+  unit         Unit?        @relation(fields: [unitId], references: [id], onDelete: Cascade)
   @@map("maintenance_requests")
 }
 
@@ -263,11 +270,33 @@ model Plan {
   limits      Json // Objeto JSON con los límites: { "properties": 10, "tenants": 50 }
   createdAt      DateTime   @default(now()) @map("created_at")
 
-
   // Relación: Un plan puede tener muchas suscripciones
   subscriptions Subscription[]
 
   @@map("plans")
+}
+
+model AccountingEntry {
+  id             String   @id @default(uuid())
+  organizationId String
+  type           String   // 'INCOME' o 'EXPENSE'
+  concept        String
+  amount         Int
+  date           DateTime
+  notes          String?
+  propertyId     String?
+  unitId         String?
+  contractId     String?
+  createdById    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relaciones (ajusta según tus modelos)
+  organization Organization @relation(fields: [organizationId], references: [id])
+  property     Property?    @relation(fields: [propertyId], references: [id])
+  unit         Unit?        @relation(fields: [unitId], references: [id])
+  contract     Contract?    @relation(fields: [contractId], references: [id])
+  createdBy    User?        @relation("AccountingEntryCreatedBy", fields: [createdById], references: [id])
 }
 
 // Enums

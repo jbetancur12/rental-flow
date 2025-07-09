@@ -157,6 +157,7 @@ router.post('/',
   validateOrganizationAccess,
   [
     body('propertyId').isUUID().withMessage('Valid property ID required'),
+    body('unitId').isUUID().withMessage('Valid unit ID required'),
     body('tenantId').optional().isUUID().withMessage('Valid tenant ID required'),
     body('title').trim().isLength({ min: 1, max: 200 }).withMessage('Title is required (max 200 characters)'),
     body('description').trim().isLength({ min: 1, max: 2000 }).withMessage('Description is required (max 2000 characters)'),
@@ -178,20 +179,27 @@ router.post('/',
       const property = await prisma.property.findFirst({
         where: { id: req.body.propertyId, organizationId }
       });
-
       if (!property) {
         return res.status(400).json({
           error: 'Property not found or does not belong to organization',
           code: 'INVALID_PROPERTY'
         });
       }
-
+      // Verify unit belongs to organization
+      const unit = await prisma.unit.findFirst({
+        where: { id: req.body.unitId, organizationId }
+      });
+      if (!unit) {
+        return res.status(400).json({
+          error: 'Unit not found or does not belong to organization',
+          code: 'INVALID_UNIT'
+        });
+      }
       // Verify tenant belongs to organization if provided
       if (req.body.tenantId) {
         const tenant = await prisma.tenant.findFirst({
           where: { id: req.body.tenantId, organizationId }
         });
-
         if (!tenant) {
           return res.status(400).json({
             error: 'Tenant not found or does not belong to organization',
@@ -199,7 +207,6 @@ router.post('/',
           });
         }
       }
-
       const maintenanceData = {
         ...req.body,
         organizationId,
@@ -207,7 +214,6 @@ router.post('/',
         status: 'OPEN' as const,
         photos: req.body.photos || []
       };
-
       const maintenanceRequest = await prisma.maintenanceRequest.create({
         data: maintenanceData,
         include: {
@@ -229,14 +235,12 @@ router.post('/',
           }
         }
       });
-
       logger.info('Maintenance request created:', { 
         maintenanceId: maintenanceRequest.id, 
         organizationId,
         priority: maintenanceRequest.priority 
       });
       io.to(`org-${organizationId}`).emit('maintenance:created', { maintenance: maintenanceRequest, userId: currentUser.id, userName: `${currentUser.firstName} ${currentUser.lastName}` });
-
       return res.status(201).json({
         message: 'Maintenance request created successfully',
         maintenanceRequest
@@ -259,6 +263,7 @@ router.put('/:id',
   [
     param('id').isUUID(),
     body('propertyId').optional().isUUID(),
+    body('unitId').isUUID().withMessage('Valid unit ID required'),
     body('tenantId').optional().isUUID(),
     body('title').optional().trim().isLength({ min: 1, max: 200 }),
     body('description').optional().trim().isLength({ min: 1, max: 2000 }),
@@ -279,18 +284,15 @@ router.put('/:id',
       const organizationId = (req as any).organizationId;
       const io = req.app.get('io');
       const currentUser = (req as any).user;
-
       const existingRequest = await prisma.maintenanceRequest.findFirst({
         where: { id, organizationId }
       });
-
       if (!existingRequest) {
         return res.status(404).json({
           error: 'Maintenance request not found',
           code: 'MAINTENANCE_NOT_FOUND'
         });
       }
-
       // Verify property and tenant if provided
       if (req.body.propertyId) {
         const property = await prisma.property.findFirst({
@@ -303,7 +305,17 @@ router.put('/:id',
           });
         }
       }
-
+      if (req.body.unitId) {
+        const unit = await prisma.unit.findFirst({
+          where: { id: req.body.unitId, organizationId }
+        });
+        if (!unit) {
+          return res.status(400).json({
+            error: 'Unit not found or does not belong to organization',
+            code: 'INVALID_UNIT'
+          });
+        }
+      }
       if (req.body.tenantId) {
         const tenant = await prisma.tenant.findFirst({
           where: { id: req.body.tenantId, organizationId }
@@ -315,16 +327,13 @@ router.put('/:id',
           });
         }
       }
-
       const updateData: any = { ...req.body };
       if (req.body.reportedDate) updateData.reportedDate = new Date(req.body.reportedDate);
       if (req.body.completedDate) updateData.completedDate = new Date(req.body.completedDate);
-
       // Auto-set completed date when status changes to COMPLETED
       if (req.body.status === 'COMPLETED' && !existingRequest.completedDate && !req.body.completedDate) {
         updateData.completedDate = new Date();
       }
-
       const maintenanceRequest = await prisma.maintenanceRequest.update({
         where: { id },
         data: updateData,
@@ -347,14 +356,12 @@ router.put('/:id',
           }
         }
       });
-
       logger.info('Maintenance request updated:', { 
         maintenanceId: maintenanceRequest.id, 
         organizationId,
         status: maintenanceRequest.status 
       });
       io.to(`org-${organizationId}`).emit('maintenance:updated', { maintenance: maintenanceRequest, userId: currentUser.id, userName: `${currentUser.firstName} ${currentUser.lastName}` });
-
       return res.json({
         message: 'Maintenance request updated successfully',
         maintenanceRequest
@@ -636,6 +643,26 @@ router.patch('/:id/complete',
           } else if (updatedRequest.id) {
             concept = `Mantenimiento #${updatedRequest.id.slice(-6)}`;
           }
+
+          // Obtener info de unidad y propiedad
+          let unitName = '';
+          let propertyName = '';
+          // Buscar la unidad y propiedad por ID
+          let unit = null;
+          if (updatedRequest.unitId) {
+            unit = await prisma.unit.findUnique({ where: { id: updatedRequest.unitId ?? undefined } });
+            if (unit) unitName = unit.name;
+          }
+          if (updatedRequest.property && updatedRequest.property.name) propertyName = updatedRequest.property.name;
+
+          let accountingNotes = '';
+          if (unitName || propertyName) {
+            accountingNotes = `Unidad: ${unitName || '-'}, Propiedad: ${propertyName || '-'}.`;
+          }
+          if (notes) {
+            accountingNotes += ` ${notes}`;
+          }
+
           const entry = await prisma.accountingEntry.create({
             data: {
               organizationId,
@@ -644,10 +671,10 @@ router.patch('/:id/complete',
               amount: actualCost,
               date: updatedRequest.completedDate || new Date(),
               propertyId: updatedRequest.property?.id,
-              unitId: undefined, // Si tienes unitId, agrégalo aquí
+              unitId: updatedRequest.unitId,
               contractId: undefined,
               createdById: (req as any).user?.id,
-              notes: notes || undefined
+              notes: accountingNotes || undefined
             }
           });
           // Emitir evento socket.io

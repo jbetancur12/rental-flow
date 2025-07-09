@@ -573,6 +573,7 @@ const handleMarkComplete = async (request: MaintenanceRequest) => {
         request={editingRequest}
         properties={properties}
         tenants={tenants}
+        units={units || []}
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
         onSave={handleSaveRequest}
