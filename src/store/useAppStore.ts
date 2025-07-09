@@ -236,9 +236,8 @@ export const useAppStore = create<AppStore & { initSocket: (organizationId: stri
     },
     createProperty: async (data) => {
       const backendData = { ...data, type: data.type.toUpperCase(), status: data.status?.toUpperCase() || 'AVAILABLE' };
-      const response = await apiClient.createProperty(backendData);
-      const property = { ...response.property, createdAt: new Date(response.property.createdAt), updatedAt: new Date(response.property.updatedAt) };
-      set((state) => ({ properties: [...state.properties, property] }));
+      await apiClient.createProperty(backendData);
+      // No actualices el estado aquí, espera el evento de socket 'property:created'
     },
     updateProperty: async (id, data) => {
       const backendData = { ...data, type: data.type?.toUpperCase(), status: data.status?.toUpperCase() };
@@ -252,9 +251,8 @@ export const useAppStore = create<AppStore & { initSocket: (organizationId: stri
     },
     createUnit: async (data) => {
       const backendData = { ...data, type: data.type.toUpperCase() };
-      const response = await apiClient.createUnit(backendData);
-      const unit = { ...response.unit, createdAt: new Date(response.unit.createdAt), updatedAt: new Date(response.unit.updatedAt) };
-      set((state) => ({ units: [...state.units, unit] }));
+      await apiClient.createUnit(backendData);
+      // No actualices el estado aquí, espera el evento de socket 'unit:created'
     },
     updateUnit: async (id, data) => {
       const backendData = { ...data, type: data.type?.toUpperCase() };
@@ -271,8 +269,8 @@ export const useAppStore = create<AppStore & { initSocket: (organizationId: stri
       set({ tenants: response.tenants });
     },
     createTenant: async (data) => {
-      const response = await apiClient.createTenant(data);
-      set((state) => ({ tenants: [...state.tenants, response.tenant] }));
+      await apiClient.createTenant(data);
+      // No actualices el estado aquí, espera el evento de socket 'tenant:created'
     },
     updateTenant: async (id, data) => {
       const response = await apiClient.updateTenant(id, data);
@@ -287,8 +285,8 @@ export const useAppStore = create<AppStore & { initSocket: (organizationId: stri
       set({ contracts: response.contracts });
     },
     createContract: async (data) => {
-      const response = await apiClient.createContract(data);
-      set((state) => ({ contracts: [...state.contracts, response.contract] }));
+      await apiClient.createContract(data);
+      // No actualices el estado aquí, espera el evento de socket 'contract:created'
     },
     updateContract: async (id, data) => {
       const response = await apiClient.updateContract(id, data);
@@ -304,8 +302,8 @@ export const useAppStore = create<AppStore & { initSocket: (organizationId: stri
       set({ payments });
     },
     createPayment: async (data) => {
-      const response = await apiClient.createPayment(data);
-      set((state) => ({ payments: [...state.payments, response.payment] }));
+      await apiClient.createPayment(data);
+      // No actualices el estado aquí, espera el evento de socket 'payment:created'
     },
     updatePayment: async (id, data) => {
       const response = await apiClient.updatePayment(id, data);
@@ -331,8 +329,8 @@ export const useAppStore = create<AppStore & { initSocket: (organizationId: stri
       set({ maintenanceRequests: requests });
     },
     createMaintenanceRequest: async (data) => {
-      const response = await apiClient.createMaintenaceRequest(data);
-      set((state) => ({ maintenanceRequests: [...state.maintenanceRequests, response.maintenanceRequest] }));
+      await apiClient.createMaintenaceRequest(data);
+      // No actualices el estado aquí, espera el evento de socket 'maintenance:created'
     },
     updateMaintenanceRequest: async (id, data) => {
       const response = await apiClient.updateMaintenanceRequest(id, data);
