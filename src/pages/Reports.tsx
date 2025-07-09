@@ -166,8 +166,7 @@ const occupancyData = useMemo(() => {
               Filtros
             </h3>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 gap-y-2">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Mes</label>
               <select
@@ -182,7 +181,6 @@ const occupancyData = useMemo(() => {
                 ))}
               </select>
             </div>
-            
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Año</label>
               <select
@@ -195,7 +193,6 @@ const occupancyData = useMemo(() => {
                 ))}
               </select>
             </div>
-            
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Unidad</label>
               <select
@@ -209,7 +206,6 @@ const occupancyData = useMemo(() => {
                 ))}
               </select>
             </div>
-            
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Tipo de Propiedad</label>
               <select

@@ -252,15 +252,16 @@ export function Properties() {
 
         {/* FIX: Filtros funcionando */}
         <div className="mb-6">
-          <div className="flex space-x-2">
+          <div className="flex flex-wrap gap-2 overflow-x-auto whitespace-nowrap">
             {['all', 'AVAILABLE', 'RENTED', 'RESERVED', 'MAINTENANCE'].map((status) => (
               <button
                 key={status}
                 onClick={() => setFilter(status as 'all' | 'AVAILABLE' | 'RENTED' | 'RESERVED' | 'MAINTENANCE')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === status
+                className={`w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === status
                   ? 'bg-blue-600 text-white'
                   : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
                   }`}
+                style={{ minWidth: '120px' }}
               >
                 {status === 'all' ? 'Todas' :
                   status === 'AVAILABLE' ? 'Disponibles' :

@@ -146,16 +146,17 @@ export function Units() {
 
         {/* Filters */}
         <div className="mb-6">
-          <div className="flex space-x-2">
+          <div className="flex flex-wrap gap-2 overflow-x-auto whitespace-nowrap">
             {['all', 'BUILDING', 'HOUSE', 'COMMERCIAL'].map((type) => (
               <button
                 key={type}
                 onClick={() => setFilter(type as 'all' | 'BUILDING' | 'HOUSE' | 'COMMERCIAL')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   filter === type
                     ? 'bg-blue-600 text-white'
                     : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
                 }`}
+                style={{ minWidth: '120px' }}
               >
                 {type === 'all' && 'Todas'}
                 {type === 'BUILDING' && 'Edificios'}

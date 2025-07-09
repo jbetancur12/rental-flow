@@ -238,16 +238,17 @@ export function Tenants() {
         )}
 
         {/* Filters and Actions */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex space-x-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-2">
+          <div className="flex flex-wrap gap-2 overflow-x-auto whitespace-nowrap">
             {['all', 'PENDING', 'APPROVED', 'ACTIVE', 'FORMER', 'OVERDUE'].map((status) => (
               <button
                 key={status}
                 onClick={() => setFilter(status as 'all' | 'PENDING' | 'APPROVED' | 'ACTIVE' | 'FORMER' | 'OVERDUE')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === status
+                className={`w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === status
                   ? 'bg-blue-600 text-white'
                   : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
                   }`}
+                style={{ minWidth: '120px' }}
               >
                 {status === 'all' && 'Todos'}
                 {status === 'PENDING' && 'Pendientes'}
@@ -266,7 +267,7 @@ export function Tenants() {
 
           <button
             onClick={handleGenerateReport}
-            className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+            className="flex items-center justify-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors mt-2 sm:mt-0 sm:ml-4 w-full sm:w-auto"
           >
             <Download className="w-4 h-4 mr-2" />
             Exportar Reporte

@@ -360,8 +360,7 @@ const handleMarkComplete = async (request: MaintenanceRequest) => {
               Filtros
             </h3>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 gap-y-2">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Mes</label>
               <select
@@ -384,7 +383,6 @@ const handleMarkComplete = async (request: MaintenanceRequest) => {
                 <option value={12}>Diciembre</option>
               </select>
             </div>
-            
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Año</label>
               <select
@@ -397,7 +395,6 @@ const handleMarkComplete = async (request: MaintenanceRequest) => {
                 ))}
               </select>
             </div>
-            
             <div className="flex items-end">
               <button
                 onClick={handleGenerateReport}
@@ -412,16 +409,17 @@ const handleMarkComplete = async (request: MaintenanceRequest) => {
 
         {/* FIX: Status Tabs funcionando */}
         <div className="flex items-center justify-between mb-6">
-          <div className="flex space-x-2">
+          <div className="flex flex-wrap gap-2 overflow-x-auto whitespace-nowrap">
             {['all', 'OPEN', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'].map((status) => (
               <button
                 key={status}
                 onClick={() => setStatusFilter(status as 'OPEN' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'all')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   statusFilter === status
                     ? 'bg-blue-600 text-white'
                     : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
                 }`}
+                style={{ minWidth: '120px' }}
               >
                 {status === 'all' ? 'Todas' :
                  status === 'OPEN' ? 'Abiertas' :
