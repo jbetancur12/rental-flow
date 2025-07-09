@@ -1,6 +1,5 @@
 import React from 'react';
 import { Download } from 'lucide-react';
-// @ts-ignore
 import * as XLSX from 'xlsx';
 import { Button } from '../../components/ui/button';
 import { AccountingEntry } from './AccountingTable';

@@ -87,7 +87,7 @@ export default function Accounting() {
     try {
       const data = await apiClient.getAccountingEntries();
       setEntries(data);
-    } catch (e) {
+    } catch {
       toast.error('Error', 'Error al cargar asientos contables');
     } finally {
       setLoading(false);
@@ -98,7 +98,7 @@ export default function Accounting() {
     try {
       const data = await apiClient.getAccountingReport();
       setReport(data);
-    } catch (e) {
+    } catch {
       setReport(null);
     }
   };
@@ -152,8 +152,8 @@ export default function Accounting() {
     if (filters.minAmount) filtered = filtered.filter(e => e.amount >= Number(filters.minAmount));
     if (filters.maxAmount) filtered = filtered.filter(e => e.amount <= Number(filters.maxAmount));
     filtered = filtered.sort((a, b) => {
-      let vA = a[sortBy as keyof AccountingEntry];
-      let vB = b[sortBy as keyof AccountingEntry];
+      const vA = a[sortBy as keyof AccountingEntry];
+      const vB = b[sortBy as keyof AccountingEntry];
       if (sortBy === 'amount') {
         return sortDir === 'asc' ? (a.amount - b.amount) : (b.amount - a.amount);
       }

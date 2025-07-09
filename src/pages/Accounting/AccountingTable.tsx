@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell, TableFooter } from '../../components/ui/table';
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '../../components/ui/table';
 import { Button } from '../../components/ui/button';
 
 export interface AccountingEntry {
@@ -18,18 +18,12 @@ interface AccountingTableProps {
   loading: boolean;
   onEdit: (entry: AccountingEntry) => void;
   onDelete: (id: string) => void;
-  page: number;
-  pageSize: number;
-  total: number;
-  onPageChange: (page: number) => void;
   sortBy: string;
   sortDir: 'asc' | 'desc';
   onSort: (col: string) => void;
 }
 
-export function AccountingTable({ entries, loading, onEdit, onDelete, page, pageSize, total, onPageChange, sortBy, sortDir, onSort }: AccountingTableProps) {
-  const totalPages = Math.ceil(total / pageSize);
-  const sum = entries.reduce((acc, e) => acc + e.amount, 0);
+export function AccountingTable({ entries, loading, onEdit, onDelete, sortBy, sortDir, onSort }: AccountingTableProps) {
   return (
     <div className="overflow-x-auto">
       <Table>
