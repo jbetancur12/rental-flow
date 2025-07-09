@@ -128,6 +128,8 @@ router.post('/',
   async (req: Request, res: Response) => {
     try {
       const organizationId = (req as any).organizationId;
+      const io = req.app.get('io');
+      const currentUser = (req as any).user;
       const tenantData = {
         ...req.body,
         organizationId,
@@ -140,6 +142,7 @@ router.post('/',
       });
 
       logger.info('Tenant created:', { tenantId: tenant.id, organizationId });
+      io.to(`org-${organizationId}`).emit('tenant:created', { tenant, userId: currentUser.id, userName: `${currentUser.firstName} ${currentUser.lastName}` });
 
       return res.status(201).json({
         message: 'Tenant created successfully',
@@ -177,7 +180,8 @@ router.put('/:id',
     try {
       const { id } = req.params;
       const organizationId = (req as any).organizationId;
-
+      const io = req.app.get('io');
+      const currentUser = (req as any).user;
       const existingTenant = await prisma.tenant.findFirst({
         where: { id, organizationId }
       });
@@ -189,36 +193,13 @@ router.put('/:id',
         });
       }
 
-      const {
-        firstName,
-        lastName,
-        email,
-        phone,
-        emergencyContact,
-        employment,
-        status,
-        creditScore,
-        references
-      } = req.body;
-
-      const updateData: any = {};
-
-      if (firstName !== undefined) updateData.firstName = firstName;
-      if (lastName !== undefined) updateData.lastName = lastName;
-      if (email !== undefined) updateData.email = email;
-      if (phone !== undefined) updateData.phone = phone;
-      if (emergencyContact !== undefined) updateData.emergencyContact = emergencyContact;
-      if (employment !== undefined) updateData.employment = employment;
-      if (status !== undefined) updateData.status = status;
-      if (creditScore !== undefined) updateData.creditScore = creditScore;
-      if (references !== undefined) updateData.references = references;
-
       const tenant = await prisma.tenant.update({
         where: { id },
-        data: updateData
+        data: req.body
       });
 
       logger.info('Tenant updated:', { tenantId: tenant.id, organizationId });
+      io.to(`org-${organizationId}`).emit('tenant:updated', { tenant, userId: currentUser.id, userName: `${currentUser.firstName} ${currentUser.lastName}` });
 
       return res.json({
         message: 'Tenant updated successfully',
@@ -245,12 +226,10 @@ router.delete('/:id',
     try {
       const { id } = req.params;
       const organizationId = (req as any).organizationId;
-
+      const io = req.app.get('io');
+      const currentUser = (req as any).user;
       const tenant = await prisma.tenant.findFirst({
-        where: { id, organizationId },
-        include: {
-          contracts: { where: { status: 'ACTIVE' } }
-        }
+        where: { id, organizationId }
       });
 
       if (!tenant) {
@@ -260,18 +239,12 @@ router.delete('/:id',
         });
       }
 
-      if (tenant.contracts.length > 0) {
-        return res.status(400).json({
-          error: 'Cannot delete tenant with active contracts',
-          code: 'TENANT_HAS_ACTIVE_CONTRACTS'
-        });
-      }
-
       await prisma.tenant.delete({
         where: { id }
       });
 
       logger.info('Tenant deleted:', { tenantId: id, organizationId });
+      io.to(`org-${organizationId}`).emit('tenant:deleted', { tenantId: id, userId: currentUser.id, userName: `${currentUser.firstName} ${currentUser.lastName}` });
 
       return res.json({
         message: 'Tenant deleted successfully'

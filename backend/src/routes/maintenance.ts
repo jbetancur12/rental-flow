@@ -171,6 +171,8 @@ router.post('/',
   async (req:Request, res:Response) => {
     try {
       const organizationId = (req as any).organizationId;
+      const io = req.app.get('io');
+      const currentUser = (req as any).user;
       
       // Verify property belongs to organization
       const property = await prisma.property.findFirst({
@@ -233,6 +235,7 @@ router.post('/',
         organizationId,
         priority: maintenanceRequest.priority 
       });
+      io.to(`org-${organizationId}`).emit('maintenance:created', { maintenance: maintenanceRequest, userId: currentUser.id, userName: `${currentUser.firstName} ${currentUser.lastName}` });
 
       return res.status(201).json({
         message: 'Maintenance request created successfully',
@@ -274,6 +277,8 @@ router.put('/:id',
     try {
       const { id } = req.params;
       const organizationId = (req as any).organizationId;
+      const io = req.app.get('io');
+      const currentUser = (req as any).user;
 
       const existingRequest = await prisma.maintenanceRequest.findFirst({
         where: { id, organizationId }
@@ -348,6 +353,7 @@ router.put('/:id',
         organizationId,
         status: maintenanceRequest.status 
       });
+      io.to(`org-${organizationId}`).emit('maintenance:updated', { maintenance: maintenanceRequest, userId: currentUser.id, userName: `${currentUser.firstName} ${currentUser.lastName}` });
 
       return res.json({
         message: 'Maintenance request updated successfully',
@@ -374,6 +380,8 @@ router.delete('/:id',
     try {
       const { id } = req.params;
       const organizationId = (req as any).organizationId;
+      const io = req.app.get('io');
+      const currentUser = (req as any).user;
 
       const maintenanceRequest = await prisma.maintenanceRequest.findFirst({
         where: { id, organizationId }
@@ -399,6 +407,7 @@ router.delete('/:id',
       });
 
       logger.info('Maintenance request deleted:', { maintenanceId: id, organizationId });
+      io.to(`org-${organizationId}`).emit('maintenance:deleted', { maintenanceId: id, userId: currentUser.id, userName: `${currentUser.firstName} ${currentUser.lastName}` });
 
       return res.json({
         message: 'Maintenance request deleted successfully'

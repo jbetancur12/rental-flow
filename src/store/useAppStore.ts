@@ -3,6 +3,7 @@ import { Property, Tenant, Contract, Payment, MaintenanceRequest, Building, Unit
 import { Organization } from '../types/auth';
 import { apiClient } from '../config/api';
 import { formatDateInUTC } from '../utils/formatDate';
+import { io as socketIOClient, Socket } from 'socket.io-client';
 
 interface AppState {
   properties: Property[];
@@ -61,11 +62,158 @@ const initialState: AppState = {
   isLoading: false,
 };
 
-export const useAppStore = create<AppStore>((set) => {
+let socket: Socket | null = null;
+
+export const useAppStore = create<AppStore & { initSocket: (organizationId: string) => void }>((set) => {
   // NOTA: useToast solo puede usarse dentro de un componente, así que deberás pasar el toast como prop o usarlo en los métodos desde los componentes.
   // Aquí se asume que los métodos de notificación se llamarán desde los componentes tras cada acción.
   return {
     ...initialState,
+    initSocket: (organizationId: string) => {
+      if (socket) return; // Evitar doble conexión
+      socket = socketIOClient(import.meta.env.VITE_API_URL?.replace('/v1', '') || 'http://localhost:3001');
+      if (typeof window !== 'undefined') (window as any).__rentflow_socket = socket;
+      socket.on('connect', () => {
+        socket?.emit('join-organization', organizationId);
+      });
+      // Actualización en tiempo real de propiedades
+      socket.on('property:created', ({ property }) => {
+        const normalized = {
+          ...property,
+          createdAt: new Date(property.createdAt),
+          updatedAt: new Date(property.updatedAt),
+        };
+        set((state) => ({ properties: [...state.properties, normalized] }));
+      });
+      socket.on('property:updated', ({ property }) => {
+        const normalized = {
+          ...property,
+          createdAt: new Date(property.createdAt),
+          updatedAt: new Date(property.updatedAt),
+        };
+        set((state) => ({ properties: state.properties.map((p) => p.id === property.id ? normalized : p) }));
+      });
+      socket.on('property:deleted', ({ propertyId }) => {
+        set((state) => ({ properties: state.properties.filter((p) => p.id !== propertyId) }));
+      });
+      // Actualización en tiempo real de unidades
+      socket.on('unit:created', ({ unit }) => {
+        const normalized = {
+          ...unit,
+          createdAt: new Date(unit.createdAt),
+          updatedAt: new Date(unit.updatedAt),
+        };
+        set((state) => {
+          const newUnits = [...state.units, normalized];
+          console.log('SOCKET unit:created', {
+            before: state.units.length,
+            after: newUnits.length,
+            normalized,
+            prevUnits: state.units,
+            nextUnits: newUnits
+          });
+          return { units: newUnits };
+        }); 
+      });
+      socket.on('unit:updated', ({ unit }) => {
+        const normalized = {
+          ...unit,
+          createdAt: new Date(unit.createdAt),
+          updatedAt: new Date(unit.updatedAt),
+        };
+        set((state) => {
+          const nextUnits = state.units.map((u) => u.id === unit.id ? normalized : u);
+          console.log('SOCKET unit:updated', {
+            before: state.units,
+            after: nextUnits,
+            normalized
+          });
+          return { units: nextUnits };
+        });
+      });
+      socket.on('unit:deleted', ({ unitId }) => {
+        set((state) => {
+          const nextUnits = state.units.filter((u) => u.id !== unitId);
+          console.log('SOCKET unit:deleted', {
+            before: state.units,
+            after: nextUnits,
+            deletedId: unitId
+          });
+          return { units: nextUnits };
+        });
+      });
+      // Actualización en tiempo real de inquilinos
+      socket.on('tenant:created', ({ tenant }) => {
+        const normalized = {
+          ...tenant,
+          createdAt: new Date(tenant.createdAt),
+          updatedAt: new Date(tenant.updatedAt),
+          applicationDate: new Date(tenant.applicationDate),
+        };
+        set((state) => {
+          const newTenants = [...state.tenants, normalized];
+          console.log('SOCKET tenant:created', { before: state.tenants.length, after: newTenants.length, normalized });
+          return { tenants: newTenants };
+        });      });
+      socket.on('tenant:updated', ({ tenant }) => {
+        const normalized = {
+          ...tenant,
+          createdAt: new Date(tenant.createdAt),
+          updatedAt: new Date(tenant.updatedAt),
+          applicationDate: new Date(tenant.applicationDate),
+        };
+        set((state) => ({ tenants: state.tenants.map((t) => t.id === tenant.id ? normalized : t) }));
+      });
+      socket.on('tenant:deleted', ({ tenantId }) => {
+        set((state) => ({ tenants: state.tenants.filter((t) => t.id !== tenantId) }));
+      });
+      // Actualización en tiempo real de contratos
+      socket.on('contract:created', ({ contract }) => {
+        const normalized = {
+          ...contract,
+          createdAt: new Date(contract.createdAt),
+          updatedAt: new Date(contract.updatedAt),
+          startDate: contract.startDate ? new Date(contract.startDate) : undefined,
+          endDate: contract.endDate ? new Date(contract.endDate) : undefined,
+          signedDate: contract.signedDate ? new Date(contract.signedDate) : undefined,
+        };
+        set((state) => ({ contracts: [...state.contracts, normalized] }));
+      });
+      socket.on('contract:updated', ({ contract }) => {
+        const normalized = {
+          ...contract,
+          createdAt: new Date(contract.createdAt),
+          updatedAt: new Date(contract.updatedAt),
+          startDate: contract.startDate ? new Date(contract.startDate) : undefined,
+          endDate: contract.endDate ? new Date(contract.endDate) : undefined,
+          signedDate: contract.signedDate ? new Date(contract.signedDate) : undefined,
+        };
+        set((state) => ({ contracts: state.contracts.map((c) => c.id === contract.id ? normalized : c) }));
+      });
+      socket.on('contract:deleted', ({ contractId }) => {
+        set((state) => ({ contracts: state.contracts.filter((c) => c.id !== contractId) }));
+      });
+      // Actualización en tiempo real de pagos
+      socket.on('payment:created', ({ payment }) => {
+        set((state) => ({ payments: [...state.payments, payment] }));
+      });
+      socket.on('payment:updated', ({ payment }) => {
+        set((state) => ({ payments: state.payments.map((p) => p.id === payment.id ? payment : p) }));
+      });
+      socket.on('payment:deleted', ({ paymentId }) => {
+        set((state) => ({ payments: state.payments.filter((p) => p.id !== paymentId) }));
+      });
+      // Actualización en tiempo real de mantenimiento
+      socket.on('maintenance:created', ({ maintenance }) => {
+        set((state) => ({ maintenanceRequests: [...state.maintenanceRequests, maintenance] }));
+      });
+      socket.on('maintenance:updated', ({ maintenance }) => {
+        set((state) => ({ maintenanceRequests: state.maintenanceRequests.map((m) => m.id === maintenance.id ? maintenance : m) }));
+      });
+      socket.on('maintenance:deleted', ({ maintenanceId }) => {
+        set((state) => ({ maintenanceRequests: state.maintenanceRequests.filter((m) => m.id !== maintenanceId) }));
+      });
+    },
     setLoading: (loading) => set({ isLoading: loading }),
     loadProperties: async () => {
       set({ isLoading: true });
@@ -214,4 +362,8 @@ export const useAppStore = create<AppStore>((set) => {
       return response.data;
     },
   };
-}); 
+});
+
+if (typeof window !== 'undefined') {
+  (window as any).getAppState = useAppStore.getState;
+} 

@@ -125,6 +125,7 @@ router.post('/',
   async (req: Request, res: Response) => {
     try {
       const organizationId = (req as any).organizationId;
+      const io = req.app.get('io');
       const currentUser = (req as any).user;
       // Verify property and tenant belong to organization
       const [property, tenant] = await Promise.all([
@@ -195,6 +196,7 @@ router.post('/',
       });
 
       logger.info('Contract created:', { contractId: contract.id, organizationId });
+      io.to(`org-${organizationId}`).emit('contract:created', { contract, userId: currentUser.id, userName: `${currentUser.firstName} ${currentUser.lastName}` });
 
       return res.status(201).json({
         message: 'Contract created successfully',
@@ -216,7 +218,7 @@ router.put('/:id',
   requireRole(['ADMIN', 'MANAGER']),
   validateOrganizationAccess,
   [
-    param('id').isString(),
+    param('id').isUUID(),
     body('propertyId').optional().isUUID(),
     body('tenantId').optional().isUUID(),
     body('startDate').optional().isISO8601(),
@@ -233,6 +235,7 @@ router.put('/:id',
     try {
       const { id } = req.params;
       const organizationId = (req as any).organizationId;
+      const io = req.app.get('io');
       const currentUser = (req as any).user;
 
 
@@ -372,6 +375,7 @@ router.put('/:id',
       });
 
       logger.info('Contract updated:', { contractId: contract.id, organizationId });
+      io.to(`org-${organizationId}`).emit('contract:updated', { contract, userId: currentUser.id, userName: `${currentUser.firstName} ${currentUser.lastName}` });
 
       return res.json({
         message: 'Contract updated successfully',
@@ -392,12 +396,14 @@ router.delete('/:id',
   authenticateToken,
   requireRole(['ADMIN']),
   validateOrganizationAccess,
-  [param('id').isString()],
+  [param('id').isUUID()],
   handleValidationErrors,
   async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const organizationId = (req as any).organizationId;
+      const io = req.app.get('io');
+      const currentUser = (req as any).user;
 
       const contract = await prisma.contract.findFirst({
         where: { id, organizationId },
@@ -431,6 +437,7 @@ router.delete('/:id',
       });
 
       logger.info('Contract deleted:', { contractId: id, organizationId });
+      io.to(`org-${organizationId}`).emit('contract:deleted', { contractId: id, userId: currentUser.id, userName: `${currentUser.firstName} ${currentUser.lastName}` });
 
       return res.json({
         message: 'Contract deleted successfully'

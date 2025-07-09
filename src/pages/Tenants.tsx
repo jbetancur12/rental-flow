@@ -40,10 +40,8 @@ export function Tenants() {
   }, [getTenants]);
 
   useEffect(() => {
-    if (tenants.length === 0) {
-      fetchTenants();
-    }
-  }, [tenants.length, fetchTenants]);
+    fetchTenants();
+  }, [fetchTenants]);
 
   // Get tenants with OVERDUE payments
   const tenantsWithOverdue = tenants.filter(tenant => {

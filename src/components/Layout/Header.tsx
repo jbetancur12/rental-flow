@@ -1,6 +1,5 @@
 
-import { Bell, Search, Plus, Menu } from 'lucide-react';
-import { useState } from 'react';
+import {  Search, Plus, Menu } from 'lucide-react';
 
 interface HeaderProps {
   title: string;

@@ -154,6 +154,8 @@ router.post('/',
   async (req: Request, res: Response) => {
     try {
       const organizationId = (req as any).organizationId;
+      const io = req.app.get('io');
+      const currentUser = (req as any).user;
 
       const organization = await prisma.organization.findUnique({
         where: { id: organizationId }
@@ -206,6 +208,8 @@ router.post('/',
       });
 
       logger.info('Property created:', { propertyId: property.id, organizationId });
+      // Emitir evento socket.io
+      io.to(`org-${organizationId}`).emit('property:created', { property, userId: currentUser.id, userName: `${currentUser.firstName} ${currentUser.lastName}` });
 
       return res.status(201).json({
         message: 'Property created successfully',
@@ -235,6 +239,7 @@ router.put('/:id', // Usar PATCH para actualizaciones parciales
     try {
       const { id } = req.params; // ID de la propiedad a actualizar
       const organizationId = (req as any).organizationId;
+      const io = req.app.get('io');
       const currentUser = (req as any).user;
 
       // --- Lógica segura para la actualización (Evitar Mass Assignment) ---
@@ -301,6 +306,8 @@ router.put('/:id', // Usar PATCH para actualizaciones parciales
 
 
       logger.info('Property updated:', { propertyId: updatedProperty.id, organizationId });
+      // Emitir evento socket.io
+      io.to(`org-${organizationId}`).emit('property:updated', { property: updatedProperty, userId: currentUser.id, userName: `${currentUser.firstName} ${currentUser.lastName}` });
 
       return res.json({
         message: 'Property updated successfully',
@@ -327,6 +334,8 @@ router.delete('/:id',
     try {
       const { id } = req.params;
       const organizationId = (req as any).organizationId;
+      const io = req.app.get('io');
+      const currentUser = (req as any).user;
 
       // Check if property exists and belongs to organization
       const property = await prisma.property.findFirst({
@@ -356,6 +365,8 @@ router.delete('/:id',
       });
 
       logger.info('Property deleted:', { propertyId: id, organizationId });
+      // Emitir evento socket.io
+      io.to(`org-${organizationId}`).emit('property:deleted', { propertyId: id, userId: currentUser.id, userName: `${currentUser.firstName} ${currentUser.lastName}` });
 
       return res.json({
         message: 'Property deleted successfully'

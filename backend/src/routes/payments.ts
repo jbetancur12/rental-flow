@@ -126,6 +126,8 @@ router.post('/',
   async (req: Request, res: Response) => {
     try {
       const organizationId = (req as any).organizationId;
+      const io = req.app.get('io');
+      const currentUser = (req as any).user;
 
       // Verify contract and tenant belong to organization
       const [contract, tenant] = await Promise.all([
@@ -208,6 +210,7 @@ router.post('/',
       });
 
       logger.info('Payment created:', { paymentId: payment.id, organizationId });
+      io.to(`org-${organizationId}`).emit('payment:created', { payment, userId: currentUser.id, userName: `${currentUser.firstName} ${currentUser.lastName}` });
 
       return res.status(201).json({
         message: 'Payment created successfully',
@@ -243,6 +246,8 @@ router.put('/:id',
     try {
       const { id } = req.params;
       const organizationId = (req as any).organizationId;
+      const io = req.app.get('io');
+      const currentUser = (req as any).user;
 
       const existingPayment = await prisma.payment.findFirst({
         where: { id, organizationId }
@@ -297,6 +302,7 @@ router.put('/:id',
 
 
       logger.info('Payment updated:', { paymentId: payment.id, organizationId });
+      io.to(`org-${organizationId}`).emit('payment:updated', { payment, userId: currentUser.id, userName: `${currentUser.firstName} ${currentUser.lastName}` });
 
       return res.json({
         message: 'Payment updated successfully',
@@ -323,6 +329,8 @@ router.delete('/:id',
     try {
       const { id } = req.params;
       const organizationId = (req as any).organizationId;
+      const io = req.app.get('io');
+      const currentUser = (req as any).user;
 
       const payment = await prisma.payment.findFirst({
         where: { id, organizationId }
@@ -338,6 +346,7 @@ router.delete('/:id',
         where: { id }
       });
       logger.info('Payment deleted:', { paymentId: id, organizationId });
+      io.to(`org-${organizationId}`).emit('payment:deleted', { paymentId: id, userId: currentUser.id, userName: `${currentUser.firstName} ${currentUser.lastName}` });
       return res.json({
         message: 'Payment deleted successfully'
       });

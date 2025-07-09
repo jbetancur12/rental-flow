@@ -128,6 +128,8 @@ router.post('/',
   async (req:Request, res:Response) => {
     try {
       const organizationId = (req as any).organizationId;
+      const io = req.app.get('io');
+      const currentUser = (req as any).user;
       const unitData = {
         ...req.body,
         organizationId,
@@ -140,6 +142,7 @@ router.post('/',
       });
 
       logger.info('Unit created:', { unitId: unit.id, organizationId });
+      io.to(`org-${organizationId}`).emit('unit:created', { unit, userId: currentUser.id, userName: `${currentUser.firstName} ${currentUser.lastName}` });
 
       return res.status(201).json({
         message: 'Unit created successfully',
@@ -177,7 +180,8 @@ router.put('/:id',
     try {
       const { id } = req.params;
       const organizationId = (req as any).organizationId;
-
+      const io = req.app.get('io');
+      const currentUser = (req as any).user;
       // Check if unit exists and belongs to organization
       const existingUnit = await prisma.unit.findFirst({
         where: { id, organizationId }
@@ -196,6 +200,7 @@ router.put('/:id',
       });
 
       logger.info('Unit updated:', { unitId: unit.id, organizationId });
+      io.to(`org-${organizationId}`).emit('unit:updated', { unit, userId: currentUser.id, userName: `${currentUser.firstName} ${currentUser.lastName}` });
 
       return res.json({
         message: 'Unit updated successfully',
@@ -222,17 +227,11 @@ router.delete('/:id',
     try {
       const { id } = req.params;
       const organizationId = (req as any).organizationId;
-
+      const io = req.app.get('io');
+      const currentUser = (req as any).user;
       // Check if unit exists and belongs to organization
       const unit = await prisma.unit.findFirst({
-        where: { id, organizationId },
-        include: {
-          properties: {
-            include: {
-              contracts: { where: { status: 'ACTIVE' } }
-            }
-          }
-        }
+        where: { id, organizationId }
       });
 
       if (!unit) {
@@ -242,35 +241,15 @@ router.delete('/:id',
         });
       }
 
-      // Check if unit has properties with active contracts
-      const hasActiveContracts = unit.properties.some(property => 
-        property.contracts.length > 0
-      );
-
-      if (hasActiveContracts) {
-        return res.status(400).json({
-          error: 'Cannot delete unit with properties that have active contracts',
-          code: 'UNIT_HAS_ACTIVE_CONTRACTS'
-        });
-      }
-
-      // Delete unit and all its properties
-      await prisma.$transaction(async (tx) => {
-        // Delete all properties in the unit
-        await tx.property.deleteMany({
-          where: { unitId: id }
-        });
-
-        // Delete the unit
-        await tx.unit.delete({
-          where: { id }
-        });
+      await prisma.unit.delete({
+        where: { id }
       });
 
       logger.info('Unit deleted:', { unitId: id, organizationId });
+      io.to(`org-${organizationId}`).emit('unit:deleted', { unitId: id, userId: currentUser.id, userName: `${currentUser.firstName} ${currentUser.lastName}` });
 
       return res.json({
-        message: 'Unit and all its properties deleted successfully'
+        message: 'Unit deleted successfully'
       });
     } catch (error) {
       logger.error('Delete unit error:', error);
