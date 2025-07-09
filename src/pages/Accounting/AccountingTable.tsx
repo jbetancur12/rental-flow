@@ -68,11 +68,6 @@ export function AccountingTable({ entries, loading, onEdit, onDelete, sortBy, so
   );
 }
 
-// Exportar el cálculo del total de la página para usarlo fuera
-export function getAccountingPageTotal(entries: AccountingEntry[]): number {
-  return entries.reduce((acc, e) => acc + e.amount, 0);
-}
-
 export function AccountingPagination({ page, pageSize, total, onPageChange }: { page: number, pageSize: number, total: number, onPageChange: (page: number) => void }) {
   const totalPages = Math.ceil(total / pageSize);
   return (

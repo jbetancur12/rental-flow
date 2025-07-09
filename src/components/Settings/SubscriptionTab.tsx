@@ -1,6 +1,6 @@
 import { Crown } from 'lucide-react';
 
-export function SubscriptionTab({ authState, state, isAdmin, handleOpenUpgradeModal }: any) {
+export function SubscriptionTab({ authState, properties, tenants, isAdmin, handleOpenUpgradeModal }: any) {
   const statusDetails = {
     ACTIVE: { text: 'Activo', color: 'text-emerald-600' },
     TRIALING: { text: 'Prueba', color: 'text-blue-600' },
@@ -56,11 +56,11 @@ export function SubscriptionTab({ authState, state, isAdmin, handleOpenUpgradeMo
               <div className="space-y-2 mt-2">
                 <div className="flex justify-between text-sm">
                   <span>Propiedades:</span>
-                  <span>{state.properties.length} / {authState.organization?.settings.limits.maxProperties}</span>
+                  <span>{properties.length} / {authState.organization?.settings.limits.maxProperties}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Inquilinos:</span>
-                  <span>{state.tenants.length} / {authState.organization?.settings.limits.maxTenants}</span>
+                  <span>{tenants.length} / {authState.organization?.settings.limits.maxTenants}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Usuarios:</span>

@@ -17,7 +17,7 @@ import {
 import { useSearchParams } from 'react-router-dom';
 import { OrganizationSettings } from '../types/auth';
 import { PlanSelector } from '../components/Subscription/PlanSelector';
-import { plans } from '../components/Auth/RegisterForm';
+import { plans } from '../components/Auth/registerPlans';
 import { RecentActivity } from '../components/Settings/RecentActivity';
 import { User as UserType } from '../types/auth';
 import apiClient from '../config/api';

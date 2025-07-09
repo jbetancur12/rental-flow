@@ -14,7 +14,7 @@ interface MaintenanceFormProps {
   onSave: (request: Omit<MaintenanceRequest, 'id'>) => void;
 }
 
-export function MaintenanceForm({ request, properties, tenants, units, isOpen, onClose, onSave }: MaintenanceFormProps) {
+export function MaintenanceForm({ request, properties, units, isOpen, onClose, onSave }: MaintenanceFormProps) {
   const toast = useToast();
   const [formData, setFormData] = useState({
     unitId: '',

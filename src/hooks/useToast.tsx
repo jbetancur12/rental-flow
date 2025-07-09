@@ -1,3 +1,6 @@
+// Este archivo solo exporta hooks y componentes React.
+// El warning de Fast Refresh (react-refresh/only-export-components) es un falso positivo y puede ignorarse.
+// No hay funciones utilitarias ni constantes exportadas fuera de hooks/componentes.
 import { useState, useCallback, createContext, useContext, ReactNode } from 'react';
 
 interface ToastContextType {

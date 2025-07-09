@@ -10,6 +10,16 @@ import { ConfirmDialog } from '../components/UI/ConfirmDialog';
 import { useConfirm } from '../hooks/useConfirm';
 import { useToast } from '../hooks/useToast';
 
+// Utilidad para mostrar fechas en formato DD/MM/YYYY
+function formatDateDMY(dateStr: string | Date): string {
+  const date = typeof dateStr === 'string' ? new Date(dateStr) : dateStr;
+  if (isNaN(date.getTime())) return '';
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
 export function Maintenance() {
   const { maintenanceRequests, units, properties, tenants, updateMaintenanceRequest, createMaintenanceRequest, markMaintenanceAsComplete, loadMaintenanceRequests, loadProperties, loadUnits, asignMaintenanceTechinician } = useApp();
     const { isOpen: isConfirmOpen, options: confirmOptions, confirm, handleConfirm, handleCancel } = useConfirm();
@@ -67,8 +77,12 @@ useEffect(() => {
   loadInitialData();
 
 }, [
-
-  
+  loadMaintenanceRequests,
+  loadProperties,
+  loadUnits,
+  maintenanceRequests.length,
+  properties.length,
+  units.length
 ]);
 
   // FIX: Filtros funcionando correctamente
@@ -688,12 +702,20 @@ const handleMarkComplete = async (request: MaintenanceRequest) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <h4 className="font-medium text-slate-900 mb-2">Fecha de Reporte</h4>
-                  <p className="text-slate-700">{formatInTimeZone(selectedRequest.reportedDate, 'UTC', 'dd/MM/yyyy')}</p>
+                  <p className="text-slate-700">{
+                    selectedRequest.reportedDate && !isNaN(new Date(selectedRequest.reportedDate).getTime())
+                      ? formatDateDMY(selectedRequest.reportedDate)
+                      : 'N/A'
+                  }</p>
                 </div>
                 {selectedRequest.completedDate && (
                   <div>
                     <h4 className="font-medium text-slate-900 mb-2">Fecha de Completado</h4>
-                    <p className="text-slate-700">{formatInTimeZone(selectedRequest.completedDate, 'UTC', 'dd/MM/yyyy')}</p>
+                    <p className="text-slate-700">{
+                      selectedRequest.completedDate && !isNaN(new Date(selectedRequest.completedDate).getTime())
+                        ? formatDateDMY(selectedRequest.completedDate)
+                        : 'N/A'
+                    }</p>
                   </div>
                 )}
               </div>

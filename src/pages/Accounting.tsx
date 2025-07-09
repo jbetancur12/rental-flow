@@ -1,8 +1,9 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { apiClient } from '../config/api';
 import { useToast } from '../hooks/useToast';
 import { Filters } from './Accounting/Filters';
-import { AccountingTable, AccountingEntry, AccountingPagination, getAccountingPageTotal } from './Accounting/AccountingTable';
+import { AccountingTable, AccountingEntry, AccountingPagination } from './Accounting/AccountingTable';
+import { getAccountingPageTotal } from './Accounting/accountingUtils';
 import { AccountingForm, AccountingFormValues } from './Accounting/AccountingForm';
 import { AccountingChart } from './Accounting/AccountingChart';
 import { ExportButton } from './Accounting/ExportButton';
@@ -82,7 +83,7 @@ export default function Accounting() {
   const [modalOpen, setModalOpen] = useState(false);
   const [showChartPanel, setShowChartPanel] = useState(false);
 
-  const fetchEntries = async () => {
+  const fetchEntries = useCallback(async () => {
     setLoading(true);
     try {
       const data = await apiClient.getAccountingEntries();
@@ -92,7 +93,7 @@ export default function Accounting() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   const fetchReport = async () => {
     try {
@@ -131,7 +132,7 @@ export default function Accounting() {
       socket.off('accounting:updated', onUpdated);
       socket.off('accounting:deleted', onDeleted);
     };
-  }, []);
+  }, [fetchEntries, toast]);
 
   // Filtros y ordenamiento en memoria (puedes migrar a backend si hay muchos datos)
   const filteredEntries = useMemo(() => {
@@ -401,11 +402,7 @@ export default function Accounting() {
             entries={pagedEntries}
             loading={loading}
             onEdit={handleEdit}
-            onDelete={handleDelete}
-            page={page}
-            pageSize={pageSize}
-            total={filteredEntries.length}
-            onPageChange={setPage}
+            onDelete={handleDelete}        
             sortBy={sortBy}
             sortDir={sortDir}
             onSort={handleSort}
