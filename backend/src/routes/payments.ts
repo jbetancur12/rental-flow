@@ -299,7 +299,46 @@ router.put('/:id',
         }
       });
 
-
+      // Lógica de contabilidad automática: solo si el status cambió a PAID y antes no era PAID
+      if (status === 'PAID' && existingPayment.status !== 'PAID') {
+        // Verificar si ya existe un entry para este pago
+        const existingEntry = await prisma.accountingEntry.findFirst({
+          where: {
+            contractId: payment.contractId,
+            amount: payment.amount,
+            date: payment.paidDate || undefined,
+            type: 'INCOME',
+            // El concepto ya no es relevante para buscar duplicados
+          }
+        });
+        if (!existingEntry) {
+          // Construir concepto informativo
+          let concept = 'Arriendo pagado';
+          if (payment.contract?.property?.unitNumber) {
+            concept = `Arriendo pagado por Apto ${payment.contract.property.unitNumber}`;
+          } else if (payment.contract?.property?.name) {
+            concept = `Arriendo pagado por ${payment.contract.property.name}`;
+          }
+          const entry = await prisma.accountingEntry.create({
+            data: {
+              organizationId,
+              type: 'INCOME',
+              concept,
+              amount: payment.amount,
+              date: payment.paidDate || new Date(),
+              propertyId: payment.contract?.property?.id,
+              contractId: payment.contractId,
+              unitId: undefined, // Si tienes unitId, agrégalo aquí
+              createdById: currentUser.id,
+              notes: payment.notes || undefined
+            }
+          });
+          // Emitir evento socket.io
+          if (io) {
+            io.to(`org-${organizationId}`).emit('accounting:created', { entry });
+          }
+        }
+      }
 
       logger.info('Payment updated:', { paymentId: payment.id, organizationId });
       io.to(`org-${organizationId}`).emit('payment:updated', { payment, userId: currentUser.id, userName: `${currentUser.firstName} ${currentUser.lastName}` });

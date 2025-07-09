@@ -616,6 +616,48 @@ router.patch('/:id/complete',
         }
       });
 
+      // Lógica de contabilidad automática: solo si actualCost está definido y es mayor a 0
+      if (actualCost !== undefined && actualCost > 0) {
+        // Verificar si ya existe un entry para este gasto
+        const existingEntry = await prisma.accountingEntry.findFirst({
+          where: {
+            propertyId: updatedRequest.property?.id,
+            amount: actualCost,
+            date: updatedRequest.completedDate || undefined,
+            type: 'EXPENSE',
+            // El concepto ya no es relevante para buscar duplicados
+          }
+        });
+        if (!existingEntry) {
+          // Construir concepto informativo
+          let concept = 'Gasto de mantenimiento';
+          if (updatedRequest.title) {
+            concept = updatedRequest.title;
+          } else if (updatedRequest.id) {
+            concept = `Mantenimiento #${updatedRequest.id.slice(-6)}`;
+          }
+          const entry = await prisma.accountingEntry.create({
+            data: {
+              organizationId,
+              type: 'EXPENSE',
+              concept,
+              amount: actualCost,
+              date: updatedRequest.completedDate || new Date(),
+              propertyId: updatedRequest.property?.id,
+              unitId: undefined, // Si tienes unitId, agrégalo aquí
+              contractId: undefined,
+              createdById: (req as any).user?.id,
+              notes: notes || undefined
+            }
+          });
+          // Emitir evento socket.io
+          const io = req.app.get('io');
+          if (io) {
+            io.to(`org-${organizationId}`).emit('accounting:created', { entry });
+          }
+        }
+      }
+
       logger.info('Maintenance request completed:', { 
         maintenanceId: id, 
         actualCost, 
