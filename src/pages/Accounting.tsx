@@ -236,6 +236,7 @@ export default function Accounting() {
       fetchEntries();
       fetchReport();
     } catch (e) {
+      console.error(e);
       toast.error('Error', 'Error al guardar el asiento');
     }
   };
@@ -248,6 +249,7 @@ export default function Accounting() {
       fetchEntries();
       fetchReport();
     } catch (e) {
+      console.error(e);
       toast.error('Error', 'Error al eliminar el asiento');
     }
   };
