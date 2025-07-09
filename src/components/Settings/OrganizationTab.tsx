@@ -48,6 +48,49 @@ export function OrganizationTab({ settings, setSettings, handleSaveOrganization,
               <option value="Europe/London">Londres, Lisboa (UTC+1)</option>
             </select>
           </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-slate-700 mb-2">Automatización Contable</label>
+            <div className="flex items-center gap-6">
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={!!settings.organization.accounting?.autoRegisterRent}
+                  onChange={e =>
+                    setSettings((prev: any) => ({
+                      ...prev,
+                      organization: {
+                        ...prev.organization,
+                        accounting: {
+                          ...prev.organization.accounting,
+                          autoRegisterRent: e.target.checked,
+                        },
+                      },
+                    }))
+                  }
+                />
+                Registrar rentas automáticamente en contabilidad
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={!!settings.organization.accounting?.autoRegisterMaintenance}
+                  onChange={e =>
+                    setSettings((prev: any) => ({
+                      ...prev,
+                      organization: {
+                        ...prev.organization,
+                        accounting: {
+                          ...prev.organization.accounting,
+                          autoRegisterMaintenance: e.target.checked,
+                        },
+                      },
+                    }))
+                  }
+                />
+                Registrar mantenimientos automáticamente en contabilidad
+              </label>
+            </div>
+          </div>
         </div>
         <div className="mt-6 flex justify-end">
           <button onClick={isAdmin ? handleSaveOrganization : undefined} className={`flex items-center px-4 py-2 rounded-lg ${isAdmin ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`} disabled={!isAdmin} title={!isAdmin ? 'Solo un administrador puede guardar cambios en la organización' : ''}>

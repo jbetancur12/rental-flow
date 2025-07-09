@@ -12,6 +12,18 @@ const toMidnightUTC = (date: Date): Date =>
 async function main() {
   logger.info('🌱 Starting database seed...');
 
+  // Eliminar todos los datos existentes (en orden de dependencias)
+  await prisma.payment.deleteMany({});
+  await prisma.contract.deleteMany({});
+  await prisma.tenant.deleteMany({});
+  await prisma.property.deleteMany({});
+  await prisma.unit.deleteMany({});
+  await prisma.user.deleteMany({});
+  await prisma.subscription.deleteMany({});
+  await prisma.accountingEntry.deleteMany({});
+  await prisma.organization.deleteMany({});
+  await prisma.plan.deleteMany({});
+
   // Create super admin user
   const superAdminPassword = await bcrypt.hash(process.env.SUPER_ADMIN_PASSWORD || 'superadmin123', 12);
 
@@ -232,10 +244,10 @@ async function main() {
     { unitNumber: '201', floor: 2 },
     { unitNumber: '202', floor: 2 },
     { unitNumber: '301', floor: 3 },
-    { unitNumber: '302', floor: 3 },
-    { unitNumber: '401', floor: 4 },
-    { unitNumber: '402', floor: 4 },
-    { unitNumber: '501', floor: 5 },
+   // { unitNumber: '302', floor: 3 },
+  // { unitNumber: '401', floor: 4 },
+    // { unitNumber: '402', floor: 4 },
+    // { unitNumber: '501', floor: 5 },
     { unitNumber: '502', floor: 5 },
   ];
 
