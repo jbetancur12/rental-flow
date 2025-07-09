@@ -23,9 +23,10 @@ export function Contracts() {
 
   useEffect(() => {
     if (contracts.length === 0) {
-      fetchContracts();
+      loadContracts();
     }
-  }, [contracts.length, fetchContracts]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contracts.length]);
 
   const getStatusColor = (status: string) => {
     const colors = {

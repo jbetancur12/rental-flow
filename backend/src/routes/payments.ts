@@ -209,6 +209,68 @@ router.post('/',
         }
       });
 
+      // Lógica de contabilidad automática: si el pago se crea con status PAID
+      if (payment.status === 'PAID') {
+        // Verificar si ya existe un entry para este pago
+        const existingEntry = await prisma.accountingEntry.findFirst({
+          where: {
+            contractId: payment.contractId,
+            amount: payment.amount,
+            date: payment.paidDate || undefined,
+            type: 'INCOME',
+          }
+        });
+        if (!existingEntry) {
+          // Construir concepto informativo
+          let concept = 'Arriendo pagado';
+          if (payment.contract?.property?.unitNumber) {
+            concept = `Arriendo pagado por Apto ${payment.contract.property.unitNumber}`;
+          } else if (payment.contract?.property?.name) {
+            concept = `Arriendo pagado por ${payment.contract.property.name}`;
+          }
+
+          // Obtener info de unidad y propiedad
+          let unitName = '';
+          let propertyName = '';
+          let unitId = undefined;
+          if (payment.contract?.property?.unitId) {
+            const unit = await prisma.unit.findUnique({ where: { id: payment.contract.property.unitId } });
+            if (unit) {
+              unitName = unit.name;
+              unitId = unit.id;
+            }
+          }
+          if (payment.contract?.property?.name) propertyName = payment.contract.property.name;
+
+          let accountingNotes = '';
+          if (unitName || propertyName) {
+            accountingNotes = `Unidad: ${unitName || '-'}, Propiedad: ${propertyName || '-'}.`;
+          }
+          if (payment.notes) {
+            accountingNotes += ` ${payment.notes}`;
+          }
+
+          const entry = await prisma.accountingEntry.create({
+            data: {
+              organizationId,
+              type: 'INCOME',
+              concept,
+              amount: payment.amount,
+              date: payment.paidDate || new Date(),
+              propertyId: payment.contract?.property?.id,
+              contractId: payment.contractId,
+              unitId: unitId,
+              createdById: currentUser.id,
+              notes: accountingNotes || undefined
+            }
+          });
+          // Emitir evento socket.io
+          if (io) {
+            io.to(`org-${organizationId}`).emit('accounting:created', { entry });
+          }
+        }
+      }
+
       logger.info('Payment created:', { paymentId: payment.id, organizationId });
       io.to(`org-${organizationId}`).emit('payment:created', { payment, userId: currentUser.id, userName: `${currentUser.firstName} ${currentUser.lastName}` });
 
@@ -319,6 +381,28 @@ router.put('/:id',
           } else if (payment.contract?.property?.name) {
             concept = `Arriendo pagado por ${payment.contract.property.name}`;
           }
+
+          // Obtener info de unidad y propiedad
+          let unitName = '';
+          let propertyName = '';
+          let unitId = undefined;
+          if (payment.contract?.property?.unitId) {
+            const unit = await prisma.unit.findUnique({ where: { id: payment.contract.property.unitId } });
+            if (unit) {
+              unitName = unit.name;
+              unitId = unit.id;
+            }
+          }
+          if (payment.contract?.property?.name) propertyName = payment.contract.property.name;
+
+          let accountingNotes = '';
+          if (unitName || propertyName) {
+            accountingNotes = `Unidad: ${unitName || '-'}, Propiedad: ${propertyName || '-'}.`;
+          }
+          if (payment.notes) {
+            accountingNotes += ` ${payment.notes}`;
+          }
+
           const entry = await prisma.accountingEntry.create({
             data: {
               organizationId,
@@ -328,9 +412,9 @@ router.put('/:id',
               date: payment.paidDate || new Date(),
               propertyId: payment.contract?.property?.id,
               contractId: payment.contractId,
-              unitId: undefined, // Si tienes unitId, agrégalo aquí
+              unitId: unitId,
               createdById: currentUser.id,
-              notes: payment.notes || undefined
+              notes: accountingNotes || undefined
             }
           });
           // Emitir evento socket.io

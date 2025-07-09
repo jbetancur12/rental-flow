@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { apiClient } from '../config/api';
 import { useToast } from '../hooks/useToast';
 import { Filters } from './Accounting/Filters';
-import { AccountingTable, AccountingEntry } from './Accounting/AccountingTable';
+import { AccountingTable, AccountingEntry, AccountingPagination, getAccountingPageTotal } from './Accounting/AccountingTable';
 import { AccountingForm, AccountingFormValues } from './Accounting/AccountingForm';
 import { AccountingChart } from './Accounting/AccountingChart';
 import { ExportButton } from './Accounting/ExportButton';
@@ -106,6 +106,31 @@ export default function Accounting() {
   useEffect(() => {
     fetchEntries();
     fetchReport();
+
+    // --- Actualización en tiempo real de contabilidad ---
+    // @ts-expect-error to show in the console
+    const socket = window.__rentflow_socket;
+    if (!socket) return;
+    const onCreated = ({ entry, userName }: { entry: AccountingEntry, userName?: string }) => {
+      setEntries((prev) => [entry, ...prev]);
+      toast.info('Nueva entrada contable', `${userName ? userName + ' agregó' : 'Se agregó'} un asiento: ${entry.concept}`);
+    };
+    const onUpdated = ({ entry, userName }: { entry: AccountingEntry, userName?: string }) => {
+      setEntries((prev) => prev.map((e) => e.id === entry.id ? entry : e));
+      toast.info('Entrada contable actualizada', `${userName ? userName + ' actualizó' : 'Se actualizó'} el asiento: ${entry.concept}`);
+    };
+    const onDeleted = ({ entryId, userName }: { entryId: string, userName?: string }) => {
+      setEntries((prev) => prev.filter((e) => e.id !== entryId));
+      toast.info('Entrada contable eliminada', `${userName ? userName + ' eliminó' : 'Se eliminó'} un asiento.`);
+    };
+    socket.on('accounting:created', onCreated);
+    socket.on('accounting:updated', onUpdated);
+    socket.on('accounting:deleted', onDeleted);
+    return () => {
+      socket.off('accounting:created', onCreated);
+      socket.off('accounting:updated', onUpdated);
+      socket.off('accounting:deleted', onDeleted);
+    };
   }, []);
 
   // Filtros y ordenamiento en memoria (puedes migrar a backend si hay muchos datos)
@@ -309,78 +334,93 @@ export default function Accounting() {
   );
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Contabilidad</h1>
-      {report && (
-        <div className="mb-6 p-4 bg-slate-100 rounded-lg flex gap-8 items-center justify-between">
-          <div className="flex gap-8">
-            <div>
-              <div className="text-slate-500 text-xs">Ingresos</div>
-              <div className="text-green-600 font-bold text-lg">${report.totalIngresos?.toLocaleString() || 0}</div>
+    <div className="flex flex-col min-h-screen h-screen">
+      <div className="p-6 max-w-6xl mx-auto w-full flex-1 flex flex-col">
+        <h1 className="text-2xl font-bold mb-4">Contabilidad</h1>
+        {report && (
+          <div className="mb-6 p-4 bg-slate-100 rounded-lg flex gap-8 items-center justify-between">
+            <div className="flex gap-8">
+              <div>
+                <div className="text-slate-500 text-xs">Ingresos</div>
+                <div className="text-green-600 font-bold text-lg">${report.totalIngresos?.toLocaleString() || 0}</div>
+              </div>
+              <div>
+                <div className="text-slate-500 text-xs">Gastos</div>
+                <div className="text-red-600 font-bold text-lg">${report.totalGastos?.toLocaleString() || 0}</div>
+              </div>
+              <div>
+                <div className="text-slate-500 text-xs">Balance</div>
+                <div className="text-blue-600 font-bold text-lg">${report.balance?.toLocaleString() || 0}</div>
+              </div>
             </div>
-            <div>
-              <div className="text-slate-500 text-xs">Gastos</div>
-              <div className="text-red-600 font-bold text-lg">${report.totalGastos?.toLocaleString() || 0}</div>
-            </div>
-            <div>
-              <div className="text-slate-500 text-xs">Balance</div>
-              <div className="text-blue-600 font-bold text-lg">${report.balance?.toLocaleString() || 0}</div>
+            <Button type="button" onClick={handleOpenModal} className="bg-blue-600 text-white px-4 py-2 rounded shadow">+ Agregar entrada</Button>
+          </div>
+        )}
+        {/* Modal para crear/editar entrada */}
+        {modalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg relative animate-fade-in">
+              <h2 className="text-xl font-semibold mb-4">{editingId ? 'Editar entrada' : 'Agregar entrada'}</h2>
+              <button onClick={handleCancel} className="absolute top-2 right-2 text-slate-400 hover:text-slate-700 text-2xl">×</button>
+              <AccountingForm values={form} onChange={handleFormChange} onSubmit={handleFormSubmit} onCancel={handleCancel} editing={!!editingId} loading={loading} />
             </div>
           </div>
-          <Button type="button" onClick={handleOpenModal} className="bg-blue-600 text-white px-4 py-2 rounded shadow">+ Agregar entrada</Button>
+        )}
+        {/* Gráfica o mensaje informativo */}
+        {showChart && (
+          <div className="relative">
+            <div className={`transition-all duration-300 ${showChartPanel ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+              <AccountingChart data={chartData} />
+            </div>
+          </div>
+        )}
+        {!showChart && (
+          <div className="bg-white rounded-xl border border-slate-200 p-6 mb-4 flex items-center gap-3 text-slate-500">
+            <Info className="w-6 h-6 text-blue-400" />
+            <span>Selecciona un rango de al menos dos días para visualizar la gráfica de ingresos y gastos.</span>
+          </div>
+        )}
+        <Filters
+          type={filters.type}
+          concept={filters.concept}
+          range={filters.range}
+          dateFrom={filters.dateFrom}
+          dateTo={filters.dateTo}
+          minAmount={filters.minAmount}
+          maxAmount={filters.maxAmount}
+          onChange={handleFilterChange}
+          onRangeChange={handleRangeChange}
+          onReset={handleFilterReset}
+          chartToggle={chartToggleButton}
+        />
+        <ExportButton entries={filteredEntries} />
+        <div className="w-full max-h-[60vh] overflow-y-auto mb-2 flex-1">
+          <AccountingTable
+            entries={pagedEntries}
+            loading={loading}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            page={page}
+            pageSize={pageSize}
+            total={filteredEntries.length}
+            onPageChange={setPage}
+            sortBy={sortBy}
+            sortDir={sortDir}
+            onSort={handleSort}
+          />
         </div>
-      )}
-      {/* Modal para crear/editar entrada */}
-      {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg relative animate-fade-in">
-            <h2 className="text-xl font-semibold mb-4">{editingId ? 'Editar entrada' : 'Agregar entrada'}</h2>
-            <button onClick={handleCancel} className="absolute top-2 right-2 text-slate-400 hover:text-slate-700 text-2xl">×</button>
-            <AccountingForm values={form} onChange={handleFormChange} onSubmit={handleFormSubmit} onCancel={handleCancel} editing={!!editingId} loading={loading} />
+        <div className="sticky bottom-0 left-0 w-full bg-white border-t border-slate-200 z-20 py-3 px-6 shadow-lg">
+          <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+            <div className="font-bold text-slate-700">Total página: <span className="text-blue-700">${getAccountingPageTotal(pagedEntries).toLocaleString()}</span></div>
+            <AccountingPagination
+              page={page}
+              pageSize={pageSize}
+              total={filteredEntries.length}
+              onPageChange={setPage}
+            />
           </div>
         </div>
-      )}
-      {/* Gráfica o mensaje informativo */}
-      {showChart && (
-        <div className="relative">
-          <div className={`transition-all duration-300 ${showChartPanel ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
-            <AccountingChart data={chartData} />
-          </div>
-        </div>
-      )}
-      {!showChart && (
-        <div className="bg-white rounded-xl border border-slate-200 p-6 mb-4 flex items-center gap-3 text-slate-500">
-          <Info className="w-6 h-6 text-blue-400" />
-          <span>Selecciona un rango de al menos dos días para visualizar la gráfica de ingresos y gastos.</span>
-        </div>
-      )}
-      <Filters
-        type={filters.type}
-        concept={filters.concept}
-        range={filters.range}
-        dateFrom={filters.dateFrom}
-        dateTo={filters.dateTo}
-        minAmount={filters.minAmount}
-        maxAmount={filters.maxAmount}
-        onChange={handleFilterChange}
-        onRangeChange={handleRangeChange}
-        onReset={handleFilterReset}
-        chartToggle={chartToggleButton}
-      />
-      <ExportButton entries={filteredEntries} />
-      <AccountingTable
-        entries={pagedEntries}
-        loading={loading}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        page={page}
-        pageSize={pageSize}
-        total={filteredEntries.length}
-        onPageChange={setPage}
-        sortBy={sortBy}
-        sortDir={sortDir}
-        onSort={handleSort}
-      />
+      </div>
     </div>
   );
 } 

@@ -89,7 +89,7 @@ const handleQuickRent = async () => {
         await updateContract(contract.id, contractUpdatePayload);
         const tenant = tenants.find(t => t.id === contract.tenantId);
         if (tenant && tenant.status !== 'ACTIVE') {
-            await updateTenant(tenant.id, { ...tenant, status: 'ACTIVE' });
+            await updateTenant(tenant.id, { status: 'ACTIVE' });
         }
 
         toast.success('Propiedad rentada', 'La propiedad fue rentada y el contrato asignado correctamente.');

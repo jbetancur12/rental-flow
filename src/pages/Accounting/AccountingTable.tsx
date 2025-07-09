@@ -69,20 +69,23 @@ export function AccountingTable({ entries, loading, onEdit, onDelete, page, page
             </TableRow>
           ))}
         </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TableCell colSpan={3} className="font-bold">Total página</TableCell>
-            <TableCell className="font-bold">${sum.toLocaleString()}</TableCell>
-            <TableCell colSpan={2}></TableCell>
-          </TableRow>
-        </TableFooter>
       </Table>
-      {/* Paginación */}
-      <div className="flex justify-end items-center gap-2 mt-2">
-        <Button type="button" disabled={page===1} onClick={()=>onPageChange(page-1)}>Anterior</Button>
-        <span>Página {page} de {totalPages}</span>
-        <Button type="button" disabled={page===totalPages} onClick={()=>onPageChange(page+1)}>Siguiente</Button>
-      </div>
+    </div>
+  );
+}
+
+// Exportar el cálculo del total de la página para usarlo fuera
+export function getAccountingPageTotal(entries: AccountingEntry[]): number {
+  return entries.reduce((acc, e) => acc + e.amount, 0);
+}
+
+export function AccountingPagination({ page, pageSize, total, onPageChange }: { page: number, pageSize: number, total: number, onPageChange: (page: number) => void }) {
+  const totalPages = Math.ceil(total / pageSize);
+  return (
+    <div className="flex justify-end items-center gap-2 mt-2">
+      <Button type="button" disabled={page===1} onClick={()=>onPageChange(page-1)}>Anterior</Button>
+      <span>Página {page} de {totalPages}</span>
+      <Button type="button" disabled={page===totalPages} onClick={()=>onPageChange(page+1)}>Siguiente</Button>
     </div>
   );
 }
