@@ -437,6 +437,20 @@ router.patch('/:id',
                 // Lista de tipos de pago que deben regenerarse tras un reembolso.
                 const regenerableTypes: PaymentType[] = ['RENT', 'DEPOSIT'];
 
+                // --- NUEVO: Eliminar asiento contable asociado si es REFUNDED ---
+                if (status === 'REFUNDED') {
+                  await tx.accountingEntry.deleteMany({
+                    where: {
+                      contractId: updatedPayment.contractId,
+                      amount: updatedPayment.amount,
+                      date: updatedPayment.paidDate || undefined,
+                      type: 'INCOME',
+                      organizationId
+                    }
+                  });
+                }
+                // --- FIN NUEVO ---
+
                 if (status === 'REFUNDED' && regenerableTypes.includes(updatedPayment.type)) {
                     const contract = await tx.contract.findUnique({
                         where: { id: updatedPayment.contractId }
