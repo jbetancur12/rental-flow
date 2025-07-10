@@ -1,4 +1,4 @@
-import { Building2, Eye, Ban, Edit } from 'lucide-react';
+import { Building2, Eye, Ban, Edit, CheckCircle } from 'lucide-react';
 import { OrganizationSummary, Plan } from '../../types';
 import { useState, useEffect } from 'react';
 import { useApp } from '../../context/useApp';
@@ -50,7 +50,7 @@ export function OrganizationsTable({
       await import('../../config/api').then(({ apiClient }) =>
         apiClient.updateOrganizationSubscription(editingOrg.id, drawerState)
       );
-      toast.success('Cambios guardados');
+      toast.success('Éxito', 'Cambios guardados');
       setEditingOrg(null);
     } catch (e) {
       toast.error('Error', 'No se pudo guardar');
@@ -58,6 +58,25 @@ export function OrganizationsTable({
       setSaving(false);
     }
   };
+
+  const handleToggleActive = async (org: OrganizationSummary) => {
+    setSaving(true);
+    try {
+      await import('../../config/api').then(({ apiClient }) =>
+        apiClient.updateOrganization(org.id, { isActive: !org.isActive })
+      );
+      toast.success('Éxito', `Organización ${org.isActive ? 'deshabilitada' : 'habilitada'}`);
+      // Refrescar la tabla: puedes llamar a una función de fetchOrganizations si está disponible vía props/context, o recargar la página temporalmente:
+      window.location.reload();
+    } catch (e) {
+      toast.error('Error', 'No se pudo actualizar el estado de la organización');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Modal para ver detalles
+  const [viewOrg, setViewOrg] = useState<OrganizationSummary | null>(null);
 
   const filteredOrganizations = organizations.filter(org => {
     const matchesSearch = org.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -139,11 +158,18 @@ export function OrganizationsTable({
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex space-x-2">
-                        <button className="text-blue-600 hover:text-blue-800">
+                        <button className="text-blue-600 hover:text-blue-800" onClick={() => setViewOrg(org)} title="Ver detalles">
                           <Eye className="w-4 h-4" />
                         </button>
-                        <button className="text-red-600 hover:text-red-800">
-                          <Ban className="w-4 h-4" />
+                        <button
+                          className={org.isActive
+                            ? 'text-red-600 hover:text-red-800'
+                            : 'text-emerald-600 hover:text-emerald-800'}
+                          onClick={() => handleToggleActive(org)}
+                          disabled={saving}
+                          title={org.isActive ? 'Deshabilitar organización' : 'Habilitar organización'}
+                        >
+                          {org.isActive ? <Ban className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
                         </button>
                         <button className="text-slate-600 hover:text-blue-600" onClick={() => setEditingOrg(org)} title="Editar organización">
                           <Edit className="w-4 h-4" />
@@ -202,6 +228,32 @@ export function OrganizationsTable({
                   {saving ? 'Guardando...' : 'Guardar Cambios'}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {viewOrg && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 z-40 flex justify-center items-center">
+          <div className="bg-white rounded-xl shadow-xl p-8 max-w-lg w-full relative z-50">
+            <button className="absolute top-4 right-4 text-slate-400 hover:text-slate-700" onClick={() => setViewOrg(null)}>
+              ×
+            </button>
+            <h2 className="text-xl font-bold mb-6">Detalles de la Organización</h2>
+            <div className="space-y-2">
+              <div><b>Nombre:</b> {viewOrg.name}</div>
+              <div><b>Email:</b> {viewOrg.email}</div>
+              <div><b>Plan:</b> {viewOrg.plan}</div>
+              <div><b>Estado:</b> {viewOrg.status}</div>
+              <div><b>Usuarios:</b> {viewOrg.users}</div>
+              <div><b>Propiedades:</b> {viewOrg.properties}</div>
+              <div><b>Inquilinos:</b> {viewOrg.tenants}</div>
+              <div><b>MRR:</b> ${viewOrg.mrr}</div>
+              <div><b>Creada:</b> {new Date(viewOrg.createdAt).toLocaleString()}</div>
+              <div><b>Última actividad:</b> {new Date(viewOrg.lastActivity).toLocaleString()}</div>
+              <div><b>Habilitada:</b> {viewOrg.isActive ? 'Sí' : 'No'}</div>
+            </div>
+            <div className="flex justify-end mt-6">
+              <button className="px-4 py-2 rounded-lg bg-slate-200 text-slate-700" onClick={() => setViewOrg(null)}>Cerrar</button>
             </div>
           </div>
         </div>
