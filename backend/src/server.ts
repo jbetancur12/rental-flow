@@ -140,7 +140,7 @@ app.use(`${API_PREFIX}/reports`, reportRoutes);
 app.use(`${API_PREFIX}/subscriptions`, subscriptionRoutes);
 app.use(`${API_PREFIX}/super-admin`, superAdminRoutes);
 app.use(`${API_PREFIX}/activity-log`, activityLogRoutes);
-app.use(`${API_PREFIX}/super-admin/plans`, planRoutes);
+app.use(`${API_PREFIX}/plans`, planRoutes);
 app.use('/webhooks', webhookRoutes);
 
 // Socket.IO for real-time features

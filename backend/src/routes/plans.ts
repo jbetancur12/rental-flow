@@ -22,7 +22,21 @@ interface PlanUpdateInput {
 
 const router = Router();
 
-// Middleware para asegurar que solo un SUPER_ADMIN acceda a estas rutas
+// ENDPOINT PÚBLICO: GET /v1/plans/public - Obtiene todos los planes activos (para registro)
+router.get('/public', async (req: Request, res: Response) => {
+    try {
+        const plans = await prisma.plan.findMany({
+            where: { isActive: true },
+            orderBy: { price: 'asc' }
+        });
+        return res.json({ data: plans });
+    } catch (error) {
+        logger.error('Failed to fetch public plans:', error);
+        return res.status(500).json({ error: 'Failed to fetch plans' });
+    }
+});
+
+// Middleware para asegurar que solo un SUPER_ADMIN acceda a las rutas siguientes
 router.use(authenticateToken, requireRole(['SUPER_ADMIN']));
 
 // GET /v1/super-admin/plans - Obtiene todos los planes

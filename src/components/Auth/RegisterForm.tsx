@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Building2, User, Mail, Lock, Building, Check, AlertCircle } from 'lucide-react';
-import { plans } from './registerPlans';
+import { Plan } from '../../types';
 
 interface RegisterFormProps {
   onSwitchToLogin: () => void;
@@ -10,7 +10,9 @@ interface RegisterFormProps {
 export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
   const { register, state } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
-  const [selectedPlan, setSelectedPlan] = useState('plan-professional');
+  const [selectedPlan, setSelectedPlan] = useState('');
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [loadingPlans, setLoadingPlans] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -45,6 +47,22 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
   const prevStep = () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
+
+  // Cargar planes dinámicamente al entrar al paso 3
+  useEffect(() => {
+    if (currentStep === 3 && plans.length === 0 && !loadingPlans) {
+      setLoadingPlans(true);
+      fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001/v1'}/plans/public`)
+        .then(res => res.json())
+        .then((data) => {
+          setPlans(data.data || []);
+          if ((data.data || []).length > 0 && !selectedPlan) {
+            setSelectedPlan(data.data[0].id);
+          }
+        })
+        .finally(() => setLoadingPlans(false));
+    }
+  }, [currentStep, plans.length, selectedPlan, loadingPlans]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -243,44 +261,47 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
                   <h2 className="text-2xl font-semibold text-slate-900 mb-2">Elige tu Plan</h2>
                   <p className="text-slate-600">Comienza con 14 días gratis, cancela cuando quieras</p>
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {plans.map((plan) => (
-                    <div
-                      key={plan.id}
-                      className={`border-2 rounded-xl p-6 cursor-pointer transition-all ${
-                        selectedPlan === plan.id
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-slate-200 hover:border-slate-300'
-                      }`}
-                      onClick={() => setSelectedPlan(plan.id)}
-                    >
-                      <div className="text-center mb-4">
-                        <h3 className="text-xl font-semibold text-slate-900">{plan.name}</h3>
-                        <p className="text-slate-600 text-sm mt-1">{plan.description}</p>
-                        <div className="mt-4">
-                          <span className="text-3xl font-bold text-slate-900">${plan.price}</span>
-                          <span className="text-slate-600">/mes</span>
+                {loadingPlans ? (
+                  <div className="flex justify-center items-center h-32">
+                    <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {plans.map((plan) => (
+                      <div
+                        key={plan.id}
+                        className={`border-2 rounded-xl p-6 cursor-pointer transition-all ${
+                          selectedPlan === plan.id
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-slate-200 hover:border-slate-300'
+                        }`}
+                        onClick={() => setSelectedPlan(plan.id)}
+                      >
+                        <div className="text-center mb-4">
+                          <h3 className="text-xl font-semibold text-slate-900">{plan.name}</h3>
+                          <p className="text-slate-600 text-sm mt-1">{plan.description}</p>
+                          <div className="mt-4">
+                            <span className="text-3xl font-bold text-slate-900">${plan.price}</span>
+                            <span className="text-slate-600">/mes</span>
+                          </div>
                         </div>
+                        <ul className="space-y-2">
+                          {plan.features.map((feature, index) => (
+                            <li key={index} className="flex items-center text-sm">
+                              <Check className="w-4 h-4 text-emerald-600 mr-2" />
+                              <span className="text-slate-700">{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        {selectedPlan === plan.id && (
+                          <div className="mt-4 p-2 bg-blue-100 rounded-lg text-center">
+                            <span className="text-blue-800 text-sm font-medium">Plan Seleccionado</span>
+                          </div>
+                        )}
                       </div>
-
-                      <ul className="space-y-2">
-                        {plan.features.map((feature, index) => (
-                          <li key={index} className="flex items-center text-sm">
-                            <Check className="w-4 h-4 text-emerald-600 mr-2" />
-                            <span className="text-slate-700">{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-
-                      {selectedPlan === plan.id && (
-                        <div className="mt-4 p-2 bg-blue-100 rounded-lg text-center">
-                          <span className="text-blue-800 text-sm font-medium">Plan Seleccionado</span>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
 
                 <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
                   <div className="flex items-center">
