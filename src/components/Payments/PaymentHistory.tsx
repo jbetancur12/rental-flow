@@ -61,9 +61,9 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
   if (!payments || payments.length === 0) {
     return (
       <div>
-        <h3 className="text-lg font-semibold text-slate-900 mb-4">Historial de Pagos</h3>
-        <div className="text-center py-8 px-4 bg-slate-50 rounded-lg">
-          <p className="text-slate-500">No hay historial de pagos disponible para este inquilino.</p>
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Historial de Pagos</h3>
+        <div className="text-center py-8 px-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+          <p className="text-slate-500 dark:text-slate-400">No hay historial de pagos disponible para este inquilino.</p>
         </div>
       </div>
     );
@@ -71,19 +71,19 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
 
   return (
     <div>
-      <h3 className="text-lg font-semibold text-slate-900 mb-4">Historial de Pagos</h3>
+      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Historial de Pagos</h3>
       <div className="space-y-3">
         {payments.map((payment) => {
           const statusStyle = getPaymentStatusStyle(payment.status);
           return (
-            <div key={payment.id} className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+            <div key={payment.id} className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 items-center">
                 {/* Monto */}
                 <div className="flex items-center">
-                  <DollarSign className="w-5 h-5 text-slate-400 mr-3" />
+                  <DollarSign className="w-5 h-5 text-slate-400 dark:text-slate-300 mr-3" />
                   <div>
-                    <p className="text-sm text-slate-500">Monto</p>
-                    <p className="font-bold text-slate-900 text-lg">
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Monto</p>
+                    <p className="font-bold text-slate-900 dark:text-white text-lg">
                       ${payment.amount.toLocaleString()}
                     </p>
                   </div>
@@ -91,10 +91,10 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
 
                 {/* Fecha */}
                 <div className="flex items-center">
-                  <Calendar className="w-5 h-5 text-slate-400 mr-3" />
+                  <Calendar className="w-5 h-5 text-slate-400 dark:text-slate-300 mr-3" />
                   <div>
-                    <p className="text-sm text-slate-500">Fecha de Pago</p>
-                    <p className="font-medium text-slate-900">
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Fecha de Pago</p>
+                    <p className="font-medium text-slate-900 dark:text-white">
                       {payment.paidDate ? formatDateInOrgTimezone(payment.paidDate, orgTimezone) : '-'}
 
                     </p>
@@ -103,10 +103,10 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
                 
                 {/* Tipo */}
                 <div className="flex items-center">
-                  <Tag className="w-5 h-5 text-slate-400 mr-3" />
+                  <Tag className="w-5 h-5 text-slate-400 dark:text-slate-300 mr-3" />
                   <div>
-                    <p className="text-sm text-slate-500">Tipo</p>
-                    <p className="font-medium text-slate-900 capitalize">
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Tipo</p>
+                    <p className="font-medium text-slate-900 dark:text-white capitalize">
                       {payment.type === 'RENT' && 'Renta'}
                       {payment.type === 'DEPOSIT' && 'Depósito'}
                       {payment.type === 'LATE_FEE' && 'Recargo'}
@@ -118,7 +118,7 @@ export function PaymentHistory({ payments }: PaymentHistoryProps) {
 
                 {/* Estado */}
                 <div className="flex justify-end">
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${statusStyle.badge}`}>
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${statusStyle.badge} dark:bg-opacity-80`}> 
                     {statusStyle.icon}
                     <span className="ml-2">
                       {payment.status === 'PAID' && 'Pagado'}

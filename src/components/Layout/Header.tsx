@@ -1,8 +1,8 @@
 
 import {  Search, Plus, Menu } from 'lucide-react';
-
+import { ReactNode } from 'react';
 interface HeaderProps {
-  title: string;
+  title: ReactNode;
   onNewItem?: () => void;
   newItemLabel?: string;
   showSearch?: boolean; 
@@ -31,7 +31,7 @@ export function Header({ title, onNewItem, newItemLabel, showSearch = false, onS
                 <Menu className="w-7 h-7" />
               </button>
             )}
-            <h1 className="text-2xl font-bold text-slate-900 mr-4 whitespace-nowrap">{title}</h1>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white mr-4 whitespace-nowrap">{title}</h1>
             {subtitle && <span className="text-slate-500 text-base font-normal">{subtitle}</span>}
             {/* Aquí la campana si existe */}
             {onNewItem && newItemLabel && (

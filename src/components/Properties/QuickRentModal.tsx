@@ -11,6 +11,17 @@ interface QuickRentModalProps {
   onClose: () => void;
 }
 
+// Add helper for contract duration
+function getContractDurationMonths(startDate: Date, endDate: Date) {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  return (
+    (end.getFullYear() - start.getFullYear()) * 12 +
+    (end.getMonth() - start.getMonth()) +
+    (end.getDate() >= start.getDate() ? 0 : -1)
+  );
+}
+
 export function QuickRentModal({ property, isOpen, onClose }: QuickRentModalProps) {
   const { contracts, tenants, updateProperty, updateContract, updateTenant, createPayment, organization } = useApp();
   const toast = useToast();
@@ -109,21 +120,21 @@ const handleQuickRent = async () => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl max-w-2xl w-full mx-4">
-        <div className="flex items-center justify-between p-6 border-b border-slate-200">
-          <h2 className="text-xl font-semibold text-slate-900">
+      <div className="bg-white dark:bg-slate-800 rounded-xl max-w-2xl w-full mx-4">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
             Asignar Contrato: {property.name}
           </h2>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600">
+          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
           {/* Property Info */}
-          <div className="bg-slate-50 rounded-lg p-4">
-            <h4 className="font-medium text-slate-900 mb-2">Detalles de la Propiedad</h4>
-            <div className="text-sm text-slate-600 space-y-1">
+          <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+            <h4 className="font-medium text-slate-900 dark:text-white mb-2">Detalles de la Propiedad</h4>
+            <div className="text-sm text-slate-600 dark:text-slate-300 space-y-1">
               <p><strong>Nombre:</strong> {property.name}</p>
               <p><strong>Dirección:</strong> {property.address}</p>
               <p><strong>Tipo:</strong> {property.type}</p>
@@ -133,20 +144,20 @@ const handleQuickRent = async () => {
 
           {/* Contract Selection */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               Selecciona un contrato disponible
             </label>
             {availableContracts.length === 0 ? (
-              <div className="text-center py-8 bg-slate-50 rounded-lg">
+              <div className="text-center py-8 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
                 <FileText className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                <p className="text-slate-600">No se encontraron contratos disponibles</p>
-                <p className="text-sm text-slate-500 mt-1">Crea un contrato activo antes de asignarlo a la propiedad</p>
+                <p className="text-slate-600 dark:text-slate-300">No se encontraron contratos disponibles</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Crea un contrato activo antes de asignarlo a la propiedad</p>
               </div>
             ) : (
               <select
                 value={selectedContract}
                 onChange={(e) => setSelectedContract(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors"
               >
                 <option value="">Selecciona un contrato...</option>
                 {availableContracts.map((contract) => {
@@ -170,12 +181,12 @@ const handleQuickRent = async () => {
             return (
               <div className="space-y-4">
                 {/* Contract Info */}
-                <div className="bg-blue-50 rounded-lg p-4">
-                  <h4 className="font-medium text-blue-900 mb-3 flex items-center">
+                <div className="bg-blue-50 dark:bg-slate-900 rounded-lg p-4 border border-blue-200 dark:border-slate-700">
+                  <h4 className="font-medium text-blue-900 dark:text-blue-300 mb-3 flex items-center">
                     <FileText className="w-4 h-4 mr-2" />
                     Detalles del Contrato
                   </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800 dark:text-blue-200">
                     <div>
                       <p className="flex items-center mb-2">
                         <User className="w-4 h-4 mr-2" />
@@ -201,62 +212,26 @@ const handleQuickRent = async () => {
                       </p>
                       <p className="flex items-center">
                         <FileText className="w-4 h-4 mr-2" />
-                        <strong>Duración:</strong> {Math.round((new Date(contract.endDate).getTime() - new Date(contract.startDate).getTime()) / (1000 * 60 * 60 * 24 * 30.44))} meses
+                        <strong>Duración:</strong> {getContractDurationMonths(contract.startDate, contract.endDate)} meses
                       </p>
                     </div>
                   </div>
                 </div>
-
                 {/* Tenant Info */}
-                <div className="bg-emerald-50 rounded-lg p-4">
-                  <h4 className="font-medium text-emerald-900 mb-3 flex items-center">
+                <div className="bg-emerald-50 dark:bg-slate-900 rounded-lg p-4 border border-emerald-200 dark:border-slate-700">
+                  <h4 className="font-medium text-emerald-900 dark:text-emerald-300 mb-3 flex items-center">
                     <User className="w-4 h-4 mr-2" />
                     Información del Inquilino
                   </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-emerald-800">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-emerald-800 dark:text-emerald-200">
                     <div>
                       <p><strong>Email:</strong> {tenant.email}</p>
                       <p><strong>Teléfono:</strong> {tenant.phone}</p>
                     </div>
                     <div>
-                      <p><strong>Empleo:</strong> {tenant.employment && typeof tenant.employment === 'object'
-                        ? `${tenant.employment.employer || ''}${tenant.employment.position ? ' - ' + tenant.employment.position : ''}${tenant.employment.income ? ' - $' + tenant.employment.income.toLocaleString() + '/año' : ''}`
-                        : tenant.employment || ''
-                      }</p>
+                      <p><strong>Empleo:</strong> {tenant.employment?.employer} {tenant.employment?.position && `- ${tenant.employment.position}`}</p>
                       <p><strong>Estado:</strong> {tenant.status}</p>
                     </div>
-                  </div>
-                </div>
-
-                {/* Contract Terms */}
-                {contract.terms.length > 0 && (
-                  <div className="bg-slate-50 rounded-lg p-4">
-                    <h4 className="font-medium text-slate-900 mb-3">Contract Terms</h4>
-                    <ul className="text-sm text-slate-600 space-y-1">
-                      {contract.terms.map((term, index) => (
-                        <li key={index} className="flex items-start">
-                          <span className="w-1 h-1 bg-slate-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
-                          {term}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Assignment Summary */}
-                <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200 mt-4">
-                  <h4 className="font-medium text-yellow-900 mb-2 flex items-center">
-                    <AlertTriangle className="w-4 h-4 mr-2" />
-                    Resumen de Asignación
-                  </h4>
-                  <div className="text-sm text-yellow-800">
-                    <p>Esta acción realizará:</p>
-                    <ul className="list-disc pl-5 mt-2 space-y-1">
-                      <li>Asignar contrato #{contract.id.slice(-6).toUpperCase()} a {property.name}</li>
-                      <li>Cambiar estado de la propiedad a "Alquilada"</li>
-                      <li>Cambiar estado del inquilino a "Activo" (si no lo está)</li>
-                      <li>Crear el primer pago de renta si es necesario</li>
-                    </ul>
                   </div>
                 </div>
               </div>
@@ -264,17 +239,17 @@ const handleQuickRent = async () => {
           })()}
         </div>
 
-        <div className="flex justify-end space-x-4 p-6 border-t border-slate-200">
+        <div className="flex justify-end space-x-4 p-6 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-b-xl">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors"
+            className="px-4 py-2 text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white transition-colors"
           >
             Cancelar
           </button>
           <button
             onClick={handleQuickRent}
             disabled={!selectedContract || availableContracts.length === 0}
-            className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Asignar Contrato
           </button>

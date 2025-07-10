@@ -154,13 +154,13 @@ export function Layout() {
   }, [state.organization?.id, state.user, toast]);
   const bannerVisible = useSubscriptionBannerVisible();
   return (
-    <div className="flex h-screen bg-slate-50">
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-900">
       <Sidebar />
       <div
-        className={`flex-1 flex flex-col overflow-hidden ${bannerVisible ? 'pt-16 md:pt-14' : ''}`}
+        className={`flex-1 flex flex-col overflow-hidden ${bannerVisible ? 'pt-16 md:pt-14' : ''} bg-white dark:bg-slate-900`}
       >
         <SubscriptionBanner />
-        <Suspense fallback={<div className="flex-1 flex items-center justify-center text-slate-400">Cargando...</div>}>
+        <Suspense fallback={<div className="flex-1 flex items-center justify-center text-slate-400 dark:text-slate-200">Cargando...</div>}>
           <Outlet />
         </Suspense>
       </div>

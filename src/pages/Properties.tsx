@@ -178,7 +178,7 @@ export function Properties() {
   return (
     <div className="flex-1 overflow-auto">
       <Header
-        title="Propiedades"
+        title={<span className="text-slate-900 dark:text-white">Propiedades</span>}
         onNewItem={handleNewProperty}
         newItemLabel="Agregar Propiedad"
         showSearch={true}
@@ -188,18 +188,18 @@ export function Properties() {
 
       />
       {limitReached && (
-        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 text-sm">
+        <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 rounded-lg text-yellow-800 dark:text-yellow-200 text-sm">
           Has alcanzado el límite de **{limits.maxProperties} propiedades** de tu plan actual. Para añadir más, por favor <a href="/settings?tab=subscription" className="font-bold underline">actualiza tu plan</a>.
         </div>
       )}
       <div className="p-6">
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Total de Propiedades</p>
-                <p className="text-2xl font-bold text-slate-900">{properties.length}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Total de Propiedades</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">{properties.length}</p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                 <span className="text-2xl">🏢</span>
@@ -207,11 +207,11 @@ export function Properties() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Disponibles</p>
-                <p className="text-2xl font-bold text-emerald-600">
+                <p className="text-sm text-slate-600 dark:text-slate-300">Disponibles</p>
+                <p className="text-2xl font-bold text-emerald-600 dark:text-white">
                   {properties.filter(p => p.status === 'AVAILABLE').length}
                 </p>
               </div>
@@ -221,11 +221,11 @@ export function Properties() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Alquiladas</p>
-                <p className="text-2xl font-bold text-blue-600">
+                <p className="text-sm text-slate-600 dark:text-slate-300">Alquiladas</p>
+                <p className="text-2xl font-bold text-blue-600 dark:text-white">
                   {properties.filter(p => p.status === 'RENTED').length}
                 </p>
               </div>
@@ -235,11 +235,11 @@ export function Properties() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Pagos Vencidos</p>
-                <p className="text-2xl font-bold text-red-600">
+                <p className="text-sm text-slate-600 dark:text-slate-300">Pagos Vencidos</p>
+                <p className="text-2xl font-bold text-red-600 dark:text-white">
                   {overdueProperties.length}
                 </p>
               </div>
@@ -258,8 +258,8 @@ export function Properties() {
                 key={status}
                 onClick={() => setFilter(status as 'all' | 'AVAILABLE' | 'RENTED' | 'RESERVED' | 'MAINTENANCE')}
                 className={`w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === status
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+                  ? 'bg-blue-600 text-white dark:bg-blue-500 dark:text-white'
+                  : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-700 dark:hover:bg-slate-800'
                   }`}
                 style={{ minWidth: '120px' }}
               >

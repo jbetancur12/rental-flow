@@ -66,26 +66,26 @@ export function RecentActivity() {
   }, [payments, maintenanceRequests, tenants, properties, contracts]);
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6">
-      <h3 className="text-lg font-semibold text-slate-900 mb-6">Actividad Reciente</h3>
+    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">Actividad Reciente</h3>
       <div className="space-y-4">
         {recentActivities.length > 0 ? (
             recentActivities.map((activity) => (
             <div key={activity.id} className="flex items-start space-x-3">
-              <div className={`p-2 rounded-lg bg-slate-50 ${activity.iconColor}`}>
+              <div className={`p-2 rounded-lg bg-slate-50 dark:bg-slate-900 ${activity.iconColor}`}>
                 <activity.icon className="w-4 h-4" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-slate-900">{activity.description}</p>
+                <p className="text-sm text-slate-900 dark:text-slate-100">{activity.description}</p>
                 {/* 6. Usamos date-fns para mostrar el tiempo relativo */}
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                   {formatDistanceToNow(activity.date, { addSuffix: true, locale: es })}
                 </p>
               </div>
             </div>
           ))
         ) : (
-          <p className="text-sm text-slate-500 text-center py-4">No hay actividad reciente.</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-4">No hay actividad reciente.</p>
         )}
       </div>
     </div>

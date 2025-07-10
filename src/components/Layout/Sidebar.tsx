@@ -94,18 +94,20 @@ export function Sidebar() {
 
       {/* Sidebar */}
       <div
-        className={`
-          fixed z-50 top-0 left-0 h-full bg-slate-900 border-r border-slate-200
+        className={
+          `
+          fixed z-50 top-0 left-0 h-full bg-slate-900 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700
           flex flex-col transition-all duration-200
           ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
           md:static md:translate-x-0
           ${minimized ? 'w-20' : 'w-64'}
           ${bannerVisible ? 'pt-16 md:pt-14' : ''}
-        `}
+        `
+        }
         style={{ minWidth: minimized ? 80 : 256 }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between h-16 px-4 bg-slate-800">
+        <div className="flex items-center justify-between h-16 px-4 bg-slate-800 dark:bg-slate-900">
           <div className="flex items-center">
             <Building2 className="w-8 h-8 text-blue-500 mr-2" />
             {!minimized && <span className="text-xl font-bold text-white">RentFlow</span>}
@@ -136,7 +138,7 @@ export function Sidebar() {
               to={item.href}
               className={({ isActive }) =>
                 `flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors whitespace-nowrap
-                ${isActive ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white'}
+                ${isActive ? 'bg-blue-600 text-white' : 'text-slate-300 dark:text-slate-200 hover:bg-slate-800 dark:hover:bg-slate-700 hover:text-white'}
                 ${minimized ? 'justify-center px-0' : ''}`
               }
               title={minimized ? item.name : undefined}
@@ -159,15 +161,14 @@ export function Sidebar() {
             {!minimized && 'Cerrar Sesión'}
           </button>
         </div>
-
         {/* Organization Switcher */}
-        <div className={`p-2 border-t border-slate-700 ${minimized ? 'flex justify-center' : ''}`}>
+        <div className={`p-2 border-t border-slate-700 dark:border-slate-600 ${minimized ? 'flex justify-center' : ''}`}>
           {!minimized && <OrganizationSwitcher />}
         </div>
         {/* Theme Toggle */}
-        <div className={`p-2 border-t border-slate-700 flex items-center justify-center`}>
+        <div className={`p-2 border-t border-slate-700 dark:border-slate-600 flex items-center justify-center`}>
           <button
-            className="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors hover:bg-slate-800 text-slate-300 hover:text-white"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors hover:bg-slate-800 dark:hover:bg-slate-700 text-slate-300 dark:text-slate-200 hover:text-white"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             aria-label="Cambiar tema"
           >

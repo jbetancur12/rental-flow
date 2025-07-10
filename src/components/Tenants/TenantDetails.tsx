@@ -42,17 +42,17 @@ export function TenantDetails({ tenant, isOpen, payments=[],contracts, propertie
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-slate-200">
+      <div className="bg-white dark:bg-slate-800 rounded-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
           <div className="flex items-center">
-            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-              <User className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mr-4">
+              <User className="w-6 h-6 text-blue-600 dark:text-blue-300" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-slate-900">
+              <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
                 {tenant.firstName} {tenant.lastName}
               </h2>
-              <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 ${getStatusColor(tenant.status)}`}>
+              <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 ${getStatusColor(tenant.status)} dark:bg-opacity-80`}>
                 {tenant.status === 'PENDING' && 'Pendiente'}
                 {tenant.status === 'APPROVED' && 'Aprobado'}
                 {tenant.status === 'ACTIVE' && 'Activo'}
@@ -64,7 +64,7 @@ export function TenantDetails({ tenant, isOpen, payments=[],contracts, propertie
           <div className="flex items-center space-x-2">
             <button
                     onClick={handleGenerateStatement}
-                    className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm"
+                    className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800 transition-colors text-sm"
                 >
                     <FileText className="w-4 h-4 mr-2" />
                     Estado de Cuenta
@@ -72,13 +72,13 @@ export function TenantDetails({ tenant, isOpen, payments=[],contracts, propertie
 
             <button
               onClick={onEdit}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 transition-colors"
             >
               Editar Inquilino
             </button>
             <button
               onClick={onClose}
-              className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
+              className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -88,20 +88,20 @@ export function TenantDetails({ tenant, isOpen, payments=[],contracts, propertie
         <div className="p-6 space-y-8">
           {/* Contact Information */}
           <div>
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">Información de Contacto</h3>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Información de Contacto</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex items-center">
-                <Mail className="w-5 h-5 text-slate-400 mr-3" />
+                <Mail className="w-5 h-5 text-slate-400 dark:text-slate-300 mr-3" />
                 <div>
-                  <p className="text-sm text-slate-500">Correo Electrónico</p>
-                  <p className="font-medium text-slate-900">{tenant.email}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Correo Electrónico</p>
+                  <p className="font-medium text-slate-900 dark:text-white">{tenant.email}</p>
                 </div>
               </div>
               <div className="flex items-center">
-                <Phone className="w-5 h-5 text-slate-400 mr-3" />
+                <Phone className="w-5 h-5 text-slate-400 dark:text-slate-300 mr-3" />
                 <div>
-                  <p className="text-sm text-slate-500">Teléfono</p>
-                  <p className="font-medium text-slate-900">{tenant.phone}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Teléfono</p>
+                  <p className="font-medium text-slate-900 dark:text-white">{tenant.phone}</p>
                 </div>
               </div>
             </div>
@@ -109,24 +109,24 @@ export function TenantDetails({ tenant, isOpen, payments=[],contracts, propertie
 
           {/* Employment Information */}
           <div>
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">Información Laboral</h3>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Información Laboral</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="flex items-center">
-                <Building className="w-5 h-5 text-slate-400 mr-3" />
+                <Building className="w-5 h-5 text-slate-400 dark:text-slate-300 mr-3" />
                 <div>
-                  <p className="text-sm text-slate-500">Empleador</p>
-                  <p className="font-medium text-slate-900">{tenant.employment.employer}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Empleador</p>
+                  <p className="font-medium text-slate-900 dark:text-white">{tenant.employment.employer}</p>
                 </div>
               </div>
               <div>
-                <p className="text-sm text-slate-500">Puesto</p>
-                <p className="font-medium text-slate-900">{tenant.employment.position}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Puesto</p>
+                <p className="font-medium text-slate-900 dark:text-white">{tenant.employment.position}</p>
               </div>
               <div className="flex items-center">
-                <DollarSign className="w-5 h-5 text-slate-400 mr-3" />
+                <DollarSign className="w-5 h-5 text-slate-400 dark:text-slate-300 mr-3" />
                 <div>
-                  <p className="text-sm text-slate-500">Ingreso Anual</p>
-                  <p className="font-medium text-slate-900">${tenant.employment.income.toLocaleString()}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Ingreso Anual</p>
+                  <p className="font-medium text-slate-900 dark:text-white">${tenant.employment.income.toLocaleString()}</p>
                 </div>
               </div>
             </div>
@@ -134,40 +134,40 @@ export function TenantDetails({ tenant, isOpen, payments=[],contracts, propertie
 
           {/* Emergency Contact */}
           <div>
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">Contacto de Emergencia</h3>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Contacto de Emergencia</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <p className="text-sm text-slate-500">Nombre</p>
-                <p className="font-medium text-slate-900">{tenant.emergencyContact.name}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Nombre</p>
+                <p className="font-medium text-slate-900 dark:text-white">{tenant.emergencyContact.name}</p>
               </div>
               <div>
-                <p className="text-sm text-slate-500">Teléfono</p>
-                <p className="font-medium text-slate-900">{tenant.emergencyContact.phone}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Teléfono</p>
+                <p className="font-medium text-slate-900 dark:text-white">{tenant.emergencyContact.phone}</p>
               </div>
               <div>
-                <p className="text-sm text-slate-500">Parentesco</p>
-                <p className="font-medium text-slate-900">{tenant.emergencyContact.relationship}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Parentesco</p>
+                <p className="font-medium text-slate-900 dark:text-white">{tenant.emergencyContact.relationship}</p>
               </div>
             </div>
           </div>
 
           {/* Application Details */}
           <div>
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">Detalles de la Aplicación</h3>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Detalles de la Aplicación</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex items-center">
-                <Calendar className="w-5 h-5 text-slate-400 mr-3" />
+                <Calendar className="w-5 h-5 text-slate-400 dark:text-slate-300 mr-3" />
                 <div>
-                  <p className="text-sm text-slate-500">Fecha de Aplicación</p>
-                  <p className="font-medium text-slate-900">{formatInTimeZone(tenant.applicationDate, 'UTC', 'MMM d, yyyy')}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Fecha de Aplicación</p>
+                  <p className="font-medium text-slate-900 dark:text-white">{formatInTimeZone(tenant.applicationDate, 'UTC', 'MMM d, yyyy')}</p>
                 </div>
               </div>
               {tenant.creditScore && (
                 <div className="flex items-center">
-                  <Star className="w-5 h-5 text-slate-400 mr-3" />
+                  <Star className="w-5 h-5 text-slate-400 dark:text-slate-300 mr-3" />
                   <div>
-                    <p className="text-sm text-slate-500">Puntaje de Crédito</p>
-                    <p className={`font-medium ${getCreditScoreColor(tenant.creditScore)}`}>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Puntaje de Crédito</p>
+                    <p className={`font-medium ${getCreditScoreColor(tenant.creditScore)} dark:text-yellow-400`}> {/* Mantener color personalizado para score alto */}
                       {tenant.creditScore}
                     </p>
                   </div>
@@ -182,26 +182,26 @@ export function TenantDetails({ tenant, isOpen, payments=[],contracts, propertie
           {/* References */}
           {tenant.references.length > 0 && (
             <div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">Referencias</h3>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Referencias</h3>
               <div className="space-y-4">
                 {tenant.references.map((reference) => (
-                  <div key={reference.id} className="bg-slate-50 rounded-lg p-4">
+                  <div key={reference.id} className="bg-slate-50 dark:bg-slate-700 rounded-lg p-4">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                       <div>
-                        <p className="text-sm text-slate-500">Nombre</p>
-                        <p className="font-medium text-slate-900">{reference.name}</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Nombre</p>
+                        <p className="font-medium text-slate-900 dark:text-white">{reference.name}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-slate-500">Parentesco</p>
-                        <p className="font-medium text-slate-900">{reference.relationship}</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Parentesco</p>
+                        <p className="font-medium text-slate-900 dark:text-white">{reference.relationship}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-slate-500">Teléfono</p>
-                        <p className="font-medium text-slate-900">{reference.phone}</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Teléfono</p>
+                        <p className="font-medium text-slate-900 dark:text-white">{reference.phone}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-slate-500">Correo Electrónico</p>
-                        <p className="font-medium text-slate-900">{reference.email}</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Correo Electrónico</p>
+                        <p className="font-medium text-slate-900 dark:text-white">{reference.email}</p>
                       </div>
                     </div>
                   </div>

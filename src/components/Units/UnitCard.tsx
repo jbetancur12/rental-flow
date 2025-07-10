@@ -47,17 +47,17 @@ export function UnitCard({
   const rentedProperties = properties.filter(p => p.status === 'RENTED').length;
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-lg transition-shadow">
+    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-lg transition-shadow">
       {/* Header */}
-      <div className="p-6 border-b border-slate-100">
+      <div className="p-6 border-b border-slate-100 dark:border-slate-700">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center">
-            <div className="w-12 h-12 bg-slate-50 rounded-lg flex items-center justify-center mr-3">
+            <div className="w-12 h-12 bg-slate-50 dark:bg-slate-900 rounded-lg flex items-center justify-center mr-3">
               {getUnitIcon()}
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-slate-900">{unit.name}</h3>
-              <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getUnitTypeColor()}`}>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{unit.name}</h3>
+              <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getUnitTypeColor()} dark:bg-opacity-80`}>
                 {unit.type === 'BUILDING' && 'Edificio'}
                 {unit.type === 'HOUSE' && 'Casa'}
                 {unit.type === 'COMMERCIAL' && 'Comercial'}
@@ -67,32 +67,32 @@ export function UnitCard({
           <div className="flex space-x-1">
             <button
               onClick={() => onView(unit)}
-              className="p-2 text-slate-400 hover:text-blue-600 transition-colors"
+              className="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
             >
               <Eye className="w-4 h-4" />
             </button>
             <button
               onClick={() => onEdit(unit)}
-              className="p-2 text-slate-400 hover:text-blue-600 transition-colors"
+              className="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
             >
               <Edit className="w-4 h-4" />
             </button>
             <button
               onClick={() => onDelete(unit.id)}
-              className="p-2 text-slate-400 hover:text-red-600 transition-colors"
+              className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
             >
               <Trash2 className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        <div className="flex items-center text-slate-600 mb-3">
+        <div className="flex items-center text-slate-600 dark:text-slate-300 mb-3">
           <MapPin className="w-4 h-4 mr-2" />
           <span className="text-sm">{unit.address}</span>
         </div>
 
         {unit.description && (
-          <p className="text-sm text-slate-600 mb-3">{unit.description}</p>
+          <p className="text-sm text-slate-600 dark:text-slate-300 mb-3">{unit.description}</p>
         )}
       </div>
 
@@ -102,20 +102,20 @@ export function UnitCard({
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-slate-500">Total de Pisos:</span>
-                <p className="font-medium text-slate-900">{unit.totalFloors || 'N/A'}</p>
+                <span className="text-slate-500 dark:text-slate-400">Total de Pisos:</span>
+                <p className="font-medium text-slate-900 dark:text-white">{unit.totalFloors || 'N/A'}</p>
               </div>
               <div>
-                <span className="text-slate-500">Propiedades:</span>
-                <p className="font-medium text-slate-900">{properties.length}</p>
+                <span className="text-slate-500 dark:text-slate-400">Propiedades:</span>
+                <p className="font-medium text-slate-900 dark:text-white">{properties.length}</p>
               </div>
               <div>
-                <span className="text-slate-500">Disponibles:</span>
-                <p className="font-medium text-emerald-600">{availableProperties}</p>
+                <span className="text-slate-500 dark:text-slate-400">Disponibles:</span>
+                <p className="font-medium text-emerald-600 dark:text-emerald-400">{availableProperties}</p>
               </div>
               <div>
-                <span className="text-slate-500">Rentadas:</span>
-                <p className="font-medium text-blue-600">{rentedProperties}</p>
+                <span className="text-slate-500 dark:text-slate-400">Rentadas:</span>
+                <p className="font-medium text-blue-600 dark:text-blue-400">{rentedProperties}</p>
               </div>
             </div>
 
@@ -123,35 +123,35 @@ export function UnitCard({
             {properties.length > 0 && (
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-medium text-slate-900">Propiedades</h4>
+                  <h4 className="font-medium text-slate-900 dark:text-white">Propiedades</h4>
                 </div>
                 <div className="space-y-2 max-h-32 overflow-y-auto">
                   {properties.slice(0, 3).map((property) => (
                     <div
                       key={property.id}
-                      className="flex items-center justify-between p-2 bg-slate-50 rounded text-xs"
+                      className="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-900 rounded text-xs"
                     >
                       <div>
                         <span className="font-medium">{property.unitNumber || property.name}</span>
-                        <span className="text-slate-500 ml-2">Piso {property.floor}</span>
+                        <span className="text-slate-500 dark:text-slate-400 ml-2">Piso {property.floor}</span>
                       </div>
                       <div className="flex items-center space-x-1">
                         <span className={`px-1 py-0.5 rounded text-xs ${
-                          property.status === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-700' :
-                          property.status === 'RENTED' ? 'bg-blue-100 text-blue-700' :
-                          'bg-yellow-100 text-yellow-700'
+                          property.status === 'AVAILABLE' ? 'bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300' :
+                          property.status === 'RENTED' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' :
+                          'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300'
                         }`}>
                           {property.status === 'AVAILABLE' && 'Disponible'}
                           {property.status === 'RENTED' && 'Rentada'}
                           {property.status === 'RESERVED' && 'Reservada'}
                           {property.status === 'MAINTENANCE' && 'Mantenimiento'}
                         </span>
-                        <span className="text-slate-600">${property.rent}</span>
+                        <span className="text-slate-600 dark:text-slate-300">${property.rent}</span>
                       </div>
                     </div>
                   ))}
                   {properties.length > 3 && (
-                    <p className="text-xs text-slate-500 text-center">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
                       +{properties.length - 3} más propiedades
                     </p>
                   )}

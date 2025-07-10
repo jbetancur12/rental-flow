@@ -179,7 +179,7 @@ export function Dashboard() {
 
     return (
         <div className="flex-1 overflow-auto">
-            <Header title="Resumen del Panel" />
+            <Header title={<span className="text-slate-900 dark:text-white">Resumen del Panel</span>} />
             
             <div className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -230,42 +230,42 @@ export function Dashboard() {
                 </div>
 
                 <div className="mt-8">
-                    <h2 className="text-lg font-semibold text-slate-900 mb-4">Acciones Rápidas</h2>
+                    <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Acciones Rápidas</h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <button 
                             onClick={handleAddProperty}
-                            className="p-4 bg-white border border-slate-200 rounded-lg hover:shadow-md transition-shadow text-left group"
+                            className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:shadow-md transition-shadow text-left group"
                         >
                             <div className="flex items-center mb-2">
-                                <TrendingUp className="w-6 h-6 text-blue-600 mr-2 group-hover:scale-110 transition-transform" />
-                                <Plus className="w-4 h-4 text-blue-600" />
+                                <TrendingUp className="w-6 h-6 text-blue-600 dark:text-blue-400 mr-2 group-hover:scale-110 transition-transform" />
+                                <Plus className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                             </div>
-                            <h3 className="font-medium text-slate-900">Agregar Nueva Propiedad</h3>
-                            <p className="text-sm text-slate-600">Listar una nueva propiedad en alquiler</p>
+                            <h3 className="font-medium text-slate-900 dark:text-white">Agregar Nueva Propiedad</h3>
+                            <p className="text-sm text-slate-600 dark:text-slate-300">Listar una nueva propiedad en alquiler</p>
                         </button>
                         
                         <button 
                             onClick={handleProcessApplication}
-                            className="p-4 bg-white border border-slate-200 rounded-lg hover:shadow-md transition-shadow text-left group"
+                            className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:shadow-md transition-shadow text-left group"
                         >
                             <div className="flex items-center mb-2">
-                                <Users className="w-6 h-6 text-emerald-600 mr-2 group-hover:scale-110 transition-transform" />
-                                <Plus className="w-4 h-4 text-emerald-600" />
+                                <Users className="w-6 h-6 text-emerald-600 dark:text-emerald-400 mr-2 group-hover:scale-110 transition-transform" />
+                                <Plus className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                             </div>
-                            <h3 className="font-medium text-slate-900">Procesar Solicitud</h3>
-                            <p className="text-sm text-slate-600">Revisar solicitudes de inquilinos</p>
+                            <h3 className="font-medium text-slate-900 dark:text-white">Procesar Solicitud</h3>
+                            <p className="text-sm text-slate-600 dark:text-slate-300">Revisar solicitudes de inquilinos</p>
                         </button>
                         
                         <button 
                             onClick={handleScheduleInspection}
-                            className="p-4 bg-white border border-slate-200 rounded-lg hover:shadow-md transition-shadow text-left group"
+                            className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:shadow-md transition-shadow text-left group"
                         >
                             <div className="flex items-center mb-2">
-                                <Calendar className="w-6 h-6 text-purple-600 mr-2 group-hover:scale-110 transition-transform" />
-                                <Plus className="w-4 h-4 text-purple-600" />
+                                <Calendar className="w-6 h-6 text-purple-600 dark:text-purple-400 mr-2 group-hover:scale-110 transition-transform" />
+                                <Plus className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                             </div>
-                            <h3 className="font-medium text-slate-900">Programar Inspección</h3>
-                            <p className="text-sm text-slate-600">Reservar inspección de propiedad</p>
+                            <h3 className="font-medium text-slate-900 dark:text-white">Programar Inspección</h3>
+                            <p className="text-sm text-slate-600 dark:text-slate-300">Reservar inspección de propiedad</p>
                         </button>
                     </div>
                 </div>

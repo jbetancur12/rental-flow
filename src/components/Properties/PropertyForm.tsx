@@ -158,14 +158,14 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-slate-200">
-          <h2 className="text-xl font-semibold text-slate-900">
+      <div className="bg-white dark:bg-slate-800 rounded-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
             {property ? 'Editar Propiedad' : 'Agregar Nueva Propiedad'}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
+            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
             disabled={isSubmitting}
           >
             <X className="w-5 h-5" />
@@ -175,12 +175,12 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Unit Selection */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               Seleccionar Unidad <span className="text-red-500">*</span>
             </label>
             {units.length === 0 ? (
-              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <p className="text-yellow-800 text-sm">
+              <div className="p-4 bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 rounded-lg">
+                <p className="text-yellow-800 dark:text-yellow-200 text-sm">
                   ⚠️ No hay unidades disponibles. Por favor, cree unidades primero en la sección de Unidades.
                 </p>
               </div>
@@ -189,7 +189,7 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
                 required
                 value={formData.unitId}
                 onChange={(e) => handleUnitChange(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                 disabled={isSubmitting}
               >
                 <option value="">Elegir una unidad...</option>

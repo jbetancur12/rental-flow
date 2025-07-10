@@ -108,14 +108,14 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-slate-200">
-          <h2 className="text-xl font-semibold text-slate-900">
+      <div className="bg-white dark:bg-slate-800 rounded-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
             {unit ? 'Editar Unidad' : 'Crear Nueva Unidad'}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
+            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
             disabled={isSubmitting}
           >
             <X className="w-5 h-5" />
@@ -125,10 +125,10 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Basic Information */}
           <div>
-            <h3 className="text-lg font-medium text-slate-900 mb-4">Información Básica</h3>
+            <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-4">Información Básica</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Nombre de la Unidad
                 </label>
                 <input
@@ -136,20 +136,20 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                   placeholder="ej., Apartamentos Sunset, Casa Oak, Oficina Centro"
                   disabled={isSubmitting}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Tipo de Unidad
                 </label>
                 <select
                   value={formData.type}
                   onChange={(e) => setFormData({ ...formData, type: e.target.value as Unit['type'] })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                   disabled={isSubmitting}
                 >
                   <option value="BUILDING">Edificio (Contiene apartamentos/espacios comerciales)</option>
@@ -160,7 +160,7 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
             </div>
 
             <div className="mt-4">
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 Dirección
               </label>
               <input
@@ -168,21 +168,21 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
                 required
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                 placeholder="Dirección completa de la unidad"
                 disabled={isSubmitting}
               />
             </div>
 
             <div className="mt-4">
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 Descripción (Opcional)
               </label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows={3}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                 placeholder="Breve descripción de la unidad"
                 disabled={isSubmitting}
               />
@@ -191,7 +191,7 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
 
           {/* Type-Specific Fields */}
           <div>
-            <h3 className="text-lg font-medium text-slate-900 mb-4">
+            <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-4">
               {formData.type === 'BUILDING' && 'Detalles del Edificio'}
               {formData.type === 'HOUSE' && 'Detalles de la Casa'}
               {formData.type === 'COMMERCIAL' && 'Detalles Comerciales'}
@@ -200,7 +200,7 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
             {formData.type === 'BUILDING' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Total de Pisos
                   </label>
                   <input
@@ -209,19 +209,19 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
                     max="50"
                     value={formData.totalFloors}
                     onChange={(e) => setFormData({ ...formData, totalFloors: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                     disabled={isSubmitting}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Gerente del Edificio (Opcional)
                   </label>
                   <input
                     type="text"
                     value={formData.manager}
                     onChange={(e) => setFormData({ ...formData, manager: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                     placeholder="Nombre del gerente"
                     disabled={isSubmitting}
                   />
@@ -232,13 +232,13 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
             {formData.type === 'HOUSE' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Número de Pisos
                   </label>
                   <select
                     value={formData.floors}
                     onChange={(e) => setFormData({ ...formData, floors: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                     disabled={isSubmitting}
                   >
                     <option value={1}>1 Piso</option>
@@ -249,14 +249,14 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Gerente de la Propiedad (Opcional)
                   </label>
                   <input
                     type="text"
                     value={formData.manager}
                     onChange={(e) => setFormData({ ...formData, manager: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                     placeholder="Nombre del gerente"
                     disabled={isSubmitting}
                   />
@@ -267,7 +267,7 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
             {formData.type === 'COMMERCIAL' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Tamaño (sq ft)
                   </label>
                   <input
@@ -275,19 +275,19 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
                     min="0"
                     value={formData.size}
                     onChange={(e) => setFormData({ ...formData, size: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                     disabled={isSubmitting}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Gerente de la Propiedad (Opcional)
                   </label>
                   <input
                     type="text"
                     value={formData.manager}
                     onChange={(e) => setFormData({ ...formData, manager: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                     placeholder="Nombre del gerente"
                     disabled={isSubmitting}
                   />
@@ -298,7 +298,7 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
 
           {/* Amenities */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               Amenities
             </label>
             <div className="flex space-x-2 mb-3">
@@ -307,7 +307,7 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
                 value={newAmenity}
                 onChange={(e) => setNewAmenity(e.target.value)}
                 placeholder="Add amenity"
-                className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addAmenity())}
                 disabled={isSubmitting}
               />
@@ -342,7 +342,7 @@ export function UnitForm({ unit, isOpen, onClose }: UnitFormProps) {
 
           {/* Photos */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               Fotos
             </label>
             <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-slate-400 transition-colors">

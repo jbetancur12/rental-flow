@@ -95,14 +95,14 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-slate-200">
-          <h2 className="text-xl font-semibold text-slate-900">
+      <div className="bg-white dark:bg-slate-800 rounded-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
             {tenant ? 'Editar Inquilino' : 'Agregar Nuevo Inquilino'}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
+            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -111,10 +111,10 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Personal Information */}
           <div>
-            <h3 className="text-lg font-medium text-slate-900 mb-4">Información Personal</h3>
+            <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-4">Información Personal</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Nombre
                 </label>
                 <input
@@ -122,12 +122,12 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
                   required
                   value={formData.firstName}
                   onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Apellido
                 </label>
                 <input
@@ -135,12 +135,12 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
                   required
                   value={formData.lastName}
                   onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Email
                 </label>
                 <input
@@ -148,12 +148,12 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Teléfono
                 </label>
                 <input
@@ -161,12 +161,12 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
                   required
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Puntaje de Crédito
                 </label>
                 <input
@@ -175,18 +175,18 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
                   max="850"
                   value={formData.creditScore}
                   onChange={(e) => setFormData({ ...formData, creditScore: parseInt(e.target.value) })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Estado
                 </label>
                 <select
                   value={formData.status}
                   onChange={(e) => setFormData({ ...formData, status: e.target.value as Tenant['status'] })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                 >
                   <option value="PENDING">Pendiente</option>
                   <option value="APPROVED">Aprobado</option>
@@ -200,10 +200,10 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
 
           {/* Employment Information */}
           <div>
-            <h3 className="text-lg font-medium text-slate-900 mb-4">Información de Empleo</h3>
+            <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-4">Información de Empleo</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Empleado por
                 </label>
                 <input
@@ -214,12 +214,12 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
                     ...formData,
                     employment: { ...formData.employment, employer: e.target.value }
                   })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Puesto
                 </label>
                 <input
@@ -230,12 +230,12 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
                     ...formData,
                     employment: { ...formData.employment, position: e.target.value }
                   })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Ingreso Anual ($)
                 </label>
                 <input
@@ -246,7 +246,7 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
                     ...formData,
                     employment: { ...formData.employment, income: parseInt(e.target.value) }
                   })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                 />
               </div>
             </div>
@@ -254,10 +254,10 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
 
           {/* Emergency Contact */}
           <div>
-            <h3 className="text-lg font-medium text-slate-900 mb-4">Contacto de Emergencia</h3>
+            <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-4">Contacto de Emergencia</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Nombre
                 </label>
                 <input
@@ -268,12 +268,12 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
                     ...formData,
                     emergencyContact: { ...formData.emergencyContact, name: e.target.value }
                   })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Teléfono
                 </label>
                 <input
@@ -284,12 +284,12 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
                     ...formData,
                     emergencyContact: { ...formData.emergencyContact, phone: e.target.value }
                   })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Parentesco
                 </label>
                 <input
@@ -300,7 +300,7 @@ export function TenantForm({ tenant, isOpen, onClose, onSave }: TenantFormProps)
                     ...formData,
                     emergencyContact: { ...formData.emergencyContact, relationship: e.target.value }
                   })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                 />
               </div>
             </div>

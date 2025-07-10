@@ -138,7 +138,7 @@ export function Tenants() {
       />
 
       {limitReached && (
-        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 text-sm">
+        <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 rounded-lg text-yellow-800 dark:text-yellow-200 text-sm">
           Has alcanzado el límite de **{limits.maxTenants} iniquilinos** de tu plan actual. Para añadir más, por favor <a href="/settings?tab=subscription" className="font-bold underline">actualiza tu plan</a>.
         </div>
       )}
@@ -146,70 +146,70 @@ export function Tenants() {
       <div className="p-6">
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Total Inquilinos</p>
-                <p className="text-2xl font-bold text-slate-900">{tenants.length}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Total Inquilinos</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">{tenants.length}</p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
                 <span className="text-2xl">👥</span>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Activos</p>
-                <p className="text-2xl font-bold text-emerald-600">
+                <p className="text-sm text-slate-600 dark:text-slate-300">Activos</p>
+                <p className="text-2xl font-bold text-emerald-600 dark:text-white">
                   {tenants.filter(t => t.status === 'ACTIVE').length}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900 rounded-lg flex items-center justify-center">
                 <span className="text-2xl">✅</span>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Pendientes</p>
-                <p className="text-2xl font-bold text-yellow-600">
+                <p className="text-sm text-slate-600 dark:text-slate-300">Pendientes</p>
+                <p className="text-2xl font-bold text-yellow-600 dark:text-white">
                   {tenants.filter(t => t.status === 'PENDING').length}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-yellow-100 dark:bg-yellow-900 rounded-lg flex items-center justify-center">
                 <span className="text-2xl">⏳</span>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Aprobados</p>
-                <p className="text-2xl font-bold text-blue-600">
+                <p className="text-sm text-slate-600 dark:text-slate-300">Aprobados</p>
+                <p className="text-2xl font-bold text-blue-600 dark:text-white">
                   {tenants.filter(t => t.status === 'APPROVED').length}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
                 <span className="text-2xl">👍</span>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Vencidos</p>
-                <p className="text-2xl font-bold text-red-600">
-                  {tenantsWithOverdue.length}
+                <p className="text-sm text-slate-600 dark:text-slate-300">Anteriores</p>
+                <p className="text-2xl font-bold text-slate-600 dark:text-white">
+                  {tenants.filter(t => t.status === 'FORMER').length}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                <span className="text-2xl">⚠️</span>
+              <div className="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-center">
+                <span className="text-2xl">📁</span>
               </div>
             </div>
           </div>
@@ -243,8 +243,8 @@ export function Tenants() {
                 key={status}
                 onClick={() => setFilter(status as 'all' | 'PENDING' | 'APPROVED' | 'ACTIVE' | 'FORMER' | 'OVERDUE')}
                 className={`w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === status
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+                  ? 'bg-blue-600 text-white dark:bg-blue-500 dark:text-white'
+                  : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-700 dark:hover:bg-slate-800'
                   }`}
                 style={{ minWidth: '120px' }}
               >
@@ -265,7 +265,7 @@ export function Tenants() {
 
           <button
             onClick={handleGenerateReport}
-            className="flex items-center justify-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors mt-2 sm:mt-0 sm:ml-4 w-full sm:w-auto"
+            className="flex items-center justify-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800 transition-colors mt-2 sm:mt-0 sm:ml-4 w-full sm:w-auto"
           >
             <Download className="w-4 h-4 mr-2" />
             Exportar Reporte

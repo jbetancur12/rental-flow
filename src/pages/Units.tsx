@@ -87,7 +87,7 @@ export function Units() {
   return (
     <div className="flex-1 overflow-auto">
       <Header 
-        title="Gestión de Unidades" 
+        title={<span className="text-slate-900 dark:text-white">Gestión de Unidades</span>} 
         onNewItem={handleNewUnit}
         newItemLabel="Agregar Unidad"
       />
@@ -95,51 +95,48 @@ export function Units() {
       <div className="p-6">
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Total Unidades</p>
-                <p className="text-2xl font-bold text-slate-900">{units.length}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-300">Total Unidades</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">{units.length}</p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
                 <span className="text-2xl">🏢</span>
               </div>
             </div>
           </div>
-          
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Edificios</p>
-                <p className="text-2xl font-bold text-blue-600">
+                <p className="text-sm text-slate-600 dark:text-slate-300">Edificios</p>
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                   {units.filter(u => u.type === 'BUILDING').length}
                 </p>
               </div>
-              <Building2 className="w-8 h-8 text-blue-600" />
+              <Building2 className="w-8 h-8 text-blue-600 dark:text-blue-400" />
             </div>
           </div>
-          
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Casas</p>
-                <p className="text-2xl font-bold text-emerald-600">
+                <p className="text-sm text-slate-600 dark:text-slate-300">Casas</p>
+                <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                   {units.filter(u => u.type === 'HOUSE').length}
                 </p>
               </div>
-              <Home className="w-8 h-8 text-emerald-600" />
+              <Home className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
             </div>
           </div>
-          
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Comercial</p>
-                <p className="text-2xl font-bold text-orange-600">
+                <p className="text-sm text-slate-600 dark:text-slate-300">Comercial</p>
+                <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                   {units.filter(u => u.type === 'COMMERCIAL').length}
                 </p>
               </div>
-              <Store className="w-8 h-8 text-orange-600" />
+              <Store className="w-8 h-8 text-orange-600 dark:text-orange-400" />
             </div>
           </div>
         </div>
@@ -153,8 +150,8 @@ export function Units() {
                 onClick={() => setFilter(type as 'all' | 'BUILDING' | 'HOUSE' | 'COMMERCIAL')}
                 className={`w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   filter === type
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+                    ? 'bg-blue-600 text-white dark:bg-blue-500 dark:text-white'
+                    : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-700'
                 }`}
                 style={{ minWidth: '120px' }}
               >

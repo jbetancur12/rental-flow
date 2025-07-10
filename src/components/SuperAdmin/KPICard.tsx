@@ -17,15 +17,15 @@ const colorClasses = {
 
 export function KPICard({ title, value, subtitle, icon: Icon, color }: KPICardProps) {
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6">
+    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm text-slate-600">{title}</p>
-          <p className={`text-2xl font-bold ${colorClasses[color]}`}>
+          <p className="text-sm text-slate-600 dark:text-slate-300">{title}</p>
+          <p className={`text-2xl font-bold ${colorClasses[color]} dark:text-white`}>
             {typeof value === 'number' ? value.toLocaleString() : value}
           </p>
           {subtitle && (
-            <p className={`text-xs mt-1 ${colorClasses[color]}`}>
+            <p className={`text-xs mt-1 ${colorClasses[color]} dark:text-slate-400`}>
               {subtitle}
             </p>
           )}
