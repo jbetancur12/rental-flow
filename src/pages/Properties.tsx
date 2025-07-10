@@ -27,7 +27,7 @@ export function Properties() {
   const [searchQuery, setSearchQuery] = useState('');
 
   // FIX: Filtros funcionando correctamente
-  const [filter, setFilter] = useState<'all' | Property['status']>('all');
+  const [filter, setFilter] = useState<'all' | Property['status'] | 'draftContract'>('all');
 
  const limitReached = isLimitExceeded('properties');
 
@@ -43,7 +43,11 @@ export function Properties() {
 
   const filteredProperties = useMemo(() => {
     let filtered = properties;
-    if (filter !== 'all') {
+    if (filter === 'draftContract') {
+      filtered = filtered.filter(p =>
+        contracts.some(c => c.propertyId === p.id && c.status === 'DRAFT')
+      );
+    } else if (filter !== 'all') {
       filtered = filtered.filter(p => p.status === filter);
     }
     if (searchQuery) {
@@ -53,7 +57,7 @@ export function Properties() {
       );
     }
     return filtered;
-  }, [properties, filter, searchQuery]);
+  }, [properties, contracts, filter, searchQuery]);
 
   const handleNewProperty = () => {
     setEditingProperty(undefined);
@@ -278,6 +282,16 @@ export function Properties() {
                 )}
               </button>
             ))}
+            <button
+              onClick={() => setFilter('draftContract')}
+              className={`w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === 'draftContract'
+                ? 'bg-blue-600 text-white dark:bg-blue-500 dark:text-white'
+                : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-700 dark:hover:bg-slate-800'
+                }`}
+              style={{ minWidth: '120px' }}
+            >
+              Con contrato en borrador ({properties.filter(p => contracts.some(c => c.propertyId === p.id && c.status === 'DRAFT')).length})
+            </button>
           </div>
         </div>
         {/* Properties Grid */}
