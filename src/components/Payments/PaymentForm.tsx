@@ -113,14 +113,14 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-slate-200">
-          <h2 className="text-xl font-semibold text-slate-900">
+      <div className="bg-white dark:bg-slate-800 rounded-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
             {payment ? 'Editar Pago' : 'Registrar Nuevo Pago'}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
+            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -129,7 +129,7 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 Contrato
               </label>
               <select
@@ -137,7 +137,7 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
                 value={formData.contractId}
                 disabled={isPaid || isFinalized}
                 onChange={handleContractChange}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:cursor-not-allowed"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:cursor-not-allowed bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
               >
                 <option value="">Seleccionar un contrato</option>
                 {contracts.map((contract) => (
@@ -149,7 +149,7 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 Inquilino
               </label>
               <select
@@ -157,8 +157,8 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
                 value={formData.tenantId}
                 disabled
                 onChange={(e) => setFormData({ ...formData, tenantId: e.target.value })}
-                className={`w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${formData.contractId ? 'bg-slate-50 cursor-not-allowed' : ''
-                  }`}              >
+                className={`w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${formData.contractId ? 'bg-slate-50 dark:bg-slate-900 cursor-not-allowed' : 'bg-white dark:bg-slate-900'} text-slate-900 dark:text-white`}
+              >
                 <option value="">Seleccionar un inquilino</option>
                 {tenants.map((tenant) => (
                   <option key={tenant.id} value={tenant.id}>
@@ -171,7 +171,7 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 Monto ($)
               </label>
               <input
@@ -180,19 +180,19 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
                 required
                 value={formData.amount}
                 onChange={(e) => setFormData({ ...formData, amount: parseFloat(e.target.value) })}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:cursor-not-allowed"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:cursor-not-allowed bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 Tipo de Pago
               </label>
               <select
                 value={formData.type}
                 disabled={isPaid || isFinalized}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value as Payment['type'] })}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:cursor-not-allowed"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:cursor-not-allowed bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
               >
                 <option value="RENT">Alquiler</option>
                 <option value="DEPOSIT">Depósito</option>
@@ -205,7 +205,7 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 Fecha de Vencimiento
               </label>
               <input
@@ -213,12 +213,12 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
                 required
                 value={formData.dueDate}
                 onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 Fecha de Pago (Opcional)
               </label>
               <input
@@ -226,20 +226,20 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
                 value={formData.paidDate}
                 disabled={isFinalized}
                 onChange={(e) => setFormData({ ...formData, paidDate: e.target.value })}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 Estado
               </label>
               <select
                 value={formData.status}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value as Payment['status'] })}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
               >
                 <option value="PENDING">Pendiente</option>
                 <option value="PAID">Pagado</option>
@@ -249,13 +249,13 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 Método de Pago
               </label>
               <select
                 value={formData.method}
                 onChange={(e) => setFormData({ ...formData, method: e.target.value as Payment['method'] })}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
               >
                 <option value="BANK_TRANSFER">Transferencia Bancaria</option>
                 <option value="CHECK">Cheque</option>
@@ -267,7 +267,7 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
 
           {/* NEW: Generate Receipt Option */}
           {formData.status === 'PAID' && formData.paidDate && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
               <div className="flex items-center">
                 <input
                   type="checkbox"
@@ -276,40 +276,40 @@ export function PaymentForm({ payment, contracts, tenants, isOpen, onClose, onSa
                   onChange={(e) => setGenerateReceipt(e.target.checked)}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
                 />
-                <label htmlFor="generateReceipt" className="ml-2 block text-sm text-blue-900">
+                <label htmlFor="generateReceipt" className="ml-2 block text-sm text-blue-900 dark:text-blue-200">
                   Generar comprobante de pago automáticamente
                 </label>
               </div>
-              <p className="text-xs text-blue-700 mt-1">
+              <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
                 Se descargará un PDF con el comprobante de pago al guardar
               </p>
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               Notas (Opcional)
             </label>
             <textarea
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               rows={3}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
               placeholder="Notas adicionales sobre este pago..."
             />
           </div>
 
-          <div className="flex justify-end space-x-4 pt-4 border-t border-slate-200">
+          <div className="flex justify-end space-x-4 pt-4 border-t border-slate-200 dark:border-slate-700">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors"
+              className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-colors"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 transition-colors"
             >
               {payment ? 'Actualizar Pago' : 'Registrar Pago'}
             </button>

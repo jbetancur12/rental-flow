@@ -161,7 +161,9 @@ export function Layout() {
       >
         <SubscriptionBanner />
         <Suspense fallback={<div className="flex-1 flex items-center justify-center text-slate-400 dark:text-slate-200">Cargando...</div>}>
-          <Outlet />
+          <div className="p-8 overflow-auto">
+            <Outlet />
+          </div>
         </Suspense>
       </div>
     </div>

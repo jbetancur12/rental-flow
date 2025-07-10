@@ -5,6 +5,19 @@ import { generatePropertyReport, generateTenantReport, generateFinancialReport, 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import { DollarSign, TrendingUp, FileText, Download, Filter } from 'lucide-react';
 
+// Hook para detectar dark mode
+function useIsDark() {
+  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+  useState(() => {
+    const root = document.documentElement;
+    const check = () => setIsDark(root.classList.contains('dark'));
+    const observer = new MutationObserver(check);
+    observer.observe(root, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  });
+  return isDark;
+}
+
 export function Reports() {
   const { payments, tenants, properties, contracts, units, maintenanceRequests } = useApp();
   
@@ -153,26 +166,28 @@ const occupancyData = useMemo(() => {
     generateUnitReport(units, properties);
   };
 
+  const isDark = useIsDark();
+
   return (
     <div className="flex-1 overflow-auto">
       <Header title="Reportes y Analíticas" />
       
       <div className="p-6">
         {/* NEW: Filtros */}
-        <div className="bg-white rounded-xl border border-slate-200 p-6 mb-8">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6 mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-slate-900 flex items-center">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center">
               <Filter className="w-5 h-5 mr-2" />
               Filtros
             </h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 gap-y-2">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Mes</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Mes</label>
               <select
                 value={filters.month}
                 onChange={(e) => setFilters({...filters, month: parseInt(e.target.value)})}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
               >
                 {Array.from({length: 12}, (_, i) => (
                   <option key={i+1} value={i+1}>
@@ -182,11 +197,11 @@ const occupancyData = useMemo(() => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Año</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Año</label>
               <select
                 value={filters.year}
                 onChange={(e) => setFilters({...filters, year: parseInt(e.target.value)})}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
               >
                 {[2024, 2023, 2022].map(year => (
                   <option key={year} value={year}>{year}</option>
@@ -194,11 +209,11 @@ const occupancyData = useMemo(() => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Unidad</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Unidad</label>
               <select
                 value={filters.unitId}
                 onChange={(e) => setFilters({...filters, unitId: e.target.value})}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
               >
                 <option value="">Todas las Unidades</option>
                 {units.map(unit => (
@@ -207,11 +222,11 @@ const occupancyData = useMemo(() => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Tipo de Propiedad</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Tipo de Propiedad</label>
               <select
                 value={filters.propertyType}
                 onChange={(e) => setFilters({...filters, propertyType: e.target.value})}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
               >
                 <option value="all">Todos los Tipos</option>
                 <option value="APARTMENT">Apartamentos</option>
@@ -224,59 +239,59 @@ const occupancyData = useMemo(() => {
 
         {/* Key Metrics - NOW WITH FILTERS */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Ingreso Total</p>
-                <p className="text-2xl font-bold text-slate-900">${totalRevenue.toLocaleString()}</p>
-                <p className="text-sm text-emerald-600 flex items-center mt-1">
+                <p className="text-sm text-slate-600 dark:text-slate-400">Ingreso Total</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">${totalRevenue.toLocaleString()}</p>
+                <p className="text-sm text-emerald-600 dark:text-emerald-400 flex items-center mt-1">
                   <TrendingUp className="w-4 h-4 mr-1" />
                   Filtrado
                 </p>
               </div>
-              <DollarSign className="w-8 h-8 text-emerald-600" />
+              <DollarSign className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
             </div>
           </div>
           
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Alquiler Promedio</p>
-                <p className="text-2xl font-bold text-slate-900">${Math.round(averageRent).toLocaleString()}</p>
-                <p className="text-sm text-blue-600 flex items-center mt-1">
+                <p className="text-sm text-slate-600 dark:text-slate-400">Alquiler Promedio</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">${Math.round(averageRent).toLocaleString()}</p>
+                <p className="text-sm text-blue-600 dark:text-blue-400 flex items-center mt-1">
                   <TrendingUp className="w-4 h-4 mr-1" />
                   Filtrado
                 </p>
               </div>
-              <FileText className="w-8 h-8 text-blue-600" />
+              <FileText className="w-8 h-8 text-blue-600 dark:text-blue-400" />
             </div>
           </div>
           
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Tasa de Ocupación</p>
-                <p className="text-2xl font-bold text-slate-900">{Math.round(occupancyRate)}%</p>
-                <p className="text-sm text-emerald-600 flex items-center mt-1">
+                <p className="text-sm text-slate-600 dark:text-slate-400">Tasa de Ocupación</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{Math.round(occupancyRate)}%</p>
+                <p className="text-sm text-emerald-600 dark:text-emerald-400 flex items-center mt-1">
                   <TrendingUp className="w-4 h-4 mr-1" />
                   Filtrado
                 </p>
               </div>
-              <TrendingUp className="w-8 h-8 text-green-600" />
+              <TrendingUp className="w-8 h-8 text-green-600 dark:text-green-400" />
             </div>
           </div>
           
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Costo de Mantenimiento</p>
-                <p className="text-2xl font-bold text-slate-900">${maintenanceCost.toLocaleString()}</p>
-                <p className="text-sm text-red-600 flex items-center mt-1">
+                <p className="text-sm text-slate-600 dark:text-slate-400">Costo de Mantenimiento</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">${maintenanceCost.toLocaleString()}</p>
+                <p className="text-sm text-red-600 dark:text-red-400 flex items-center mt-1">
                   <TrendingUp className="w-4 h-4 mr-1 rotate-180" />
                   Filtrado
                 </p>
               </div>
-              <FileText className="w-8 h-8 text-orange-600" />
+              <FileText className="w-8 h-8 text-orange-600 dark:text-orange-400" />
             </div>
           </div>
         </div>
@@ -284,10 +299,10 @@ const occupancyData = useMemo(() => {
         {/* Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Revenue Chart */}
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-slate-900">Ingreso vs Gastos</h3>
-              <button className="flex items-center text-sm text-blue-600 hover:text-blue-800">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Ingreso vs Gastos</h3>
+              <button className="flex items-center text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
                 <Download className="w-4 h-4 mr-1" />
                 Exportar
               </button>
@@ -295,25 +310,28 @@ const occupancyData = useMemo(() => {
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={monthlyRevenueData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#334155' : '#f1f5f9'} />
                   <XAxis 
                     dataKey="month" 
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: '#64748b', fontSize: 12 }}
+                    tick={{ fill: isDark ? '#cbd5e1' : '#64748b', fontSize: 12 }}
                   />
                   <YAxis 
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: '#64748b', fontSize: 12 }}
+                    tick={{ fill: isDark ? '#cbd5e1' : '#64748b', fontSize: 12 }}
                   />
                   <Tooltip 
                     contentStyle={{
-                      backgroundColor: 'white',
-                      border: '1px solid #e2e8f0',
+                      backgroundColor: isDark ? '#1e293b' : 'white',
+                      color: isDark ? '#f1f5f9' : '#0f172a',
+                      border: `1px solid ${isDark ? '#334155' : '#e2e8f0'}`,
                       borderRadius: '8px',
                       boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                     }}
+                    labelStyle={{ color: isDark ? '#f1f5f9' : '#0f172a' }}
+                    itemStyle={{ color: isDark ? '#f1f5f9' : '#0f172a' }}
                   />
                   <Bar dataKey="revenue" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="expenses" fill="#ef4444" radius={[4, 4, 0, 0]} />
@@ -323,10 +341,10 @@ const occupancyData = useMemo(() => {
           </div>
 
           {/* Property Distribution */}
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-slate-900">Distribución de Propiedades</h3>
-              <button className="flex items-center text-sm text-blue-600 hover:text-blue-800">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Distribución de Propiedades</h3>
+              <button className="flex items-center text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
                 <Download className="w-4 h-4 mr-1" />
                 Exportar
               </button>
@@ -347,7 +365,7 @@ const occupancyData = useMemo(() => {
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip contentStyle={{ backgroundColor: isDark ? '#1e293b' : 'white', color: isDark ? '#f1f5f9' : '#0f172a', border: `1px solid ${isDark ? '#334155' : '#e2e8f0'}` }} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -355,10 +373,10 @@ const occupancyData = useMemo(() => {
         </div>
 
         {/* Occupancy Trend */}
-        <div className="bg-white rounded-xl border border-slate-200 p-6 mb-8">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6 mb-8">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-slate-900">Tendencia de Ocupación</h3>
-            <button className="flex items-center text-sm text-blue-600 hover:text-blue-800">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Tendencia de Ocupación</h3>
+            <button className="flex items-center text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
               <Download className="w-4 h-4 mr-1" />
               Exportar
             </button>
@@ -366,26 +384,29 @@ const occupancyData = useMemo(() => {
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={occupancyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#334155' : '#f1f5f9'} />
                 <XAxis 
                   dataKey="month" 
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: '#64748b', fontSize: 12 }}
+                  tick={{ fill: isDark ? '#cbd5e1' : '#64748b', fontSize: 12 }}
                 />
                 <YAxis 
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: '#64748b', fontSize: 12 }}
+                  tick={{ fill: isDark ? '#cbd5e1' : '#64748b', fontSize: 12 }}
                   domain={[70, 100]}
                 />
                 <Tooltip 
                   contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid #e2e8f0',
+                    backgroundColor: isDark ? '#1e293b' : 'white',
+                    color: isDark ? '#f1f5f9' : '#0f172a',
+                    border: `1px solid ${isDark ? '#334155' : '#e2e8f0'}`,
                     borderRadius: '8px',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                   }}
+                  labelStyle={{ color: isDark ? '#f1f5f9' : '#0f172a' }}
+                  itemStyle={{ color: isDark ? '#f1f5f9' : '#0f172a' }}
                   formatter={(value) => [`${value}%`, 'Tasa de Ocupación']}
                 />
                 <Line 
@@ -402,67 +423,63 @@ const occupancyData = useMemo(() => {
 
         {/* Report Actions - NOW WITH UNIT REPORT */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h3 className="font-semibold text-slate-900 mb-3">Reporte de Propiedad</h3>
-            <p className="text-sm text-slate-600 mb-4">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+            <h3 className="font-semibold text-slate-900 dark:text-white mb-3">Reporte de Propiedad</h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
               Resumen completo de la propiedad, incluyendo ocupación, alquiler y detalles de estado.
             </p>
             <button 
               onClick={handleGeneratePropertyReport}
-              className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+              className="w-full px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors text-sm"
             >
               Generar Reporte
             </button>
           </div>
-          
           {/* NEW: Unit Report */}
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h3 className="font-semibold text-slate-900 mb-3">Reporte de Unidad</h3>
-            <p className="text-sm text-slate-600 mb-4">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+            <h3 className="font-semibold text-slate-900 dark:text-white mb-3">Reporte de Unidad</h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
               Análisis detallado de unidades, incluyendo edificios, casas y espacios comerciales.
             </p>
             <button 
               onClick={handleGenerateUnitReport}
-              className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm"
+              className="w-full px-4 py-2 bg-indigo-600 dark:bg-indigo-700 text-white rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-800 transition-colors text-sm"
             >
               Generar Reporte
             </button>
           </div>
-          
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h3 className="font-semibold text-slate-900 mb-3">Reporte de Inquilino</h3>
-            <p className="text-sm text-slate-600 mb-4">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+            <h3 className="font-semibold text-slate-900 dark:text-white mb-3">Reporte de Inquilino</h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
               Información detallada de inquilinos, detalles de empleo y estado de aplicación.
             </p>
             <button 
               onClick={handleGenerateTenantReport}
-              className="w-full px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm"
+              className="w-full px-4 py-2 bg-emerald-600 dark:bg-emerald-700 text-white rounded-lg hover:bg-emerald-700 dark:hover:bg-emerald-800 transition-colors text-sm"
             >
               Generar Reporte
             </button>
           </div>
-          
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h3 className="font-semibold text-slate-900 mb-3">Reporte Financiero</h3>
-            <p className="text-sm text-slate-600 mb-4">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+            <h3 className="font-semibold text-slate-900 dark:text-white mb-3">Reporte Financiero</h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
               Análisis de ingresos, seguimiento de pagos y métricas de rendimiento financiero.
             </p>
             <button 
               onClick={handleGenerateFinancialReport}
-              className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
+              className="w-full px-4 py-2 bg-purple-600 dark:bg-purple-700 text-white rounded-lg hover:bg-purple-700 dark:hover:bg-purple-800 transition-colors text-sm"
             >
               Generar Reporte
             </button>
           </div>
-          
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h3 className="font-semibold text-slate-900 mb-3">Reporte de Mantenimiento</h3>
-            <p className="text-sm text-slate-600 mb-4">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+            <h3 className="font-semibold text-slate-900 dark:text-white mb-3">Reporte de Mantenimiento</h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
               Tendencias de solicitudes de mantenimiento, costos y análisis de condición de la propiedad.
             </p>
             <button 
               onClick={handleGenerateMaintenanceReport}
-              className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm"
+              className="w-full px-4 py-2 bg-orange-600 dark:bg-orange-700 text-white rounded-lg hover:bg-orange-700 dark:hover:bg-orange-800 transition-colors text-sm"
             >
               Generar Reporte
             </button>

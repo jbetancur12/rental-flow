@@ -317,70 +317,70 @@ const handleMarkComplete = async (request: MaintenanceRequest) => {
       <div className="p-6">
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Solicitudes Abiertas</p>
-                <p className="text-2xl font-bold text-red-600">
+                <p className="text-sm text-slate-600 dark:text-slate-400">Solicitudes Abiertas</p>
+                <p className="text-2xl font-bold text-red-600 dark:text-red-400">
                   {maintenanceRequests.filter(r => r.status === 'OPEN').length}
                 </p>
               </div>
-              <AlertTriangle className="w-8 h-8 text-red-600" />
+              <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
             </div>
           </div>
           
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">En Progreso</p>
-                <p className="text-2xl font-bold text-yellow-600">
+                <p className="text-sm text-slate-600 dark:text-slate-400">En Progreso</p>
+                <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
                   {maintenanceRequests.filter(r => r.status === 'IN_PROGRESS').length}
                 </p>
               </div>
-              <Clock className="w-8 h-8 text-yellow-600" />
+              <Clock className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
             </div>
           </div>
           
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Completadas</p>
-                <p className="text-2xl font-bold text-emerald-600">
+                <p className="text-sm text-slate-600 dark:text-slate-400">Completadas</p>
+                <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                   {maintenanceRequests.filter(r => r.status === 'COMPLETED').length}
                 </p>
               </div>
-              <Wrench className="w-8 h-8 text-emerald-600" />
+              <Wrench className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
             </div>
           </div>
           
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Costo Total</p>
-                <p className="text-2xl font-bold text-blue-600">
+                <p className="text-sm text-slate-600 dark:text-slate-400">Costo Total</p>
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                   ${maintenanceRequests.reduce((sum, r) => sum + (r.actualCost || r.estimatedCost || 0), 0).toLocaleString()}
                 </p>
               </div>
-              <DollarSign className="w-8 h-8 text-blue-600" />
+              <DollarSign className="w-8 h-8 text-blue-600 dark:text-blue-400" />
             </div>
           </div>
         </div>
 
         {/* NEW: Filtros por Mes/Año */}
-        <div className="bg-white rounded-xl border border-slate-200 p-6 mb-6">
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-slate-900 flex items-center">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center">
               <Filter className="w-5 h-5 mr-2" />
               Filtros
             </h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 gap-y-2">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Mes</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Mes</label>
               <select
                 value={monthFilter}
                 onChange={(e) => setMonthFilter(e.target.value === 'all' ? 'all' : parseInt(e.target.value))}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
               >
                 <option value="all">Todos los Meses</option>
                 <option value={1}>Enero</option>
@@ -398,25 +398,30 @@ const handleMarkComplete = async (request: MaintenanceRequest) => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Año</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Año</label>
               <select
                 value={yearFilter}
                 onChange={(e) => setYearFilter(parseInt(e.target.value))}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
               >
                 {[2024, 2023, 2022].map(year => (
                   <option key={year} value={year}>{year}</option>
                 ))}
               </select>
             </div>
-            <div className="flex items-end">
-              <button
-                onClick={handleGenerateReport}
-                className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Estado</label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as any)}
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
               >
-                <Download className="w-4 h-4 mr-2" />
-                Exportar Reporte
-              </button>
+                <option value="all">Todos</option>
+                <option value="OPEN">Abiertas</option>
+                <option value="IN_PROGRESS">En Progreso</option>
+                <option value="COMPLETED">Completadas</option>
+                <option value="CANCELLED">Canceladas</option>
+              </select>
             </div>
           </div>
         </div>
@@ -430,8 +435,8 @@ const handleMarkComplete = async (request: MaintenanceRequest) => {
                 onClick={() => setStatusFilter(status as 'OPEN' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'all')}
                 className={`w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   statusFilter === status
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+                    ? 'bg-blue-600 text-white dark:bg-blue-700 dark:text-white'
+                    : 'bg-white text-slate-600 dark:bg-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
                 }`}
                 style={{ minWidth: '120px' }}
               >
@@ -452,12 +457,12 @@ const handleMarkComplete = async (request: MaintenanceRequest) => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {filteredRequests.map((request) => {
             return (
-            <div key={request.id} className="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-shadow">
+            <div key={request.id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6 hover:shadow-lg transition-shadow">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-start">
                   <div className="text-2xl mr-3">{getCategoryIcon(request.category)}</div>
                   <div>
-                    <h3 className="font-semibold text-slate-900 mb-1">{request.title}</h3>
+                    <h3 className="font-semibold text-slate-900 dark:text-white mb-1">{request.title}</h3>
                     <div className="flex items-center space-x-2">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(request.priority)}`}>
                         {request.priority === 'LOW' ? 'Baja' :
@@ -488,43 +493,43 @@ const handleMarkComplete = async (request: MaintenanceRequest) => {
                 </div>
               </div>
 
-              <p className="text-slate-600 text-sm mb-4 line-clamp-2">{request.description}</p>
+              <p className="text-slate-600 dark:text-slate-400 text-sm mb-4 line-clamp-2">{request.description}</p>
 
               <div className="space-y-3 mb-4">
-                <div className="flex items-center text-slate-600">
+                <div className="flex items-center text-slate-600 dark:text-slate-400">
                   <Home className="w-4 h-4 mr-3" />
                   <span className="text-sm">{getPropertyName(request.propertyId)}</span>
                 </div>
-                <div className="flex items-center text-slate-600">
+                <div className="flex items-center text-slate-600 dark:text-slate-400">
                   <User className="w-4 h-4 mr-3" />
                   <span className="text-sm">{getTenantName(request.tenantId)}</span>
                 </div>
-                <div className="flex items-center text-slate-600">
+                <div className="flex items-center text-slate-600 dark:text-slate-400">
                   <Calendar className="w-4 h-4 mr-3" />
   Reportado: {request.reportedDate ? formatInTimeZone(request.reportedDate, 'UTC', 'MMM d, yyyy') : 'N/A'}
                 </div>
               </div>
 
-              <div className="border-t border-slate-100 pt-4">
+              <div className="border-t border-slate-100 dark:border-slate-700 pt-4">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-slate-500">Costo Estimado</span>
-                    <p className="font-medium text-slate-900">
+                    <span className="text-slate-500 dark:text-slate-400">Costo Estimado</span>
+                    <p className="font-medium text-slate-900 dark:text-white">
                       {request.estimatedCost ? `$${request.estimatedCost.toLocaleString()}` : 'Por Determinar'}
                     </p>
                   </div>
                   <div>
-                    <span className="text-slate-500">Asignado a</span>
-                    <p className="font-medium text-slate-900">{request.assignedTo || 'Sin Asignar'}</p>
+                    <span className="text-slate-500 dark:text-slate-400">Asignado a</span>
+                    <p className="font-medium text-slate-900 dark:text-white">{request.assignedTo || 'Sin Asignar'}</p>
                   </div>
                 </div>
               </div>
 
               {request.actualCost && (
-                <div className="mt-4 p-3 bg-emerald-50 rounded-lg">
+                <div className="mt-4 p-3 bg-emerald-50 dark:bg-emerald-900 rounded-lg">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-emerald-700">Costo Real:</span>
-                    <span className="font-medium text-emerald-800">${request.actualCost.toLocaleString()}</span>
+                    <span className="text-sm text-emerald-700 dark:text-emerald-200">Costo Real:</span>
+                    <span className="font-medium text-emerald-800 dark:text-emerald-100">${request.actualCost.toLocaleString()}</span>
                   </div>
                 </div>
               )}
@@ -550,7 +555,7 @@ const handleMarkComplete = async (request: MaintenanceRequest) => {
                 )}
                 <button 
                   onClick={() => handleViewDetails(request)}
-                  className="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors text-sm flex items-center"
+                  className="px-4 py-2 border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-200 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-sm flex items-center"
                 >
                   <Eye className="w-4 h-4 mr-2" />
                   Ver Detalles
@@ -648,9 +653,9 @@ const handleMarkComplete = async (request: MaintenanceRequest) => {
       {/* NEW: Details Modal */}
       {isDetailsModalOpen && selectedRequest && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b border-slate-200">
-              <h2 className="text-xl font-semibold text-slate-900">Detalles de Solicitud</h2>
+          <div className="bg-white dark:bg-slate-900 rounded-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+              <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Detalles de Solicitud</h2>
               <button
                 onClick={() => setIsDetailsModalOpen(false)}
                 className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
@@ -664,7 +669,7 @@ const handleMarkComplete = async (request: MaintenanceRequest) => {
               <div className="flex items-start">
                 <div className="text-3xl mr-4">{getCategoryIcon(selectedRequest.category)}</div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-semibold text-slate-900 mb-2">{selectedRequest.title}</h3>
+                  <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">{selectedRequest.title}</h3>
                   <div className="flex items-center space-x-3">
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${getPriorityColor(selectedRequest.priority)}`}>
                       {selectedRequest.priority === 'LOW' ? 'Baja' :
@@ -682,27 +687,27 @@ const handleMarkComplete = async (request: MaintenanceRequest) => {
 
               {/* Description */}
               <div>
-                <h4 className="font-medium text-slate-900 mb-2">Descripción</h4>
-                <p className="text-slate-700">{selectedRequest.description}</p>
+                <h4 className="font-medium text-slate-900 dark:text-white mb-2">Descripción</h4>
+                <p className="text-slate-700 dark:text-slate-300">{selectedRequest.description}</p>
               </div>
 
               {/* Property and Tenant Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="font-medium text-slate-900 mb-2">Propiedad</h4>
-                  <p className="text-slate-700">{getPropertyName(selectedRequest.propertyId)}</p>
+                  <h4 className="font-medium text-slate-900 dark:text-white mb-2">Propiedad</h4>
+                  <p className="text-slate-700 dark:text-slate-300">{getPropertyName(selectedRequest.propertyId)}</p>
                 </div>
                 <div>
-                  <h4 className="font-medium text-slate-900 mb-2">Reportado por</h4>
-                  <p className="text-slate-700">{getTenantName(selectedRequest.tenantId)}</p>
+                  <h4 className="font-medium text-slate-900 dark:text-white mb-2">Reportado por</h4>
+                  <p className="text-slate-700 dark:text-slate-300">{getTenantName(selectedRequest.tenantId)}</p>
                 </div>
               </div>
 
               {/* Dates */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="font-medium text-slate-900 mb-2">Fecha de Reporte</h4>
-                  <p className="text-slate-700">{
+                  <h4 className="font-medium text-slate-900 dark:text-white mb-2">Fecha de Reporte</h4>
+                  <p className="text-slate-700 dark:text-slate-300">{
                     selectedRequest.reportedDate && !isNaN(new Date(selectedRequest.reportedDate).getTime())
                       ? formatDateDMY(selectedRequest.reportedDate)
                       : 'N/A'
@@ -710,8 +715,8 @@ const handleMarkComplete = async (request: MaintenanceRequest) => {
                 </div>
                 {selectedRequest.completedDate && (
                   <div>
-                    <h4 className="font-medium text-slate-900 mb-2">Fecha de Completado</h4>
-                    <p className="text-slate-700">{
+                    <h4 className="font-medium text-slate-900 dark:text-white mb-2">Fecha de Completado</h4>
+                    <p className="text-slate-700 dark:text-slate-300">{
                       selectedRequest.completedDate && !isNaN(new Date(selectedRequest.completedDate).getTime())
                         ? formatDateDMY(selectedRequest.completedDate)
                         : 'N/A'
@@ -723,17 +728,17 @@ const handleMarkComplete = async (request: MaintenanceRequest) => {
               {/* Assignment and Costs */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="font-medium text-slate-900 mb-2">Asignado a</h4>
-                  <p className="text-slate-700">{selectedRequest.assignedTo || 'Sin asignar'}</p>
+                  <h4 className="font-medium text-slate-900 dark:text-white mb-2">Asignado a</h4>
+                  <p className="text-slate-700 dark:text-slate-300">{selectedRequest.assignedTo || 'Sin asignar'}</p>
                 </div>
                 <div>
-                  <h4 className="font-medium text-slate-900 mb-2">Costo</h4>
+                  <h4 className="font-medium text-slate-900 dark:text-white mb-2">Costo</h4>
                   <div className="space-y-1">
-                    <p className="text-sm text-slate-600">
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
                       Estimado: {selectedRequest.estimatedCost ? `$${selectedRequest.estimatedCost.toLocaleString()}` : 'N/A'}
                     </p>
                     {selectedRequest.actualCost && (
-                      <p className="text-sm text-emerald-600 font-medium">
+                      <p className="text-sm text-emerald-600 dark:text-emerald-300 font-medium">
                         Real: ${selectedRequest.actualCost.toLocaleString()}
                       </p>
                     )}
@@ -744,8 +749,8 @@ const handleMarkComplete = async (request: MaintenanceRequest) => {
               {/* Notes */}
               {selectedRequest.notes && (
                 <div>
-                  <h4 className="font-medium text-slate-900 mb-2">Notas</h4>
-                  <p className="text-slate-700">{selectedRequest.notes}</p>
+                  <h4 className="font-medium text-slate-900 dark:text-white mb-2">Notas</h4>
+                  <p className="text-slate-700 dark:text-slate-300">{selectedRequest.notes}</p>
                 </div>
               )}
             </div>

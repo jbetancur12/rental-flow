@@ -444,18 +444,18 @@ export function Settings() {
       <div className="p-6">
         <div className="max-w-6xl mx-auto">
           {/* Tab Navigation */}
-          <div className="border-b border-slate-200 mb-8">
-            <nav className="flex space-x-8 overflow-x-auto">
+          <div className="border-b border-slate-200 dark:border-slate-700 mb-8">
+            <nav className="flex space-x-8 overflow-x-auto bg-white dark:bg-slate-900">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => handleTabClick(tab.id)}
-                  className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                  className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${activeTab === tab.id
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400 dark:border-blue-400'
+                    : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-500'
                     }`}
                 >
-                  <tab.icon className="w-5 h-5 mr-2" />
+                  <tab.icon className={`w-5 h-5 mr-2 ${activeTab === tab.id ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'}`} />
                   {tab.label}
                 </button>
               ))}
@@ -589,52 +589,52 @@ export function Settings() {
       {/* Modal de edición */}
       {isEditModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full mx-4 p-8 relative">
+          <div className="bg-white dark:bg-slate-900 rounded-xl max-w-md w-full mx-4 p-8 relative">
             <button
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               onClick={() => setIsEditModalOpen(false)}
             >
               <X className="w-5 h-5" />
             </button>
-            <h2 className="text-xl font-semibold text-slate-900 mb-4">Editar Usuario</h2>
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">Editar Usuario</h2>
             <form onSubmit={handleEditUser} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Nombre</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nombre</label>
                 <input
                   type="text"
                   required
                   value={editForm.firstName}
                   onChange={e => setEditForm(f => ({ ...f, firstName: e.target.value }))}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Apellido</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Apellido</label>
                 <input
                   type="text"
                   required
                   value={editForm.lastName}
                   onChange={e => setEditForm(f => ({ ...f, lastName: e.target.value }))}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Correo Electrónico</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Correo Electrónico</label>
                 <input
                   type="email"
                   required
                   value={editForm.email}
                   onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Rol</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Rol</label>
                 <select
                   required
                   value={editForm.role}
                   onChange={e => setEditForm(f => ({ ...f, role: e.target.value }))}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
                 >
                   <option value="USER">Usuario</option>
                   <option value="MANAGER">Gerente</option>
@@ -642,31 +642,31 @@ export function Settings() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Estado</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Estado</label>
                 <select
                   required
                   value={editForm.isActive ? 'activo' : 'inactivo'}
                   onChange={e => setEditForm(f => ({ ...f, isActive: e.target.value === 'activo' }))}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
                 >
                   <option value="activo">Activo</option>
                   <option value="inactivo">Inactivo</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Contraseña (dejar en blanco para no cambiar)</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Contraseña (dejar en blanco para no cambiar)</label>
                 <input
                   type="password"
                   minLength={8}
                   value={editForm.password}
                   onChange={e => setEditForm(f => ({ ...f, password: e.target.value }))}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
                 />
               </div>
               {editError && <p className="text-red-600 text-sm">{editError}</p>}
               <button
                 type="submit"
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="w-full px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-800"
                 disabled={editLoading}
               >
                 {editLoading ? 'Guardando...' : 'Guardar Cambios'}

@@ -39,7 +39,8 @@ export function Payments() {
 
   const [showKPIs, setShowKPIs] = useState(true);
 
-
+  // Detectar dark mode para gráficos
+  const isDark = typeof window !== 'undefined' && document.documentElement.classList.contains('dark');
 
 
 useEffect(() => {
@@ -282,7 +283,7 @@ useEffect(() => {
         <div className="flex items-center justify-between mb-6">
           <button
             onClick={() => setShowKPIs(!showKPIs)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 transition-colors"
           >
             <BarChart3 className="w-4 h-4 mr-2" />
             {showKPIs ? 'Ocultar' : 'Mostrar'} Análisis
@@ -293,20 +294,20 @@ useEffect(() => {
         {showKPIs && (
           <>
             {/* Filtros para KPIs */}
-            <div className="bg-white rounded-xl border border-slate-200 p-6 mb-6">
+            <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 mb-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-slate-900 flex items-center">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center">
                   <Filter className="w-5 h-5 mr-2" />
                   Filtros de Análisis
                 </h3>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 gap-y-2">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Mes</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Mes</label>
                   <select
                     value={kpiFilters.month}
                     onChange={(e) => setKpiFilters({ ...kpiFilters, month: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                   >
                     {Array.from({ length: 12 }, (_, i) => (
                       <option key={i + 1} value={i + 1}>
@@ -316,11 +317,11 @@ useEffect(() => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Año</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Año</label>
                   <select
                     value={kpiFilters.year}
                     onChange={(e) => setKpiFilters({ ...kpiFilters, year: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                   >
                     {[2024, 2023, 2022].map(year => (
                       <option key={year} value={year}>{year}</option>
@@ -328,11 +329,11 @@ useEffect(() => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Unidad</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Unidad</label>
                   <select
                     value={kpiFilters.unitId}
                     onChange={(e) => setKpiFilters({ ...kpiFilters, unitId: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                   >
                     <option value="">Todas las Unidades</option>
                     {units.map(unit => (
@@ -341,11 +342,11 @@ useEffect(() => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Tipo de Propiedad</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Tipo de Propiedad</label>
                   <select
                     value={kpiFilters.propertyType}
                     onChange={(e) => setKpiFilters({ ...kpiFilters, propertyType: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                   >
                     <option value="all">Todos los Tipos</option>
                     <option value="APARTMENT">Apartamentos</option>
@@ -358,47 +359,47 @@ useEffect(() => {
 
             {/* KPIs Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-              <div className="bg-white rounded-xl border border-slate-200 p-6">
+              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-slate-600">Total Recaudado</p>
-                    <p className="text-2xl font-bold text-emerald-600">${totalCollected.toLocaleString()}</p>
-                    <p className="text-xs text-slate-500 mt-1">Datos filtrados</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">Total Recaudado</p>
+                    <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">${totalCollected.toLocaleString()}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Datos filtrados</p>
                   </div>
-                  <CheckCircle className="w-8 h-8 text-emerald-600" />
+                  <CheckCircle className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl border border-slate-200 p-6">
+              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-slate-600">Pendiente</p>
-                    <p className="text-2xl font-bold text-yellow-600">${pendingAmount.toLocaleString()}</p>
-                    <p className="text-xs text-slate-500 mt-1">Datos filtrados</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">Pendiente</p>
+                    <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">${pendingAmount.toLocaleString()}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Datos filtrados</p>
                   </div>
-                  <Clock className="w-8 h-8 text-yellow-600" />
+                  <Clock className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl border border-slate-200 p-6">
+              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-slate-600">Vencido</p>
-                    <p className="text-2xl font-bold text-red-600">${overdueAmount.toLocaleString()}</p>
-                    <p className="text-xs text-slate-500 mt-1">Datos filtrados</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">Vencido</p>
+                    <p className="text-2xl font-bold text-red-600 dark:text-red-400">${overdueAmount.toLocaleString()}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Datos filtrados</p>
                   </div>
-                  <AlertCircle className="w-8 h-8 text-red-600" />
+                  <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl border border-slate-200 p-6">
+              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-slate-600">Este Mes</p>
-                    <p className="text-2xl font-bold text-blue-600">${thisMonthAmount.toLocaleString()}</p>
-                    <p className="text-xs text-slate-500 mt-1">Datos filtrados</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">Este Mes</p>
+                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">${thisMonthAmount.toLocaleString()}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Datos filtrados</p>
                   </div>
-                  <CreditCard className="w-8 h-8 text-blue-600" />
+                  <BarChart3 className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
             </div>
@@ -406,15 +407,15 @@ useEffect(() => {
             {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
               {/* Payment Trend */}
-              <div className="bg-white rounded-xl border border-slate-200 p-6">
-                <h3 className="text-lg font-semibold text-slate-900 mb-4">Tendencia de Pagos (6 Meses)</h3>
+              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Tendencia de Pagos (6 Meses)</h3>
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={monthlyTrendData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <Tooltip />
+                      <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#334155' : '#f1f5f9'} />
+                      <XAxis dataKey="month" stroke={isDark ? '#e2e8f0' : '#334155'} tick={{ fill: isDark ? '#e2e8f0' : '#334155' }} />
+                      <YAxis stroke={isDark ? '#e2e8f0' : '#334155'} tick={{ fill: isDark ? '#e2e8f0' : '#334155' }} />
+                      <Tooltip contentStyle={{ backgroundColor: isDark ? '#1e293b' : '#fff', color: isDark ? '#e2e8f0' : '#0f172a', borderRadius: 8, border: isDark ? '1px solid #334155' : '1px solid #e2e8f0' }} wrapperClassName={isDark ? 'dark:bg-slate-800 dark:text-white dark:border-slate-700' : ''} />
                       <Bar dataKey="collected" fill="#10b981" name="Recaudado" />
                       <Bar dataKey="PENDING" fill="#f59e0b" name="Pendiente" />
                     </BarChart>
@@ -423,8 +424,8 @@ useEffect(() => {
               </div>
 
               {/* Payment Types */}
-              <div className="bg-white rounded-xl border border-slate-200 p-6">
-                <h3 className="text-lg font-semibold text-slate-900 mb-4">Tipos de Pago</h3>
+              <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Tipos de Pago</h3>
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -435,12 +436,14 @@ useEffect(() => {
                         outerRadius={100}
                         dataKey="value"
                         label={({ name, value }) => `${name}: $${value.toLocaleString()}`}
+                        labelLine={{ stroke: isDark ? '#e2e8f0' : '#334155' }}
+                        stroke={isDark ? '#e2e8f0' : '#334155'}
                       >
                         {paymentTypeData.map((_entry, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
-                      <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+                      <Tooltip contentStyle={{ backgroundColor: isDark ? '#1e293b' : '#fff', color: isDark ? '#e2e8f0' : '#0f172a', borderRadius: 8, border: isDark ? '1px solid #334155' : '1px solid #e2e8f0' }} wrapperClassName={isDark ? 'dark:bg-slate-800 dark:text-white dark:border-slate-700' : ''} formatter={(value) => `$${value.toLocaleString()}`} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -451,51 +454,51 @@ useEffect(() => {
 
         {/* Summary Cards - Original */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Total Recaudado</p>
-                <p className="text-2xl font-bold text-emerald-600">
+                <p className="text-sm text-slate-600 dark:text-slate-400">Total Recaudado</p>
+                <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                   ${payments.filter(p => p.status === 'PAID').reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
                 </p>
               </div>
-              <CheckCircle className="w-8 h-8 text-emerald-600" />
+              <CheckCircle className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Pendiente</p>
-                <p className="text-2xl font-bold text-yellow-600">
+                <p className="text-sm text-slate-600 dark:text-slate-400">Pendiente</p>
+                <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
                   ${payments.filter(p => p.status === 'PENDING').reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
                 </p>
               </div>
-              <Clock className="w-8 h-8 text-yellow-600" />
+              <Clock className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Vencido</p>
-                <p className="text-2xl font-bold text-red-600">
+                <p className="text-sm text-slate-600 dark:text-slate-400">Vencido</p>
+                <p className="text-2xl font-bold text-red-600 dark:text-red-400">
                   ${filteredPayments.filter(p => getPaymentStatus(p) === 'OVERDUE').reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
                 </p>
               </div>
-              <AlertCircle className="w-8 h-8 text-red-600" />
+              <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600">Este Mes</p>
-                <p className="text-2xl font-bold text-blue-600">
+                <p className="text-sm text-slate-600 dark:text-slate-400">Este Mes</p>
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                   ${payments.filter(p => new Date(p.dueDate).getMonth() === new Date().getMonth()).reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
                 </p>
               </div>
-              <CreditCard className="w-8 h-8 text-blue-600" />
+              <CreditCard className="w-8 h-8 text-blue-600 dark:text-blue-400" />
             </div>
           </div>
         </div>
@@ -507,9 +510,9 @@ useEffect(() => {
               <button
                 key={status}
                 onClick={() => setFilter(status as 'all' | 'PENDING' | 'PAID' | 'OVERDUE')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === status
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${filter === status
+                  ? 'bg-blue-600 text-white border-blue-600 dark:bg-blue-700 dark:text-white dark:border-blue-700'
+                  : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-700'
                   }`}
               >
                 {status === 'all' ? 'Todos' :
@@ -524,7 +527,7 @@ useEffect(() => {
 
           <button
             onClick={handleGenerateReport}
-            className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800 transition-colors"
           >
             <Download className="w-4 h-4 mr-2" />
             Exportar Reporte
@@ -532,62 +535,62 @@ useEffect(() => {
         </div>
 
         {/* Payments List */}
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-slate-50 border-b border-slate-200">
+              <thead className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700">
                 <tr>
-                  <th className="text-left py-3 px-6 text-sm font-medium text-slate-600">Pago</th>
-                  <th className="text-left py-3 px-6 text-sm font-medium text-slate-600">Inquilino</th>
-                  <th className="text-left py-3 px-6 text-sm font-medium text-slate-600">Propiedad</th>
-                  <th className="text-left py-3 px-6 text-sm font-medium text-slate-600">Monto</th>
-                  <th className="text-left py-3 px-6 text-sm font-medium text-slate-600">Fecha de Vencimiento</th>
-                  <th className="text-left py-3 px-6 text-sm font-medium text-slate-600">Estado</th>
-                  <th className="text-left py-3 px-6 text-sm font-medium text-slate-600">Acciones</th>
+                  <th className="text-left py-3 px-6 text-sm font-medium text-slate-600 dark:text-slate-300">Pago</th>
+                  <th className="text-left py-3 px-6 text-sm font-medium text-slate-600 dark:text-slate-300">Inquilino</th>
+                  <th className="text-left py-3 px-6 text-sm font-medium text-slate-600 dark:text-slate-300">Propiedad</th>
+                  <th className="text-left py-3 px-6 text-sm font-medium text-slate-600 dark:text-slate-300">Monto</th>
+                  <th className="text-left py-3 px-6 text-sm font-medium text-slate-600 dark:text-slate-300">Fecha de Vencimiento</th>
+                  <th className="text-left py-3 px-6 text-sm font-medium text-slate-600 dark:text-slate-300">Estado</th>
+                  <th className="text-left py-3 px-6 text-sm font-medium text-slate-600 dark:text-slate-300">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                 {filteredPayments.map((payment) => {
                   const status = getPaymentStatus(payment);
                   return (
-                    <tr key={payment.id} className="hover:bg-slate-50">
+                    <tr key={payment.id} className="hover:bg-slate-50 dark:hover:bg-slate-900">
                       <td className="py-4 px-6">
                         <div className="flex items-center">
                           {getStatusIcon(status)}
                           <div className="ml-3">
-                            <p className="font-medium text-slate-900">
+                            <p className="font-medium text-slate-900 dark:text-white">
                               {payment.type === 'RENT' ? 'Alquiler' :
                                 payment.type === 'DEPOSIT' ? 'Depósito' :
                                   payment.type === 'LATE_FEE' ? 'Recargo por Mora' :
                                     payment.type === 'UTILITY' ? 'Servicios' : 'Mantenimiento'}
                             </p>
-                            <p className="text-sm text-slate-500">#{payment.id.slice(-6).toUpperCase()}</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">#{payment.id.slice(-6).toUpperCase()}</p>
                           </div>
                         </div>
                       </td>
                       <td className="py-4 px-6">
                         <div className="flex items-center">
-                          <User className="w-4 h-4 text-slate-400 mr-2" />
-                          <span className="text-sm text-slate-900">{getTenantName(payment.tenantId)}</span>
+                          <User className="w-4 h-4 text-slate-400 dark:text-slate-300 mr-2" />
+                          <span className="text-sm text-slate-900 dark:text-white">{getTenantName(payment.tenantId)}</span>
                         </div>
                       </td>
                       <td className="py-4 px-6">
                         <div className="flex items-center">
-                          <Home className="w-4 h-4 text-slate-400 mr-2" />
-                          <span className="text-sm text-slate-900">{getPropertyName(payment.contractId)}</span>
+                          <Home className="w-4 h-4 text-slate-400 dark:text-slate-300 mr-2" />
+                          <span className="text-sm text-slate-900 dark:text-white">{getPropertyName(payment.contractId)}</span>
                         </div>
                       </td>
                       <td className="py-4 px-6">
-                        <span className="font-medium text-slate-900">${payment.amount.toLocaleString()}</span>
+                        <span className="font-medium text-slate-900 dark:text-white">${payment.amount.toLocaleString()}</span>
                       </td>
                       <td className="py-4 px-6">
                         <div className="flex items-center">
-                          <Calendar className="w-4 h-4 text-slate-400 mr-2" />
-                          <span className="text-sm text-slate-900">{formatDateInUTC(payment.dueDate)}</span>
+                          <Calendar className="w-4 h-4 text-slate-400 dark:text-slate-300 mr-2" />
+                          <span className="text-sm text-slate-900 dark:text-white">{formatDateInUTC(payment.dueDate)}</span>
                         </div>
                       </td>
                       <td className="py-4 px-6">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(status)}`}>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(status)} dark:bg-opacity-80 dark:text-opacity-90`}>
                           {statusDisplayNames[status as keyof typeof statusDisplayNames] || status}
                         </span>
                       </td>
@@ -597,7 +600,7 @@ useEffect(() => {
                           {payment.status === 'PAID' && (
                             <button
                               onClick={() => handleGenerateReceipt(payment)}
-                              className="text-sm text-emerald-600 hover:text-emerald-800 font-medium"
+                              className="text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 font-medium"
                               title="Generar Comprobante"
                             >
                               <Receipt className="w-4 h-4" />
@@ -606,7 +609,7 @@ useEffect(() => {
                           <button
                             onClick={() => handleEditPayment(payment)}
                             disabled={payment.status === 'CANCELLED' || payment.status === 'REFUNDED'}
-                            className="text-blue-600 hover:text-blue-800 disabled:text-slate-400 disabled:cursor-not-allowed"
+                            className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 disabled:text-slate-400 dark:disabled:text-slate-600 disabled:cursor-not-allowed"
                             title={
                               payment.status === 'CANCELLED' || payment.status === 'REFUNDED'
                                 ? 'No se puede editar un pago finalizado'
@@ -620,19 +623,19 @@ useEffect(() => {
                               {/* Botón para Anular */}
                               <button
                                 onClick={() => handleCancelPayment(payment.id)}
-                                className="text-orange-600 hover:text-orange-800"
+                                className="text-orange-600 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-300"
                                 title="Anular Pago (marcar como error)"
                               >
-                                <XCircle className="w-5 h-5" /> {/* Ícono sugerido, asegúrate de importarlo */}
+                                <XCircle className="w-5 h-5" />
                               </button>
 
                               {/* Botón para Reembolsar */}
                               <button
                                 onClick={() => handleRefundPayment(payment.id)}
-                                className="text-red-600 hover:text-red-800"
+                                className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
                                 title="Registrar Reembolso"
                               >
-                                <Undo2 className="w-5 h-5" /> {/* Ícono sugerido, asegúrate de importarlo */}
+                                <Undo2 className="w-5 h-5" />
                               </button>
                             </>
                           )}

@@ -208,7 +208,7 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Nombre de la Propiedad
                   </label>
                   <input
@@ -216,7 +216,7 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                     placeholder={
                       selectedUnit.type === 'BUILDING' 
                         ? 'ej., Apartamento 2A, Suite 200' 
@@ -227,13 +227,13 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Tipo de Propiedad
                   </label>
                   <select
                     value={formData.type}
                     onChange={(e) => setFormData({ ...formData, type: e.target.value as Property['type'] })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                     disabled={selectedUnit.type !== 'BUILDING' || isSubmitting}
                   >
                     {selectedUnit.type === 'BUILDING' ? (
@@ -254,7 +254,7 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
               {selectedUnit.type === 'BUILDING' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       Número de Unidad <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -262,19 +262,19 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
                       required
                       value={formData.unitNumber}
                       onChange={(e) => setFormData({ ...formData, unitNumber: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                       placeholder="ej., 2A, 101, Suite 200"
                       disabled={isSubmitting}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                       Piso
                     </label>
                     <select
                       value={formData.floor}
                       onChange={(e) => setFormData({ ...formData, floor: parseInt(e.target.value) })}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                       disabled={isSubmitting}
                     >
                       {Array.from({ length: selectedUnit.totalFloors || 10 }, (_, i) => i + 1).map(floor => (
@@ -287,7 +287,7 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Tamaño (m²)
                   </label>
                   <input
@@ -295,13 +295,13 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
                     required
                     value={formData.size}
                     onChange={(e) => setFormData({ ...formData, size: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                     disabled={isSubmitting}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Habitaciones
                   </label>
                   <input
@@ -309,13 +309,13 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
                     required
                     value={formData.rooms}
                     onChange={(e) => setFormData({ ...formData, rooms: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                     disabled={isSubmitting}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Baños
                   </label>
                   <input
@@ -324,13 +324,13 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
                     step="0.5"
                     value={formData.bathrooms}
                     onChange={(e) => setFormData({ ...formData, bathrooms: parseFloat(e.target.value) })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                     disabled={isSubmitting}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Renta Mensual ($)
                   </label>
                   <input
@@ -338,20 +338,20 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
                     required
                     value={formData.rent}
                     onChange={(e) => setFormData({ ...formData, rent: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                     disabled={isSubmitting}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Estado
                 </label>
                 <select
                   value={formData.status}
                   onChange={(e) => setFormData({ ...formData, status: e.target.value as Property['status'] })}
-                  className="w-full max-w-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full max-w-xs px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                   disabled={isSubmitting}
                 >
                   <option value="AVAILABLE">Disponible</option>
@@ -362,7 +362,7 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Amenidades
                 </label>
                 <div className="flex space-x-2 mb-3">
@@ -371,14 +371,14 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
                     value={newAmenity}
                     onChange={(e) => setNewAmenity(e.target.value)}
                     placeholder="Agregar comodidad"
-                    className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                     onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addAmenity())}
                     disabled={isSubmitting}
                   />
                   <button
                     type="button"
                     onClick={addAmenity}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 transition-colors disabled:opacity-50"
                     disabled={isSubmitting}
                   >
                     Agregar
@@ -388,13 +388,13 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
                   {formData.amenities.map((amenity, index) => (
                     <span
                       key={index}
-                      className="inline-flex items-center px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-sm"
+                      className="inline-flex items-center px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-full text-sm"
                     >
                       {amenity}
                       <button
                         type="button"
                         onClick={() => removeAmenity(amenity)}
-                        className="ml-2 text-slate-400 hover:text-slate-600"
+                        className="ml-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                         disabled={isSubmitting}
                       >
                         <X className="w-3 h-3" />
@@ -405,30 +405,30 @@ export function PropertyForm({ property, isOpen, onClose }: PropertyFormProps) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Fotos
                 </label>
-                <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-slate-400 transition-colors">
-                  <Upload className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                  <p className="text-slate-600">Haz clic para subir fotos o arrastra y suelta</p>
-                  <p className="text-sm text-slate-500 mt-1">PNG, JPG hasta 10MB cada una</p>
+                <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg p-8 text-center hover:border-slate-400 dark:hover:border-slate-500 transition-colors">
+                  <Upload className="w-8 h-8 text-slate-400 dark:text-slate-500 mx-auto mb-2" />
+                  <p className="text-slate-600 dark:text-slate-300">Haz clic para subir fotos o arrastra y suelta</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">PNG, JPG hasta 10MB cada una</p>
                 </div>
               </div>
             </>
           )}
 
-          <div className="flex justify-end space-x-4 pt-4 border-t border-slate-200">
+          <div className="flex justify-end space-x-4 pt-4 border-t border-slate-200 dark:border-slate-700">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors"
+              className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100 transition-colors"
               disabled={isSubmitting}
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
               disabled={!formData.unitId || isSubmitting}
             >
               {isSubmitting ? (

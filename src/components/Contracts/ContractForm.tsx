@@ -187,14 +187,14 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-slate-200">
-          <h2 className="text-xl font-semibold text-slate-900">
+      <div className="bg-white dark:bg-slate-800 rounded-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
             {contract ? 'Editar Contrato' : 'Crear Nuevo Contrato'}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
+            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -203,14 +203,14 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Propiedad {!contract && <span className="text-xs text-slate-500">(Solo disponibles)</span>}
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Propiedad {!contract && <span className="text-xs text-slate-500 dark:text-slate-400">(Solo disponibles)</span>}
               </label>
               <select
                 required
                 value={formData.propertyId}
                 onChange={handlePropertyChange}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
               >
                 <option value="">Selecciona una propiedad</option>
                 {availableProperties.map((property) => (
@@ -225,14 +225,14 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 Tenant
               </label>
               <select
                 required
                 value={formData.tenantId}
                 onChange={(e) => setFormData({ ...formData, tenantId: e.target.value })}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
               >
                 <option value="">Select a tenant</option>
                 {tenants.map((tenant) => (
@@ -246,7 +246,7 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 Start Date
               </label>
               <input
@@ -254,18 +254,18 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
                 required
                 value={formData.startDate}
                 onChange={handleStartDateChange}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 Contract Period
               </label>
               <select
                 value={contractPeriod}
                 onChange={handlePeriodChange}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
               >
                 <option value="6">6 months</option>
                 <option value="12">12 months</option>
@@ -277,23 +277,23 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 End Date
-                <span className="text-xs text-slate-500 ml-1">(Auto-calculated)</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400 ml-1">(Auto-calculated)</span>
               </label>
               <input
                 type="date"
                 required
                 value={formData.endDate}
                 onChange={handleEndDateChange}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 Monthly Rent ($)
               </label>
               <input
@@ -301,12 +301,12 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
                 required
                 value={formData.monthlyRent}
                 onChange={(e) => setFormData({ ...formData, monthlyRent: parseInt(e.target.value) })}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 Security Deposit ($)
               </label>
               <input
@@ -314,20 +314,20 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
                 required
                 value={formData.securityDeposit}
                 onChange={(e) => setFormData({ ...formData, securityDeposit: parseInt(e.target.value) })}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 Status
               </label>
               <select
                 value={formData.status}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value as Contract['status'] })}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
               >
                 <option value="DRAFT">Draft</option>
                 <option value="ACTIVE">Active</option>
@@ -337,20 +337,20 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 Signed Date (Optional)
               </label>
               <input
                 type="date"
                 value={formData.signedDate}
                 onChange={(e) => setFormData({ ...formData, signedDate: e.target.value })}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               Contract Terms
             </label>
             <div className="flex space-x-2 mb-3">
@@ -359,13 +359,13 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
                 value={newTerm}
                 onChange={(e) => setNewTerm(e.target.value)}
                 placeholder="Add contract term"
-                className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTerm())}
               />
               <button
                 type="button"
                 onClick={addTerm}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 transition-colors"
               >
                 Add
               </button>
@@ -374,13 +374,13 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
               {formData.terms.map((term, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
+                  className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900 rounded-lg"
                 >
-                  <span className="text-sm text-slate-700">{term}</span>
+                  <span className="text-sm text-slate-700 dark:text-slate-200">{term}</span>
                   <button
                     type="button"
                     onClick={() => removeTerm(term)}
-                    className="text-red-600 hover:text-red-800 text-sm"
+                    className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm"
                   >
                     Remove
                   </button>
@@ -389,17 +389,17 @@ export function ContractForm({ contract, properties, tenants, isOpen, onClose, o
             </div>
           </div>
 
-          <div className="flex justify-end space-x-4 pt-4 border-t border-slate-200">
+          <div className="flex justify-end space-x-4 pt-4 border-t border-slate-200 dark:border-slate-700">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors"
+              className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-colors"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 transition-colors"
             >
               {contract ? 'Actualizar Contrato' : 'Crear Contrato'}
             </button>

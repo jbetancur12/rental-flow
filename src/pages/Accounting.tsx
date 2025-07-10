@@ -339,32 +339,32 @@ export default function Accounting() {
   return (
     <div className="flex flex-col min-h-screen h-screen">
       <div className="p-6 max-w-6xl mx-auto w-full flex-1 flex flex-col">
-        <h1 className="text-2xl font-bold mb-4">Contabilidad</h1>
+        <h1 className="text-2xl font-bold mb-4 text-slate-900 dark:text-white">Contabilidad</h1>
         {report && (
-          <div className="mb-6 p-4 bg-slate-100 rounded-lg flex gap-8 items-center justify-between">
+          <div className="mb-6 p-4 bg-slate-100 dark:bg-slate-900 border dark:border-slate-700 rounded-lg flex gap-8 items-center justify-between">
             <div className="flex gap-8">
               <div>
-                <div className="text-slate-500 text-xs">Ingresos</div>
-                <div className="text-green-600 font-bold text-lg">${report.totalIngresos?.toLocaleString() || 0}</div>
+                <div className="text-slate-500 dark:text-slate-400 text-xs">Ingresos</div>
+                <div className="text-green-600 dark:text-green-400 font-bold text-lg">${report.totalIngresos?.toLocaleString() || 0}</div>
               </div>
               <div>
-                <div className="text-slate-500 text-xs">Gastos</div>
-                <div className="text-red-600 font-bold text-lg">${report.totalGastos?.toLocaleString() || 0}</div>
+                <div className="text-slate-500 dark:text-slate-400 text-xs">Gastos</div>
+                <div className="text-red-600 dark:text-red-400 font-bold text-lg">${report.totalGastos?.toLocaleString() || 0}</div>
               </div>
               <div>
-                <div className="text-slate-500 text-xs">Balance</div>
-                <div className="text-blue-600 font-bold text-lg">${report.balance?.toLocaleString() || 0}</div>
+                <div className="text-slate-500 dark:text-slate-400 text-xs">Balance</div>
+                <div className="text-blue-600 dark:text-blue-400 font-bold text-lg">${report.balance?.toLocaleString() || 0}</div>
               </div>
             </div>
-            <Button type="button" onClick={handleOpenModal} className="bg-blue-600 text-white px-4 py-2 rounded shadow">+ Agregar entrada</Button>
+            <Button type="button" onClick={handleOpenModal} className="bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-800 text-white px-4 py-2 rounded shadow transition-colors">+ Agregar entrada</Button>
           </div>
         )}
         {/* Modal para crear/editar entrada */}
         {modalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg relative animate-fade-in">
-              <h2 className="text-xl font-semibold mb-4">{editingId ? 'Editar entrada' : 'Agregar entrada'}</h2>
-              <button onClick={handleCancel} className="absolute top-2 right-2 text-slate-400 hover:text-slate-700 text-2xl">×</button>
+            <div className="bg-white dark:bg-slate-900 rounded-lg shadow-xl p-6 w-full max-w-lg relative animate-fade-in">
+              <h2 className="text-xl font-semibold mb-4 text-slate-900 dark:text-white">{editingId ? 'Editar entrada' : 'Agregar entrada'}</h2>
+              <button onClick={handleCancel} className="absolute top-2 right-2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-2xl">×</button>
               <AccountingForm values={form} onChange={handleFormChange} onSubmit={handleFormSubmit} onCancel={handleCancel} editing={!!editingId} loading={loading} />
             </div>
           </div>
@@ -378,7 +378,7 @@ export default function Accounting() {
           </div>
         )}
         {!showChart && (
-          <div className="bg-white rounded-xl border border-slate-200 p-6 mb-4 flex items-center gap-3 text-slate-500">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6 mb-4 flex items-center gap-3 text-slate-500 dark:text-slate-400">
             <Info className="w-6 h-6 text-blue-400" />
             <span>Selecciona un rango de al menos dos días para visualizar la gráfica de ingresos y gastos.</span>
           </div>
@@ -396,7 +396,7 @@ export default function Accounting() {
           onReset={handleFilterReset}
           chartToggle={chartToggleButton}
         />
-        <ExportButton entries={filteredEntries} />
+        <ExportButton entries={filteredEntries} className="bg-emerald-600 dark:bg-emerald-700 hover:bg-emerald-700 dark:hover:bg-emerald-800 text-white" />
         <div className="w-full max-h-[60vh] overflow-y-auto mb-2 flex-1">
           <AccountingTable
             entries={pagedEntries}
@@ -408,9 +408,9 @@ export default function Accounting() {
             onSort={handleSort}
           />
         </div>
-        <div className="sticky bottom-0 left-0 w-full bg-white border-t border-slate-200 z-20 py-3 px-6 shadow-lg">
+        <div className="sticky bottom-0 left-0 w-full bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 z-20 py-3 px-6 shadow-lg">
           <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-            <div className="font-bold text-slate-700">Total página: <span className="text-blue-700">${getAccountingPageTotal(pagedEntries).toLocaleString()}</span></div>
+            <div className="font-bold text-slate-700 dark:text-slate-200">Total página: <span className="text-blue-700 dark:text-blue-400">${getAccountingPageTotal(pagedEntries).toLocaleString()}</span></div>
             <AccountingPagination
               page={page}
               pageSize={pageSize}

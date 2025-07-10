@@ -46,24 +46,23 @@ export function RecentActivity() {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6">
-      <h3 className="text-lg font-semibold text-slate-900 mb-6">Actividad Reciente</h3>
+    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+      <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-6">Actividad Reciente</h3>
       <div className="space-y-4">
         {isLoading ? (
-          <p className="text-sm text-slate-500 text-center py-4">Cargando actividad...</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-4">Cargando actividad...</p>
         ) : activities.length > 0 ? (
           activities.map((activity: any) => {
-            const config = entityIconMap[activity.entityType] || { icon: Wrench, color: 'text-slate-600' };
+            const config = entityIconMap[activity.entityType] || { icon: Wrench, color: 'text-slate-600 dark:text-slate-400' };
             const Icon = config.icon;
-            
             return (
               <div key={activity.id} className="flex items-start space-x-3">
-                <div className={`p-2 rounded-lg bg-slate-50 ${config.color}`}>
+                <div className={`p-2 rounded-lg bg-slate-50 dark:bg-slate-800 ${config.color}`}> 
                   <Icon className="w-4 h-4" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-slate-900">{activity.description}</p>
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-sm text-slate-900 dark:text-slate-100">{activity.description}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                     {formatDistanceToNow(new Date(activity.createdAt), { addSuffix: true, locale: es })}
                   </p>
                 </div>
@@ -71,21 +70,21 @@ export function RecentActivity() {
             );
           })
         ) : (
-          <p className="text-sm text-slate-500 text-center py-4">No hay actividad reciente.</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-4">No hay actividad reciente.</p>
         )}
       </div>
       <div className="mt-6 text-center">
-        {isLoading && <p className="text-sm text-slate-500">Cargando...</p>}
+        {isLoading && <p className="text-sm text-slate-500 dark:text-slate-400">Cargando...</p>}
         {!isLoading && hasMore && (
           <button 
             onClick={handleLoadMore}
-            className="text-sm font-medium text-blue-600 hover:text-blue-800"
+            className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
           >
             Cargar más
           </button>
         )}
         {!isLoading && !hasMore && activities.length > 0 && (
-          <p className="text-sm text-slate-400">No hay más actividades.</p>
+          <p className="text-sm text-slate-400 dark:text-slate-500">No hay más actividades.</p>
         )}
       </div>
     </div>
