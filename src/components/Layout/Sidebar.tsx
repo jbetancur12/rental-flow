@@ -16,11 +16,14 @@ import {
   Menu,
   X,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { OrganizationSwitcher } from './OrganizationSwitcher';
 import { useAuth } from '../../context/AuthContext';
 import { useMemo } from 'react';
+import { useTheme } from '../../hooks/useTheme';
 
 function useSubscriptionBannerVisible() {
   const { state } = useAuth();
@@ -59,6 +62,7 @@ export function Sidebar() {
     return false;
   });
   const bannerVisible = useSubscriptionBannerVisible();
+  const [theme, setTheme] = useTheme();
 
   // Guardar el estado minimizado en localStorage
   useEffect(() => {
@@ -159,6 +163,17 @@ export function Sidebar() {
         {/* Organization Switcher */}
         <div className={`p-2 border-t border-slate-700 ${minimized ? 'flex justify-center' : ''}`}>
           {!minimized && <OrganizationSwitcher />}
+        </div>
+        {/* Theme Toggle */}
+        <div className={`p-2 border-t border-slate-700 flex items-center justify-center`}>
+          <button
+            className="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors hover:bg-slate-800 text-slate-300 hover:text-white"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            aria-label="Cambiar tema"
+          >
+            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            <span className="hidden md:inline text-sm">{theme === 'dark' ? 'Claro' : 'Oscuro'}</span>
+          </button>
         </div>
       </div>
     </>
