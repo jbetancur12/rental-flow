@@ -181,6 +181,7 @@ export interface OrganizationSummary {
   mrr: number;
   createdAt: string; // Se reciben como string desde la API
   lastActivity: string;
+  isActive: boolean;
 }
 
 // Interfaz para la información de paginación

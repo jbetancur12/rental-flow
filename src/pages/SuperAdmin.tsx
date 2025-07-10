@@ -17,7 +17,7 @@ import { SettingsTab } from '../components/SuperAdmin/SettingsTab';
 
 export function SuperAdmin() {
   const { state, logout } = useAuth();
-  const { getPlans, updatePlans, createPlan } = useApp();
+  const { getPlans, updatePlans, createPlan, deletePlan, enablePlan } = useApp();
   const toast = useToast();
 
   // State
@@ -100,6 +100,26 @@ export function SuperAdmin() {
     }
   };
 
+  const handlePlanDelete = async (planId: string) => {
+    try {
+      await deletePlan(planId);
+      await fetchPlans(true);
+      toast.success('Plan deshabilitado');
+    } catch (error) {
+      toast.error('Error', 'No se pudo deshabilitar el plan.');
+    }
+  };
+
+  const handlePlanEnable = async (planId: string) => {
+    try {
+      await enablePlan(planId);
+      await fetchPlans(true);
+      toast.success('Plan habilitado');
+    } catch (error) {
+      toast.error('Error', 'No se pudo habilitar el plan.');
+    }
+  };
+
   // Check if user is super admin
   if (state.user?.role !== 'SUPER_ADMIN') {
     return <AccessDenied />;
@@ -148,6 +168,8 @@ export function SuperAdmin() {
             isLoading={isLoading}
             onPlanSave={handlePlanSave}
             onRefreshPlans={fetchPlans}
+            onPlanDelete={handlePlanDelete}
+            onPlanEnable={handlePlanEnable}
           />
         )}
       </div>

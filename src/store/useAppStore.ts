@@ -49,6 +49,8 @@ type AppStore = AppState & {
   getPlans: () => Promise<Plan[]>;
   updatePlans: (plans: Plan[]) => Promise<void>;
   createPlan: (planData: Omit<Plan, 'id' | 'isActive' | 'currency' | 'features'>) => Promise<Plan>;
+  deletePlan: (id: string) => Promise<void>;
+  enablePlan: (id: string) => Promise<void>;
 };
 
 const initialState: AppState = {
@@ -349,15 +351,21 @@ export const useAppStore = create<AppStore & { initSocket: (organizationId: stri
       set({ organization: response.organization });
     },
     getPlans: async () => {
-      const response = await apiClient.getSuperAdminPlans();
+      const response = await apiClient.getPlans();
       return response.data;
     },
     updatePlans: async (plans) => {
-      await apiClient.updateSuperAdminPlans(plans);
+      await apiClient.updatePlans(plans);
     },
     createPlan: async (planData) => {
-      const response = await apiClient.createSuperAdminPlan(planData);
+      const response = await apiClient.createPlan(planData);
       return response.data;
+    },
+    deletePlan: async (id) => {
+      await apiClient.deletePlan(id);
+    },
+    enablePlan: async (id) => {
+      await apiClient.enablePlan(id);
     },
   };
 });

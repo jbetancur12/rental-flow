@@ -156,4 +156,34 @@ router.post('/',
     }
 );
 
+// DELETE /v1/plans/:id - Deshabilita un plan (isActive=false)
+router.delete('/:id', async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const plan = await prisma.plan.update({
+            where: { id },
+            data: { isActive: false }
+        });
+        return res.json({ message: 'Plan deshabilitado', data: plan });
+    } catch (error) {
+        logger.error('Failed to disable plan:', error);
+        return res.status(500).json({ error: 'Failed to disable plan' });
+    }
+});
+
+// PATCH /v1/plans/:id/enable - Habilita un plan (isActive=true)
+router.patch('/:id/enable', async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const plan = await prisma.plan.update({
+            where: { id },
+            data: { isActive: true }
+        });
+        return res.json({ message: 'Plan habilitado', data: plan });
+    } catch (error) {
+        logger.error('Failed to enable plan:', error);
+        return res.status(500).json({ error: 'Failed to enable plan' });
+    }
+});
+
 export default router;

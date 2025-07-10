@@ -442,21 +442,33 @@ class ApiClient {
     return this.request<any>(`/super-admin/organizations${query ? `?${query}` : ''}`);
   }
 
-  async getSuperAdminPlans() {
-    return this.request<any>('/super-admin/plans');
+  async getPlans() {
+    return this.request<any>('/plans');
   }
 
-  async updateSuperAdminPlans(plans: Plan[]) {
-    return this.request<any>('/super-admin/plans', {
+  async updatePlans(plans: Plan[]) {
+    return this.request<any>('/plans', {
       method: 'PATCH',
       body: JSON.stringify(plans),
     });
   }
 
-    async createSuperAdminPlan(planData: Omit<Plan, 'id' | 'isActive' | 'currency' | 'features'>) {
-    return this.request<any>('/super-admin/plans', {
+  async createPlan(planData: Omit<Plan, 'id' | 'isActive' | 'currency' | 'features'>) {
+    return this.request<any>('/plans', {
       method: 'POST',
       body: JSON.stringify(planData),
+    });
+  }
+
+  async deletePlan(id: string) {
+    return this.request<any>(`/plans/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async enablePlan(id: string) {
+    return this.request<any>(`/plans/${id}/enable`, {
+      method: 'PATCH',
     });
   }
 
@@ -551,6 +563,13 @@ class ApiClient {
     }
     const query = searchParams.toString();
     return this.request<any>(`/accounting/report${query ? `?${query}` : ''}`);
+  }
+
+  async updateOrganizationSubscription(orgId: string, data: { planId?: string; status?: string }) {
+    return this.request<any>(`/organizations/${orgId}/subscription`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
   }
 
 }

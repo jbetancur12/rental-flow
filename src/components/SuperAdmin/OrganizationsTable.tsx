@@ -67,7 +67,7 @@ export function OrganizationsTable({
       );
       toast.success('Éxito', `Organización ${org.isActive ? 'deshabilitada' : 'habilitada'}`);
       // Refrescar la tabla: puedes llamar a una función de fetchOrganizations si está disponible vía props/context, o recargar la página temporalmente:
-      window.location.reload();
+      // window.location.reload();
     } catch (e) {
       toast.error('Error', 'No se pudo actualizar el estado de la organización');
     } finally {

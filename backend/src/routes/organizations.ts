@@ -151,7 +151,7 @@ router.put('/:id',
             // --- INICIO DE LA CORRECCIÓN ---
 
             // 1. Desestructuramos solo los campos que permitimos cambiar del body.
-            const { name, email, phone, address, settings } = req.body;
+            const { name, email, phone, address, settings, isActive } = req.body;
 
             // 2. Creamos un objeto 'dataToUpdate' seguro.
             const dataToUpdate: any = {};
@@ -161,6 +161,7 @@ router.put('/:id',
             if (email) dataToUpdate.email = email;
             if (phone) dataToUpdate.phone = phone;
             if (address) dataToUpdate.address = address;
+            if (typeof isActive === 'boolean') dataToUpdate.isActive = isActive;
 
             // 4. Fusionamos los 'settings' para no borrar datos existentes en el JSON.
             if (settings) {
@@ -273,5 +274,32 @@ router.patch('/:id/activate',
     }
   }
 );
+
+// PATCH /v1/organizations/:id/subscription - Actualiza plan y estado de la suscripción activa
+router.patch('/:id/subscription', authenticateToken, requireSuperAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { planId, status } = req.body;
+    // Buscar la suscripción activa más reciente
+    const subscription = await prisma.subscription.findFirst({
+      where: { organizationId: id },
+      orderBy: { createdAt: 'desc' }
+    });
+    if (!subscription) {
+      return res.status(404).json({ error: 'No active subscription found for this organization' });
+    }
+    const updated = await prisma.subscription.update({
+      where: { id: subscription.id },
+      data: {
+        ...(planId && { planId }),
+        ...(status && { status })
+      }
+    });
+    return res.json({ message: 'Subscription updated', subscription: updated });
+  } catch (error) {
+    logger.error('Failed to update subscription:', error);
+    return res.status(500).json({ error: 'Failed to update subscription' });
+  }
+});
 
 export default router;

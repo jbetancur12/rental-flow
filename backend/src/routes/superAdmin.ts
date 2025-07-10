@@ -99,7 +99,8 @@ router.get('/organizations',
           tenants: org.tenants.length,
           mrr: mrr,
           createdAt: org.createdAt,
-          lastActivity: org.updatedAt
+          lastActivity: org.updatedAt,
+          isActive: org.isActive
         };
       });
 

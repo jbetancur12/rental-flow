@@ -11,9 +11,11 @@ interface SettingsTabProps {
   isLoading: boolean;
   onPlanSave: (planData: Plan) => Promise<void>;
   onRefreshPlans: () => Promise<void>;
+  onPlanDelete: (planId: string) => Promise<void>;
+  onPlanEnable: (planId: string) => Promise<void>;
 }
 
-export function SettingsTab({ plans, isLoading, onPlanSave, onRefreshPlans }: SettingsTabProps) {
+export function SettingsTab({ plans, isLoading, onPlanSave, onRefreshPlans, onPlanDelete, onPlanEnable }: SettingsTabProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
 
@@ -45,6 +47,9 @@ export function SettingsTab({ plans, isLoading, onPlanSave, onRefreshPlans }: Se
     }
   };
 
+  const activePlans = plans.filter(p => p.isActive);
+  const inactivePlans = plans.filter(p => !p.isActive);
+
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-xl border border-slate-200 p-6">
@@ -57,23 +62,41 @@ export function SettingsTab({ plans, isLoading, onPlanSave, onRefreshPlans }: Se
             {isLoading ? (
               <p className="text-slate-600">Cargando planes...</p>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {plans.map(plan => (
-                  <PlanCard 
-                    key={plan.id} 
-                    plan={plan} 
-                    onEdit={handleOpenEditModal} 
-                    isFeatured={plan.id === 'plan-professional'} 
-                  />
-                ))}
-                <button 
-                  onClick={handleOpenNewPlanModal} 
-                  className="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-lg text-slate-500 hover:bg-slate-50 hover:border-slate-400 min-h-[200px] transition-colors"
-                >
-                  <PlusCircle className="w-8 h-8 mb-2" />
-                  <span className="text-sm font-medium">Crear Nuevo Plan</span>
-                </button>
-              </div>
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {activePlans.map(plan => (
+                    <PlanCard 
+                      key={plan.id} 
+                      plan={plan} 
+                      onEdit={handleOpenEditModal} 
+                      isFeatured={plan.id === 'plan-professional'} 
+                      onDelete={onPlanDelete}
+                    />
+                  ))}
+                  <button 
+                    onClick={handleOpenNewPlanModal} 
+                    className="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-lg text-slate-500 hover:bg-slate-50 hover:border-slate-400 min-h-[200px] transition-colors"
+                  >
+                    <PlusCircle className="w-8 h-8 mb-2" />
+                    <span className="text-sm font-medium">Crear Nuevo Plan</span>
+                  </button>
+                </div>
+                {inactivePlans.length > 0 && (
+                  <div className="mt-8">
+                    <h5 className="text-slate-500 font-semibold mb-2 text-sm uppercase tracking-wider">Planes deshabilitados</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 opacity-60">
+                      {inactivePlans.map(plan => (
+                        <PlanCard
+                          key={plan.id}
+                          plan={plan}
+                          isDisabled
+                          onEnable={onPlanEnable}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
 
             <PlanEditorModal
