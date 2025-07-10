@@ -9,22 +9,17 @@ import {
   CreditCard,
   Wrench,
   BarChart3,
-  Settings,
-  HelpCircle,
   Building,
-  LogOut,
   Menu,
   X,
   ChevronLeft,
   ChevronRight,
-  Sun,
-  Moon,
   DollarSign
 } from 'lucide-react';
 import { OrganizationSwitcher } from './OrganizationSwitcher';
 import { useAuth } from '../../context/AuthContext';
 import { useMemo } from 'react';
-import { useTheme } from '../../hooks/useTheme';
+
 
 function useSubscriptionBannerVisible() {
   const { state } = useAuth();
@@ -49,12 +44,11 @@ const navigation = [
   { name: 'Mantenimiento', href: '/maintenance', icon: Wrench },
   { name: 'Contabilidad', href: '/accounting', icon: DollarSign },
   { name: 'Reportes', href: '/reports', icon: BarChart3 },
-  { name: 'Configuración', href: '/settings', icon: Settings },
-  { name: 'Ayuda', href: '/help', icon: HelpCircle },
+  // { name: 'Configuración', href: '/settings', icon: Settings },
+  // { name: 'Ayuda', href: '/help', icon: HelpCircle },
 ];
 
 export function Sidebar() {
-  const { logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [minimized, setMinimized] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -63,7 +57,7 @@ export function Sidebar() {
     return false;
   });
   const bannerVisible = useSubscriptionBannerVisible();
-  const [theme, setTheme] = useTheme();
+
 
   // Guardar el estado minimizado en localStorage
   useEffect(() => {
@@ -157,30 +151,9 @@ export function Sidebar() {
 
 
         {/* Logout Button */}
-        <div className={`px-2 pb-4 ${minimized ? 'flex justify-center' : ''}`}>
-          <button
-            onClick={logout}
-            className={`flex items-center w-full px-3 py-3 text-sm font-medium text-red-300 hover:bg-red-900/20 hover:text-red-200 rounded-lg transition-colors ${minimized ? 'justify-center px-0' : ''}`}
-            title={minimized ? 'Cerrar Sesión' : undefined}
-          >
-            <LogOut className={`w-5 h-5 ${minimized ? '' : 'mr-3'}`} />
-            {!minimized && 'Cerrar Sesión'}
-          </button>
-        </div>
         {/* Organization Switcher */}
-        <div className={`p-2 border-t border-slate-700 dark:border-slate-600 ${minimized ? 'flex justify-center' : ''}`}>
+        <div className={`z-50 p-2 border-t border-slate-700 dark:border-slate-600 ${minimized ? 'flex justify-center' : ''}`}>
           {!minimized && <OrganizationSwitcher />}
-        </div>
-        {/* Theme Toggle */}
-        <div className={`p-2 border-t border-slate-700 dark:border-slate-600 flex items-center justify-center`}>
-          <button
-            className="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors hover:bg-slate-800 dark:hover:bg-slate-700 text-slate-300 dark:text-slate-200 hover:text-white"
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            aria-label="Cambiar tema"
-          >
-            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            <span className="hidden md:inline text-sm">{theme === 'dark' ? 'Claro' : 'Oscuro'}</span>
-          </button>
         </div>
       </div>
     </>
