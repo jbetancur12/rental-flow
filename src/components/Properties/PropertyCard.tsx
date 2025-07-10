@@ -106,7 +106,7 @@ export function PropertyCard({
 
         <div className="flex items-center text-slate-600 dark:text-slate-300 mb-3">
           <Building className="w-4 h-4 mr-1" />
-          <span className="text-sm">{property.unitName}</span>
+          <span className="text-sm">{property.unit?.name || property.unitName || ''}</span>
         </div>
         
         <div className="flex items-center text-slate-600 dark:text-slate-300 mb-3">

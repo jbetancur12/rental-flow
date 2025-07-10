@@ -16,6 +16,7 @@ export interface Property {
   unitNumber?: string; // For apartments/commercial in buildings (2A, 101, Suite 200)
   unitName?: string; // Name of the unit (e.g., "Building A", "Unit 101")
   floor?: number; // For apartments/commercial in buildings
+  unit?: { name: string }; // Relación opcional para mostrar el nombre de la unidad
   
   // Legacy fields (keep for backward compatibility)
   buildingId?: string;
