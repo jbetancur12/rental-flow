@@ -25,7 +25,7 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
         if (user.role === 'SUPER_ADMIN') {
           navigate('/super-admin');
         } else {
-          navigate('/dashboard'); // o a la ruta principal '/'
+          navigate('/'); // o a la ruta principal '/'
         }
       }
     } catch (error) {

@@ -85,20 +85,20 @@ export function UnitDetails({ unit, properties, isOpen, onClose, onEdit }: UnitD
                 <MapPin className="w-5 h-5 text-slate-400 mr-3" />
                 <div>
                   <p className="text-sm text-slate-500">Dirección</p>
-                  <p className="font-medium text-slate-900">{unit.address}</p>
+                  <p className="font-medium text-slate-900 dark:text-white">{unit.address}</p>
                 </div>
               </div>
               {unit.manager && (
                 <div>
                   <p className="text-sm text-slate-500">Encargado</p>
-                  <p className="font-medium text-slate-900">{unit.manager}</p>
+                  <p className="font-medium text-slate-900 dark:text-white">{unit.manager}</p>
                 </div>
               )}
             </div>
             {unit.description && (
               <div className="mt-4">
                 <p className="text-sm text-slate-500">Descripción</p>
-                <p className="text-slate-700 mt-1">{unit.description}</p>
+                <p className="text-slate-700 dark:text-white mt-1">{unit.description}</p>
               </div>
             )}
           </div>
@@ -166,7 +166,7 @@ export function UnitDetails({ unit, properties, isOpen, onClose, onEdit }: UnitD
           {/* Properties (for all unit types) */}
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-slate-900">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
                 {unit.type === 'BUILDING' ? 'Propiedades en el Edificio' : 'Detalles de la Propiedad'}
               </h3>
             </div>

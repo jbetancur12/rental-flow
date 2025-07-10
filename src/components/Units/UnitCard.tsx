@@ -132,7 +132,7 @@ export function UnitCard({
                       className="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-900 rounded text-xs"
                     >
                       <div>
-                        <span className="font-medium">{property.unitNumber || property.name}</span>
+                        <span className="font-medium dark:text-white">{property.unitNumber || property.name}</span>
                         <span className="text-slate-500 dark:text-slate-400 ml-2">Piso {property.floor}</span>
                       </div>
                       <div className="flex items-center space-x-1">
