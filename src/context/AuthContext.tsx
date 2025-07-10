@@ -215,10 +215,14 @@ const processAuthResponse = useCallback((response: any): boolean => {
       if (wasSuccessful) {
         toast.success('','¡Bienvenido de nuevo!');
         return response.user as User;
-    }
+      }
     } catch (error: any) {
-      dispatch({ type: 'LOGIN_FAILURE', payload: error.message || 'Error de autenticación' });
-      toast.error('Error de autenticación', error.message);
+      let errorMsg = error?.message || 'Error de autenticación';
+      if (error?.code === 'ORGANIZATION_INACTIVE') {
+        errorMsg = 'Tu organización está deshabilitada. Contacta al administrador.';
+      }
+      dispatch({ type: 'LOGIN_FAILURE', payload: errorMsg });
+      toast.error('Error de autenticación', errorMsg);
     }
   }, [processAuthResponse, toast]);
 
