@@ -18,7 +18,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Sun,
-  Moon
+  Moon,
+  DollarSign
 } from 'lucide-react';
 import { OrganizationSwitcher } from './OrganizationSwitcher';
 import { useAuth } from '../../context/AuthContext';
@@ -46,7 +47,7 @@ const navigation = [
   { name: 'Contratos', href: '/contracts', icon: FileText },
   { name: 'Pagos', href: '/payments', icon: CreditCard },
   { name: 'Mantenimiento', href: '/maintenance', icon: Wrench },
-  { name: 'Contabilidad', href: '/accounting', icon: BarChart3 },
+  { name: 'Contabilidad', href: '/accounting', icon: DollarSign },
   { name: 'Reportes', href: '/reports', icon: BarChart3 },
   { name: 'Configuración', href: '/settings', icon: Settings },
   { name: 'Ayuda', href: '/help', icon: HelpCircle },
@@ -101,7 +102,7 @@ export function Sidebar() {
           ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
           md:static md:translate-x-0
           ${minimized ? 'w-20' : 'w-64'}
-          ${bannerVisible ? 'pt-16 md:pt-14' : ''}
+          ${bannerVisible ? 'pt-14 md:pt-0' : ''}
         `
         }
         style={{ minWidth: minimized ? 80 : 256 }}
@@ -131,24 +132,29 @@ export function Sidebar() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-2 py-6 space-y-2">
-          {navigation.map((item) => (
-            <NavLink
-              key={item.name}
-              to={item.href}
-              className={({ isActive }) =>
-                `flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors whitespace-nowrap
-                ${isActive ? 'bg-blue-600 text-white' : 'text-slate-300 dark:text-slate-200 hover:bg-slate-800 dark:hover:bg-slate-700 hover:text-white'}
-                ${minimized ? 'justify-center px-0' : ''}`
-              }
-              title={minimized ? item.name : undefined}
-              onClick={() => setMobileOpen(false)}
-            >
-              <item.icon className={`w-5 h-5 ${minimized ? '' : 'mr-3'}`} />
-              {!minimized && item.name}
-            </NavLink>
-          ))}
-        </nav>
+        <div className="relative flex-1 overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-4 bg-gradient-to-b from-slate-800 to-transparent pointer-events-none z-10" />
+          <nav className="h-full px-2 py-6 space-y-2 overflow-y-auto scrollbar-thin scrollbar-track-gray-200 scrollbar-thumb-gray-400 hover:scrollbar-thumb-gray-500 dark:scrollbar-track-slate-800 dark:scrollbar-thumb-blue-500 dark:hover:scrollbar-thumb-blue-400">
+            {navigation.map((item) => (
+              <NavLink
+                key={item.name}
+                to={item.href}
+                className={({ isActive }) =>
+                  `flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-colors whitespace-nowrap
+                  ${isActive ? 'bg-blue-600 text-white' : 'text-slate-300 dark:text-slate-200 hover:bg-slate-800 dark:hover:bg-slate-700 hover:text-white'}
+                  ${minimized ? 'justify-center px-0' : ''}`
+                }
+                title={minimized ? item.name : undefined}
+                onClick={() => setMobileOpen(false)}
+              >
+                <item.icon className={`w-5 h-5 ${minimized ? '' : 'mr-3'}`} />
+                {!minimized && item.name}
+              </NavLink>
+            ))}
+          </nav>
+          <div className="absolute bottom-0 left-0 w-full h-4 bg-gradient-to-t from-slate-800 to-transparent pointer-events-none z-10" />
+        </div>
+
 
         {/* Logout Button */}
         <div className={`px-2 pb-4 ${minimized ? 'flex justify-center' : ''}`}>

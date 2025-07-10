@@ -157,11 +157,11 @@ export function Layout() {
     <div className="flex h-screen bg-slate-50 dark:bg-slate-900">
       <Sidebar />
       <div
-        className={`flex-1 flex flex-col overflow-hidden ${bannerVisible ? 'pt-16 md:pt-14' : ''} bg-white dark:bg-slate-900`}
+        className={`flex-1 flex flex-col overflow-hidden ${bannerVisible ? 'pt-0 md:pt0' : ''} bg-white dark:bg-slate-900`}
       >
-        <SubscriptionBanner />
         <Suspense fallback={<div className="flex-1 flex items-center justify-center text-slate-400 dark:text-slate-200">Cargando...</div>}>
-          <div className="p-8 overflow-auto">
+          <SubscriptionBanner />
+          <div className="px-8 overflow-auto">
             <Outlet />
           </div>
         </Suspense>

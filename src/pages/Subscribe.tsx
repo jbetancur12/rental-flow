@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { PlanSelector } from '../components/Subscription/PlanSelector';
 
 // Asume que 'plans' está en un archivo compartido
-import { plans } from '../components/Auth/RegisterForm'; 
+import { plans } from '../components/Auth/registerPlans'; 
 
 export function Subscribe() {
   const { state } = useAuth();
