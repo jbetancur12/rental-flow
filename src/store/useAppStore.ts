@@ -72,6 +72,7 @@ export const useAppStore = create<AppStore & { initSocket: (organizationId: stri
   return {
     ...initialState,
     initSocket: (organizationId: string) => {
+      localStorage.debug = '*';
       if (socket) return; // Evitar doble conexión
       socket = socketIOClient(import.meta.env.VITE_API_URL?.replace('/v1', '') || 'http://localhost:3001');
       if (typeof window !== 'undefined') (window as any).__rentflow_socket = socket;
@@ -171,7 +172,7 @@ export const useAppStore = create<AppStore & { initSocket: (organizationId: stri
       });
       // Actualización en tiempo real de contratos
       socket.on('contract:created', ({ contract }) => {
-        console.log('SOCKET contract:created', { contract });
+    
         const normalized = {
           ...contract,
           createdAt: new Date(contract.createdAt),
