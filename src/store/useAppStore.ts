@@ -74,7 +74,8 @@ export const useAppStore = create<AppStore & { initSocket: (organizationId: stri
     initSocket: (organizationId: string) => {
       localStorage.debug = '*';
       if (socket) return; // Evitar doble conexión
-      socket = socketIOClient(import.meta.env.VITE_API_URL?.replace('/v1', '') || 'http://localhost:3001');
+      
+      socket = socketIOClient(import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:3001');
       console.log('SOCKET connection', { socket });
       if (typeof window !== 'undefined') (window as any).__rentflow_socket = socket;
       socket.on('connect', () => {
