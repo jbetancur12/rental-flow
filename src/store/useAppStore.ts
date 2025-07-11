@@ -76,10 +76,8 @@ export const useAppStore = create<AppStore & { initSocket: (organizationId: stri
       if (socket) return; // Evitar doble conexión
       
       socket = socketIOClient(import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:3001');
-      console.log('SOCKET connection', { socket });
       if (typeof window !== 'undefined') (window as any).__rentflow_socket = socket;
       socket.on('connect', () => {
-        console.log('SOCKET connect', { socket });
         socket?.emit('join-organization', organizationId);
       });
       // Actualización en tiempo real de propiedades
