@@ -15,11 +15,27 @@ interface QuickRentModalProps {
 function getContractDurationMonths(startDate: Date, endDate: Date) {
   const start = new Date(startDate);
   const end = new Date(endDate);
-  return (
+  let months =
     (end.getFullYear() - start.getFullYear()) * 12 +
-    (end.getMonth() - start.getMonth()) +
-    (end.getDate() >= start.getDate() ? 0 : -1)
-  );
+    (end.getMonth() - start.getMonth());
+  // Si el día de endDate es mayor o igual al de startDate, cuenta el mes completo
+  if (end.getDate() >= start.getDate()) {
+    months += 1;
+  }
+  return months;
+}
+
+// Utilidad para traducir el estado del inquilino a español
+const tenantStatusES: Record<string, string> = {
+  APPROVED: 'Aprobado',
+  PENDING: 'Pendiente',
+  ACTIVE: 'Activo',
+  REJECTED: 'Rechazado',
+  INACTIVE: 'Inactivo',
+};
+
+function getTenantStatusES(status: string) {
+  return tenantStatusES[status] || status;
 }
 
 export function QuickRentModal({ property, isOpen, onClose }: QuickRentModalProps) {
@@ -230,7 +246,7 @@ const handleQuickRent = async () => {
                     </div>
                     <div>
                       <p><strong>Empleo:</strong> {tenant.employment?.employer} {tenant.employment?.position && `- ${tenant.employment.position}`}</p>
-                      <p><strong>Estado:</strong> {tenant.status}</p>
+                      <p><strong>Estado:</strong> {getTenantStatusES(tenant.status)}</p>
                     </div>
                   </div>
                 </div>

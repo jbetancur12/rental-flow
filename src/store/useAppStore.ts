@@ -171,6 +171,7 @@ export const useAppStore = create<AppStore & { initSocket: (organizationId: stri
       });
       // Actualización en tiempo real de contratos
       socket.on('contract:created', ({ contract }) => {
+        console.log('SOCKET contract:created', { contract });
         const normalized = {
           ...contract,
           createdAt: new Date(contract.createdAt),
